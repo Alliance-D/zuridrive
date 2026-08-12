@@ -103,7 +103,7 @@ export default async function RootLayout({ children, params }: RootLayoutProps) 
   // Pre-fetch session server-side so SessionProvider doesn't need a round-trip
   const [session, messages] = await Promise.all([
     getServerSession(authOptions),
-    getMessages(),
+    getMessages({ locale }),
   ]);
 
   return (
@@ -118,7 +118,7 @@ export default async function RootLayout({ children, params }: RootLayoutProps) 
         />
       </head>
       <body>
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <AuthProvider session={session}>
             {/* Offered once, only when the browser asks for a language other
                 than the one being served. Above the nav so it never covers

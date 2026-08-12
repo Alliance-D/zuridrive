@@ -13,6 +13,7 @@
  */
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, SlidersHorizontal, ChevronDown} from "lucide-react";
 
@@ -44,6 +45,7 @@ export function CarsFilterSidebar({
   const [isPending, startTransition] = useTransition();
 
   // Collapsed by default on mobile; the lg:block below keeps it open on desktop.
+  const t = useTranslations("cars");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const [filters, setFilters] = useState({
@@ -144,7 +146,7 @@ export function CarsFilterSidebar({
       >
         <span className="flex items-center gap-2 text-lg font-bold text-ink">
           <SlidersHorizontal className="h-4 w-4 text-brand" />
-          Filters
+          {t("filters")}
           {activeCount > 0 && (
             <span className="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white lg:hidden">
               {activeCount}
@@ -173,7 +175,7 @@ export function CarsFilterSidebar({
 
       {/* Price */}
       <fieldset className="mb-6">
-        <legend className="mb-3 font-semibold text-ink">Price per day</legend>
+        <legend className="mb-3 font-semibold text-ink">{t("pricePerDay")}</legend>
         <div className="space-y-3">
           <div>
             <label htmlFor="priceMin" className="text-sm text-ink-soft">
@@ -223,21 +225,21 @@ export function CarsFilterSidebar({
       </fieldset>
 
       <FilterGroup
-        legend="Category"
+        legend={t("category")}
         options={categories}
         selected={filters.category}
         onSelect={(v) => toggle("category", v)}
       />
 
       <FilterGroup
-        legend="Transmission"
+        legend={t("transmission")}
         options={transmissions}
         selected={filters.transmission}
         onSelect={(v) => toggle("transmission", v)}
       />
 
       <FilterGroup
-        legend="Fuel type"
+        legend={t("fuelType")}
         options={fuelTypes}
         selected={filters.fuelType}
         onSelect={(v) => toggle("fuelType", v)}
@@ -250,7 +252,7 @@ export function CarsFilterSidebar({
         className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand py-2.5 font-semibold text-white transition-colors hover:bg-brand-dark disabled:opacity-60"
       >
         {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-        {isPending ? "Searching…" : "Apply filters"}
+        {isPending ? "…" : t("applyFilters")}
       </button>
 
       {hasActiveFilters && (
@@ -259,7 +261,7 @@ export function CarsFilterSidebar({
           disabled={isPending}
           className="mt-2 w-full py-2 text-sm text-ink-soft underline hover:text-brand"
         >
-          Clear all
+          {t("clearAll")}
         </button>
       )}
       </div>

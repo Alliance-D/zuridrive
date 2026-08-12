@@ -98,8 +98,8 @@
   "deposit": {
     "labelPlatform": "Ingwate isubizwa",
     "labelOwner": "Ingwate isubizwa — ihabwa nyir'imodoka",
-    "explainPlatform": "",
-    "explainOwner": ""
+    "explainPlatform": "Ingwate ibikwa na ZuriDrive, igasubizwa yose iyo wowe na nyir'imodoka mwembi mwemeje ko imodoka yagaruwe.",
+    "explainOwner": "Iyi ngwate uyiha nyir'imodoka ubwe igihe ufata imodoka, akaba ari we uyigusubiza igihe uyimusubije. ZuriDrive ntiyibika. Uzayizane."
   },
   "notFound": {
     "eyebrow": "404",
@@ -112,13 +112,13 @@
   "error": {
     "eyebrow": "Habaye ikibazo",
     "title": "Ibi ntibyakunze.",
-    "body": "",
+    "body": "Habaye ikibazo kuruhande rwacu. Nta mafaranga yatanzwe, kandi nta cyahindutse ku busabe bwawe. Kongera kugerageza akenshi birakunda.",
     "tryAgain": "Ongera ugerageze",
     "goHome": "Subira ahabanza",
     "reference": "Nomero: {digest}"
   },
   "footer": {
-    "tagline": "",
+    "tagline": "Urubuga rw'u Rwanda rwo gukodesha imodoka. Imodoka zizewe, ibiciro bigaragara, gukodesha byoroshye.",
     "contact": "Twandikire",
     "renters": "Abakodesha",
     "carOwners": "Ba nyir'imodoka",

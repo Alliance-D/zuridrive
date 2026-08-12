@@ -5,6 +5,7 @@
 // =============================================================================
 
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { formatEnumLabel } from "@/lib/labels";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -120,6 +121,7 @@ interface CarsPageProps {
 }
 
 export default async function CarsPage({ searchParams }: CarsPageProps) {
+  const t = await getTranslations("cars");
   const filters = parseFilters(searchParams);
   const { cars, total, totalPages } = await getCars(filters);
   const currentPage = filters.page ?? 1;
@@ -135,12 +137,14 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
             {/* Same naive capitalise that rendered SUV as "Suv" on the detail
                 page — formatEnumLabel keeps acronyms intact. */}
             {filters.category
-              ? `${formatEnumLabel(filters.category)} Cars`
-              : "All Available Cars"}
+              ? t("categoryTitle", { category: formatEnumLabel(filters.category) })
+              : t("title")}
           </h1>
           <p className="text-fluid-sm text-ink-soft">
-            {total} car{total !== 1 ? "s" : ""} found
-            {filters.location ? ` near "${filters.location}"` : " across Rwanda"}
+            {t("found", { count: total })}{" "}
+            {filters.location
+              ? t("near", { location: filters.location })
+              : t("acrossRwanda")}
           </p>
         </div>
       </div>
