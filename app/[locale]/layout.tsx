@@ -5,6 +5,11 @@
 // =============================================================================
 
 import type { Metadata, Viewport } from "next";
+import { notFound } from "next/navigation";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
+import { routing, type Locale } from "@/i18n/routing";
+import LanguagePrompt from "@/components/i18n/LanguagePrompt";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import AuthProvider from "@/components/auth-provider";
@@ -76,14 +81,33 @@ export const viewport: Viewport = {
 
 interface RootLayoutProps {
   children: React.ReactNode;
+  params: { locale: string };
 }
 
-export default async function RootLayout({ children }: RootLayoutProps) {
+/**
+ * Pre-render every locale at build time instead of on first request.
+ */
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export default async function RootLayout({ children, params }: RootLayoutProps) {
+  const { locale } = params;
+
+  // An unknown locale in the URL is a 404, not a silent fallback — otherwise
+  // /xx/cars would quietly serve English and get indexed as a real page.
+  if (!routing.locales.includes(locale as Locale)) notFound();
+
+  setRequestLocale(locale);
+
   // Pre-fetch session server-side so SessionProvider doesn't need a round-trip
-  const session = await getServerSession(authOptions);
+  const [session, messages] = await Promise.all([
+    getServerSession(authOptions),
+    getMessages(),
+  ]);
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {/* Preconnect to Google Fonts for faster font loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -94,10 +118,16 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
       <body>
-        <AuthProvider session={session}>
-          {/* Main content — each page renders here */}
-          <main id="main-content">{children}</main>
-        </AuthProvider>
+        <NextIntlClientProvider messages={messages}>
+          <AuthProvider session={session}>
+            {/* Offered once, only when the browser asks for a language other
+                than the one being served. Above the nav so it never covers
+                content. */}
+            <LanguagePrompt />
+            {/* Main content — each page renders here */}
+            <main id="main-content">{children}</main>
+          </AuthProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
