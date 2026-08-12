@@ -1,6 +1,5 @@
 {
   "_README": "DRAFT — NOT REVIEWED BY A NATIVE SPEAKER. Every value here needs checking before launch, and the money terms need it most. 'ingwate' (deposit) must stay the same word everywhere it appears: change it in one place and renters will think there are two different charges. Keys with an empty string fall back to English automatically, which is safer than a confident wrong translation.",
-
   "nav": {
     "browseCars": "Reba imodoka",
     "howItWorks": "Uko bikora",
@@ -134,7 +133,10 @@
     "help": "Ubufasha",
     "contactUs": "Twandikire",
     "rights": "© {year} ZuriDrive Ltd. Uburenganzira bwose bwihariwe. Kigali, u Rwanda.",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "browseCars": "Reba imodoka",
+    "howItWorks": "Uko bikora",
+    "listYourCar": "Andika imodoka yawe"
   },
   "language": {
     "label": "Ururimi",

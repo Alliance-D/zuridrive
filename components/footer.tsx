@@ -4,9 +4,11 @@
 // =============================================================================
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ROUTES } from "@/lib/routes";
 
-export default function Footer() {
+export default async function Footer() {
+  const t = await getTranslations("footer");
   const year = new Date().getFullYear();
 
   return (
@@ -21,8 +23,7 @@ export default function Footer() {
               Zuri<span className="text-accent">Drive</span>
             </div>
             <p className="max-w-[32ch] text-fluid-sm leading-[1.7] text-white/55">
-              Rwanda&apos;s premier car rental marketplace. Verified cars,
-              transparent pricing, seamless booking.
+              {t("tagline")}
             </p>
 
             {/* Contact */}
@@ -45,12 +46,12 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Renters */}
+          {/* {t("renters")} */}
           <div>
-            <FooterHeading>Renters</FooterHeading>
+            <FooterHeading>{t("renters")}</FooterHeading>
             <FooterLinks links={[
-              { label: "Browse Cars", href: ROUTES.cars },
-              { label: "How It Works", href: ROUTES.howItWorks },
+              { label: t("browseCars"), href: ROUTES.cars },
+              { label: t("howItWorks"), href: ROUTES.howItWorks },
               { label: "Pricing & Deposits", href: `${ROUTES.howItWorks}#pricing` },
               { label: "Fuel Policies", href: `${ROUTES.howItWorks}#fuel` },
               { label: "Sign Up", href: ROUTES.signup },
@@ -59,25 +60,25 @@ export default function Footer() {
 
           {/* Owners */}
           <div>
-            <FooterHeading>Car Owners</FooterHeading>
+            <FooterHeading>{t("carOwners")}</FooterHeading>
             <FooterLinks links={[
-              { label: "List Your Car", href: ROUTES.becomeAnOwner },
-              { label: "Owner Dashboard", href: ROUTES.ownerDashboard },
-              { label: "Subscription Plans", href: `${ROUTES.becomeAnOwner}#plans` },
-              { label: "Earnings & Payouts", href: `${ROUTES.becomeAnOwner}#earnings` },
-              { label: "Create an owner account", href: ROUTES.signupOwner },
+              { label: t("listYourCar"), href: ROUTES.becomeAnOwner },
+              { label: t("ownerDashboard"), href: ROUTES.ownerDashboard },
+              { label: t("subscriptionPlans"), href: `${ROUTES.becomeAnOwner}#plans` },
+              { label: t("earningsPayouts"), href: `${ROUTES.becomeAnOwner}#earnings` },
+              { label: t("createOwnerAccount"), href: ROUTES.signupOwner },
             ]} />
           </div>
 
           {/* Legal */}
           <div>
-            <FooterHeading>Company</FooterHeading>
+            <FooterHeading>{t("company")}</FooterHeading>
             <FooterLinks links={[
-              { label: "About ZuriDrive", href: "/about" },
-              { label: "Terms of Service", href: "/terms" },
-              { label: "Privacy Policy", href: "/privacy" },
-              { label: "Help Center", href: "/help" },
-              { label: "Contact Us", href: "/contact" },
+              { label: t("about"), href: "/about" },
+              { label: t("terms"), href: "/terms" },
+              { label: t("privacy"), href: "/privacy" },
+              { label: t("help"), href: "/help" },
+              { label: t("contactUs"), href: "/contact" },
             ]} />
           </div>
         </div>

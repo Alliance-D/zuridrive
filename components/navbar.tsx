@@ -9,6 +9,8 @@
 // =============================================================================
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
+import LanguageSwitcher from "@/components/i18n/LanguageSwitcher";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
@@ -27,6 +29,7 @@ import { ROUTES } from "@/lib/routes";
 const DARK_HERO_PAGES = ["/"];
 
 export default function Navbar() {
+  const t = useTranslations("nav");
   const { data: session, status } = useSession();
   const pathname = usePathname();
 
@@ -93,13 +96,13 @@ export default function Navbar() {
           {/* ---------------------------------------------------------------- */}
           <div className="hide-mobile flex items-center gap-6">
             <NavLink href={ROUTES.cars} transparent={isTransparent}>
-              Browse Cars
+              {t("browseCars")}
             </NavLink>
             <NavLink href={ROUTES.howItWorks} transparent={isTransparent}>
-              How It Works
+              {t("howItWorks")}
             </NavLink>
             <NavLink href={ROUTES.becomeAnOwner} transparent={isTransparent}>
-              List Your Car
+              {t("listYourCar")}
             </NavLink>
           </div>
 
@@ -107,6 +110,9 @@ export default function Navbar() {
           {/* DESKTOP AUTH / USER MENU                                         */}
           {/* ---------------------------------------------------------------- */}
           <div className="hide-mobile flex items-center gap-3">
+            {/* Permanent way to change language, for anyone who dismissed the
+                prompt or changed their mind later. */}
+            <LanguageSwitcher dark={isTransparent} />
             {status === "loading" ? (
               // Skeleton while session loads
               <div className="skeleton h-9 w-[120px] rounded-full" />
@@ -136,13 +142,13 @@ export default function Navbar() {
                     <DropdownItem
                       href={getDashboardPath(session.user.role)}
                       icon={<LayoutDashboard size={15} />}
-                      label="My Dashboard"
+                      label={t("myDashboard")}
                     />
                     {session.user.role === "OWNER" && (
                       <DropdownItem
                         href={ROUTES.ownerFleet}
                         icon={<Car size={15} />}
-                        label="My Fleet"
+                        label={t("myFleet")}
                       />
                     )}
                     <DropdownItem
@@ -159,7 +165,7 @@ export default function Navbar() {
                       className="flex w-full cursor-pointer items-center gap-2.5 border-none bg-none px-4 py-2.5 text-left font-sans text-fluid-sm text-danger-error transition-colors hover:bg-danger-bg"
                     >
                       <LogOut size={15} />
-                      Sign Out
+                      {t("signOut")}
                     </button>
                   </div>
                 )}
@@ -173,7 +179,7 @@ export default function Navbar() {
                     isTransparent ? "text-white/85" : "text-ink"
                   }`}
                 >
-                  Sign In
+                  {t("signIn")}
                 </Link>
                 <Link
                   href={ROUTES.cars}
@@ -213,25 +219,25 @@ export default function Navbar() {
           className="fixed inset-0 top-[var(--nav-height)] flex animate-[slideUp_0.25s_ease_forwards] flex-col gap-2 overflow-y-auto bg-bone px-5 py-6"
           style={{ zIndex: "calc(var(--z-sticky) - 1)" }}
         >
-          <MobileNavLink href={ROUTES.cars}>Browse Cars</MobileNavLink>
-          <MobileNavLink href={ROUTES.howItWorks}>How It Works</MobileNavLink>
-          <MobileNavLink href={ROUTES.becomeAnOwner}>List Your Car</MobileNavLink>
+          <MobileNavLink href={ROUTES.cars}>{t("browseCars")}</MobileNavLink>
+          <MobileNavLink href={ROUTES.howItWorks}>{t("howItWorks")}</MobileNavLink>
+          <MobileNavLink href={ROUTES.becomeAnOwner}>{t("listYourCar")}</MobileNavLink>
 
           <div className="my-4 h-px bg-sand-edge" />
 
           {session ? (
             <>
               <MobileNavLink href={getDashboardPath(session.user.role)}>
-                My Dashboard
+                {t("myDashboard")}
               </MobileNavLink>
               {session.user.role === "OWNER" && (
-                <MobileNavLink href={ROUTES.ownerFleet}>My Fleet</MobileNavLink>
+                <MobileNavLink href={ROUTES.ownerFleet}>{t("myFleet")}</MobileNavLink>
               )}
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="cursor-pointer rounded-2xl border-none bg-none p-4 text-left font-sans text-fluid-lg font-medium text-danger-error"
               >
-                Sign Out
+                {t("signOut")}
               </button>
             </>
           ) : (

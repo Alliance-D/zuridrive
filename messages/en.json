@@ -132,7 +132,10 @@
     "help": "Help Center",
     "contactUs": "Contact Us",
     "rights": "© {year} ZuriDrive Ltd. All rights reserved. Kigali, Rwanda.",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "browseCars": "Browse Cars",
+    "howItWorks": "How It Works",
+    "listYourCar": "List Your Car"
   },
   "language": {
     "label": "Language",
