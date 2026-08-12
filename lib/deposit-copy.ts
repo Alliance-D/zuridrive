@@ -35,10 +35,10 @@ export function paymentsEnabledClient(): boolean {
 }
 
 export interface DepositCopy {
-  /** Short label beside the amount. */
-  label: string;
-  /** One sentence explaining who holds it and how it comes back. */
-  explanation: string;
+  /** Message key for the short label beside the amount. */
+  labelKey: "labelPlatform" | "labelOwner";
+  /** Message key for the sentence explaining who holds it. */
+  explanationKey: "explainPlatform" | "explainOwner";
   /** Who physically takes the money. */
   heldBy: "platform" | "owner";
 }
@@ -47,17 +47,15 @@ export function getDepositCopy(opts?: { client?: boolean }): DepositCopy {
   const canCollect = opts?.client ? paymentsEnabledClient() : paymentsEnabled();
   if (canCollect) {
     return {
-      label: "Refundable deposit",
-      explanation:
-        "Held securely by ZuriDrive and returned in full once you and the owner both confirm the return.",
+      labelKey: "labelPlatform",
+      explanationKey: "explainPlatform",
       heldBy: "platform",
     };
   }
 
   return {
-    label: "Refundable deposit — paid to the owner",
-    explanation:
-      "You pay this directly to the owner when you collect the car, and they return it to you at handover. ZuriDrive doesn't hold it. Bring it with you.",
+    labelKey: "labelOwner",
+    explanationKey: "explainOwner",
     heldBy: "owner",
   };
 }

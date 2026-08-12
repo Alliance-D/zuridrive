@@ -41,6 +41,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
   // Client component, so read the browser-side mirror.
   const depositCopy = getDepositCopy({ client: true });
   const t = useTranslations('booking')
+  const td = useTranslations('deposit')
   const hasDates = form.startDate && form.endDate
 
   return (
@@ -109,11 +110,11 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
                   <Lock size={13} className="text-amber-600 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <div className="flex justify-between">
-                      <span className="text-xs font-semibold text-amber-700">{depositCopy.label}</span>
+                      <span className="text-xs font-semibold text-amber-700">{td(depositCopy.labelKey)}</span>
                       <span className="text-xs font-bold text-amber-700">{formatRWF(pricing.depositAmount)}</span>
                     </div>
                     <p className="text-xs text-amber-600 mt-0.5">
-                      {depositCopy.explanation}
+                      {td(depositCopy.explanationKey)}
                     </p>
                   </div>
                 </div>

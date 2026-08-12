@@ -143,7 +143,7 @@ export function DateRangePicker({
         <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
           <CalendarDays size={14} className="text-brand" />
           <span className="text-sm text-brand font-medium">
-            {days} day{days > 1 ? 's' : ''} selected
+            {t("daysSelected", { count: days })}
           </span>
         </div>
       )}

@@ -81,6 +81,7 @@ export async function generateMetadata({ params }: CarDetailPageProps): Promise<
 export default async function CarDetailPage({ params }: CarDetailPageProps) {
   const t = await getTranslations({ locale: params.locale, namespace: "carDetail" });
   const label = await getEnumLabeller(params.locale);
+  const td = await getTranslations({ locale: params.locale, namespace: "deposit" });
   const car = await getCar(params.id);
   if (!car) notFound();
 
@@ -256,7 +257,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                       {formatRWF(pricing.depositAmount)} deposit required
                     </p>
                     <p className="text-fluid-sm leading-[1.6] text-ink-soft">
-                      {getDepositCopy().explanation}
+                      {td(getDepositCopy().explanationKey)}
                       The deposit is separate from your rental payment.
                     </p>
                   </div>

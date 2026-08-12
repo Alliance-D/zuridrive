@@ -29,15 +29,24 @@ const TYPES = [
   { id: 'PER_MONTH' as const, labelKey: 'perMonth', Icon: CalendarClock },
 ]
 
-function getRateLabel(type: 'PER_DAY' | 'PER_WEEK' | 'PER_MONTH', pricing: Pricing | null): string {
+/**
+ * Takes the translator rather than building English inline — the strings this
+ * returns are shown to the renter, so they cannot be assembled from literals.
+ */
+function getRateLabel(
+  type: 'PER_DAY' | 'PER_WEEK' | 'PER_MONTH',
+  pricing: Pricing | null,
+  t: (key: string, values?: Record<string, string>) => string,
+): string {
   if (!pricing) return '—'
-  if (type === 'PER_DAY') return `from ${formatRWF(pricing.perDayInCity)}/day`
-  if (type === 'PER_WEEK') return `from ${formatRWF(pricing.perWeekInCity)}/week`
-  return `${formatRWF(pricing.perMonth)}/month`
+  if (type === 'PER_DAY') return t('perDayFrom', { amount: formatRWF(pricing.perDayInCity) })
+  if (type === 'PER_WEEK') return t('perWeekFrom', { amount: formatRWF(pricing.perWeekInCity) })
+  return t('perMonthFlat', { amount: formatRWF(pricing.perMonth) })
 }
 
 export function RentalTypeSelector({ value, onChange, pricing }: RentalTypeSelectorProps) {
   const tc = useTranslations('carDetail')
+  const tb = useTranslations('booking')
   return (
     <div className="grid grid-cols-3 gap-3">
       {TYPES.map((type) => (
@@ -56,7 +65,7 @@ export function RentalTypeSelector({ value, onChange, pricing }: RentalTypeSelec
           <span className={`text-sm font-semibold ${value === type.id ? 'text-brand' : 'text-stone-700'}`}>
             {tc(type.labelKey)}
           </span>
-          <span className="text-xs text-stone-500">{getRateLabel(type.id, pricing)}</span>
+          <span className="text-xs text-stone-500">{getRateLabel(type.id, pricing, tb)}</span>
         </button>
       ))}
     </div>

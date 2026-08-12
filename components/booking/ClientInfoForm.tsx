@@ -11,6 +11,7 @@
  */
 
 import type { BookingFormUpdater } from './BookingWizard'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Upload, Check, User, Phone, Mail, FileText, CreditCard } from 'lucide-react'
 
@@ -27,6 +28,7 @@ interface ClientInfoFormProps {
 }
 
 export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInfoFormProps) {
+  const t = useTranslations('booking')
   const [uploading, setUploading] = useState(false)
 
 
@@ -34,10 +36,10 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
     <div className="space-y-5">
       {/* Personal info */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider">Personal Information</h3>
+        <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider">{t("personalInfo")}</h3>
 
         <FormField
-          label="Full Name"
+          label={t("fullName")}
           icon={User}
           value={form.clientName}
           onChange={(v) => onChange('clientName', v)}
@@ -47,7 +49,7 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
         />
 
         <FormField
-          label="Phone Number"
+          label={t("phoneNumber")}
           icon={Phone}
           value={form.clientPhone}
           onChange={(v) => onChange('clientPhone', v)}
@@ -58,7 +60,7 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
         />
 
         <FormField
-          label="Email Address (optional)"
+          label={t("emailOptional")}
           icon={Mail}
           value={form.clientEmail}
           onChange={(v) => onChange('clientEmail', v)}
@@ -68,13 +70,12 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
         />
       </div>
 
-      {/* Identity check
-          ZuriDrive does not collect ID or licence documents. The owner checks
+      {/* Identity check — ZuriDrive stores no ID documents. The owner checks
           them in person at handover, which is stronger evidence and holds none
           of the liability of storing scans of people's identity papers. */}
       <div className="space-y-3 pt-2">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-500">
-          Before you collect the car
+          {t("beforeYouCollect")}
         </h3>
 
         <label
@@ -93,11 +94,9 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
             className="mt-0.5 h-4 w-4 shrink-0 accent-[#1B4332]"
           />
           <span className="text-sm text-stone-700">
-            I hold a valid driving licence, and I will show it together with my
-            national ID or passport to the owner before taking the car.
+            {t("licenceAttest")}
             <span className="mt-1 block text-xs text-stone-500">
-              The owner will check your documents in person at handover. We
-              don&apos;t ask you to upload them, and we don&apos;t store them.
+              {t("licenceNote")}
             </span>
           </span>
         </label>

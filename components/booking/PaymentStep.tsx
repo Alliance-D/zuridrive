@@ -43,6 +43,7 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
   // Client component, so read the browser-side mirror.
   const depositCopy = getDepositCopy({ client: true });
   const t = useTranslations('booking')
+  const td = useTranslations('deposit')
   const [copied, setCopied] = useState<string | null>(null)
 
   function copyToClipboard(text: string, key: string) {
@@ -59,7 +60,7 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
           <h2 className="text-lg font-semibold text-stone-900 mb-4">{t("orderSummary")}</h2>
           <div className="space-y-2">
-            <SummaryLine label="Rental" value={formatRWF(pricing.baseAmount)} />
+            <SummaryLine label={t("rental")} value={formatRWF(pricing.baseAmount)} />
             {pricing.driverSurchargeTotal > 0 && (
               <SummaryLine label="Driver surcharge" value={formatRWF(pricing.driverSurchargeTotal)} />
             )}
@@ -67,17 +68,17 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
               <SummaryLine label="Delivery" value={formatRWF(pricing.deliveryFee)} />
             )}
             <div className="border-t border-stone-100 pt-2 mt-2">
-              <SummaryLine label="Rental subtotal" value={formatRWF(pricing.subtotalBeforeDeposit)} bold />
+              <SummaryLine label={t("rentalSubtotal")} value={formatRWF(pricing.subtotalBeforeDeposit)} bold />
             </div>
             {pricing.depositEnabled && pricing.depositAmount > 0 && (
               <div className="flex justify-between items-center text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-2">
-                <span className="text-xs font-medium">Refundable deposit</span>
+                <span className="text-xs font-medium">{td(depositCopy.labelKey)}</span>
                 <span className="text-xs font-bold">{formatRWF(pricing.depositAmount)}</span>
               </div>
             )}
             <div className="border-t border-stone-200 pt-3 mt-2">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-stone-900">{depositCopy.heldBy === 'owner' ? 'Total payable to owner' : 'Total to pay now'}</span>
+                <span className="font-bold text-stone-900">{depositCopy.heldBy === 'owner' ? t('totalPayableToOwner') : t('totalChargedNow')}</span>
                 <span className="text-xl font-bold text-brand">{formatRWF(pricing.totalChargedNow)}</span>
               </div>
             </div>
@@ -94,11 +95,9 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
       */}
       {depositCopy.heldBy === 'owner' ? (
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
-          <h2 className="text-lg font-semibold text-stone-900 mb-2">How you&apos;ll pay</h2>
+          <h2 className="text-lg font-semibold text-stone-900 mb-2">{t("howYoullPay")}</h2>
           <p className="text-sm text-stone-600 leading-relaxed">
-            You pay the owner directly when you collect the car — cash or mobile
-            money, whichever you both prefer. ZuriDrive doesn&apos;t take the
-            payment, so there&apos;s nothing to pay now.
+            {t("payDirect")}
           </p>
           <p className="mt-3 text-sm text-stone-600 leading-relaxed">
             Confirming below sends your request to the owner. They have 2 hours
@@ -118,13 +117,13 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
         </div>
       ) : (
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">Payment Method</h2>
+        <h2 className="text-lg font-semibold text-stone-900 mb-4">{t("paymentMethod")}</h2>
 
         <div className="grid grid-cols-2 gap-3 mb-5">
           {(
             [
-              { id: 'MTN_MOMO', label: 'MTN MoMo', icon: Smartphone, desc: 'Instant USSD push' },
-              { id: 'BANK_TRANSFER', label: 'Bank Transfer', icon: Landmark, desc: 'Manual confirmation' },
+              { id: 'MTN_MOMO', label: t('momo'), icon: Smartphone, desc: t('momoHint') },
+              { id: 'BANK_TRANSFER', label: t('bankTransfer'), icon: Landmark, desc: t('bankHint') },
             ] as const
           ).map((method) => {
             const Icon = method.icon
@@ -246,7 +245,7 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
             ? 'Your booking will only be confirmed after payment is fully verified.'
             : 'The owner confirms your booking, then you settle up with them directly.'}{' '}
           {pricing ? `Deposit: ${formatRWF(pricing.depositAmount)}. ` : ''}
-          {depositCopy.explanation}
+          {td(depositCopy.explanationKey)}
         </p>
       </div>
     </div>

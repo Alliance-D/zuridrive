@@ -129,9 +129,10 @@ export type BookingFormUpdater = <K extends keyof BookingFormState>(
 const PAYMENTS_LIVE = paymentsEnabledClient()
 
 const STEPS = [
-  { id: 1, label: 'Configure', icon: CalendarDays },
-  { id: 2, label: 'Your Details', icon: User },
-  { id: 3, label: PAYMENTS_LIVE ? 'Payment' : 'Confirm', icon: CreditCard },
+  { id: 1, labelKey: 'configure', icon: CalendarDays },
+  { id: 2, labelKey: 'yourDetails', icon: User },
+  // Wording depends on whether money is actually collected; both keys exist.
+  { id: 3, labelKey: PAYMENTS_LIVE ? 'payment' : 'confirm', icon: CreditCard },
 ]
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -378,14 +379,14 @@ export function BookingWizard({
           {pricing && (
             <div className="text-right">
               <p className="font-bold text-brand">{formatRWF(pricing.totalChargedNow)}</p>
-              <p className="text-xs text-stone-500">total</p>
+              <p className="text-xs text-stone-500">{t("total")}</p>
             </div>
           )}
         </div>
 
         {/* Step indicator */}
         <div className="max-w-4xl mx-auto px-4 pb-3">
-          <StepIndicator steps={STEPS} currentStep={currentStep} />
+          <StepIndicator steps={STEPS.map((st) => ({ ...st, label: t(st.labelKey) }))} currentStep={currentStep} />
         </div>
       </div>
 
@@ -525,11 +526,11 @@ export function BookingWizard({
                   transition={{ duration: 0.25 }}
                 >
                   <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100">
-                    <h2 className="text-lg font-semibold text-stone-900 mb-1">Your Details</h2>
+                    <h2 className="text-lg font-semibold text-stone-900 mb-1">{t("yourDetails")}</h2>
                     <p className="text-sm text-stone-500 mb-6">
                       {isLoggedIn
-                        ? 'Your details are pre-filled from your profile. Review and confirm.'
-                        : 'Required to confirm your identity as a driver.'}
+                        ? t('detailsPrefilled')
+                        : t('detailsRequired')}
                     </p>
                     <ClientInfoForm
                       form={form}
@@ -597,7 +598,7 @@ export function BookingWizard({
                   disabled={isSubmitting}
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold hover:bg-accent-deep transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? 'Processing...' : PAYMENTS_LIVE ? 'Confirm & Pay' : 'Send request to owner'}
+                  {isSubmitting ? t('processing') : PAYMENTS_LIVE ? t('confirmAndPay') : t('sendRequest')}
                   {!isSubmitting && <ChevronRight size={18} />}
                 </button>
               )}

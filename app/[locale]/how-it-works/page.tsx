@@ -5,6 +5,7 @@
 // =============================================================================
 
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { getDepositCopy } from "@/lib/deposit-copy";
 import Link from "next/link";
 import Navbar from "@/components/navbar";
@@ -22,7 +23,8 @@ export const metadata: Metadata = {
   description: "Learn how ZuriDrive works — for renters and car owners in Rwanda.",
 };
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
+  const tdep = await getTranslations("deposit");
   return (
     <div className="min-h-screen bg-bone">
       <Navbar />
@@ -118,7 +120,7 @@ export default function HowItWorksPage() {
               <InfoCard
                 icon={<Shield size={20} />}
                 title="About the deposit"
-                body={`The damage deposit is completely separate from your rental payment, and never subject to commission or platform fees. ${getDepositCopy().explanation}`}
+                body={`The damage deposit is completely separate from your rental payment, and never subject to commission or platform fees. ${tdep(getDepositCopy().explanationKey)}`}
                 accent="green"
               />
               <InfoCard
