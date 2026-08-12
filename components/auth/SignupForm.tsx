@@ -1,0 +1,321 @@
+"use client";
+
+/**
+ * SignupForm — phone-first signup for clients and owners.
+ *
+ * Two steps: details → SMS code. There is no password, because the platform
+ * signs people in with a one-time code; creating one here would be a
+ * credential nobody needs.
+ *
+ * In development the API returns the code (`devOtp`) since no SMS provider is
+ * configured, and the form shows it rather than leaving you stuck.
+ */
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { routes } from "@/lib/routes";
+import { Loader2, AlertCircle, ArrowLeft, Phone, User, Mail , Building2} from "lucide-react";
+
+export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
+  const router = useRouter();
+  const [step, setStep] = useState<"details" | "code">("details");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  // Owners only. Asked here so a company's very first listing already carries
+  // the business name rather than the founder's personal name.
+  const [ownerType, setOwnerType] = useState<"INDIVIDUAL" | "COMPANY">("INDIVIDUAL");
+  const [businessName, setBusinessName] = useState("");
+  const [code, setCode] = useState("");
+  const [devOtp, setDevOtp] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isOwner = role === "OWNER";
+
+  async function requestCode() {
+    setBusy(true);
+    setError(null);
+    try {
+      // Owners go through their own endpoint, which also creates the
+      // CarOwnerProfile the onboarding checklist depends on.
+      const endpoint = isOwner ? "/api/auth/signup/owner" : "/api/auth/otp";
+      const body = isOwner
+        ? {
+            name: name.trim(),
+            phone: phone.trim(),
+            email: email.trim() || undefined,
+            ownerType,
+            businessName: ownerType === "COMPANY" ? businessName.trim() : undefined,
+          }
+        : { phone: phone.trim(), name: name.trim(), isSignup: true };
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message ?? data.error ?? "We couldn't send your code.");
+        return;
+      }
+
+      setDevOtp(data.devOtp ?? null);
+      setStep("code");
+    } catch {
+      setError("Network problem. Please check your connection and retry.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verify() {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await signIn("phone-otp", {
+        phone: normalise(phone),
+        otp: code.trim(),
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(
+          result.error === "OTP_INVALID"
+            ? "That code isn't right. Check your SMS and try again."
+            : result.error === "OTP_EXPIRED"
+              ? "That code has expired. Request a new one."
+              : "We couldn't sign you in. Please try again.",
+        );
+        return;
+      }
+
+      router.push(isOwner ? "/owner/onboarding" : routes.dashboard);
+      router.refresh();
+    } catch {
+      setError("Network problem. Please retry.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const canRequest =
+    name.trim().length >= 2 && phone.trim().length >= 10 && !busy;
+
+  return (
+    <div className="w-full max-w-md">
+      <div className="rounded-2xl bg-white p-6 shadow-sm">
+        <h1 className="text-xl font-bold text-ink">
+          {isOwner ? "List your car on ZuriDrive" : "Create your account"}
+        </h1>
+        <p className="mt-1 text-sm text-ink-soft">
+          {step === "details"
+            ? isOwner
+              ? "Start earning from a car that's sitting idle."
+              : "You'll sign in with your phone — no password to remember."
+            : `We sent a 6-digit code to ${phone}.`}
+        </p>
+
+        {step === "details" ? (
+          <div className="mt-5 space-y-3">
+            {isOwner && (
+              <div>
+                <p className="mb-2 text-xs font-medium text-ink-muted">
+                  Are you listing as yourself or as a business?
+                </p>
+                <div className="flex gap-2">
+                  {(["INDIVIDUAL", "COMPANY"] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setOwnerType(t)}
+                      className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                        ownerType === t
+                          ? "border-brand bg-brand text-white"
+                          : "border-sand-edge bg-white text-ink-muted hover:border-brand"
+                      }`}
+                    >
+                      {t === "INDIVIDUAL" ? "Myself" : "A business"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isOwner && ownerType === "COMPANY" && (
+              <Field label="Business name" icon={Building2}>
+                <input
+                  className={input}
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  placeholder="Kigali Fleet Ltd"
+                />
+              </Field>
+            )}
+
+            <Field label={isOwner && ownerType === "COMPANY" ? "Your full name" : "Full name"} icon={User}>
+              <input
+                className={input}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={isOwner && ownerType === "COMPANY" ? "The person managing this account" : "Your legal name"}
+                autoFocus
+              />
+            </Field>
+
+            <Field label="Phone number" icon={Phone}>
+              <input
+                className={input}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="078 123 4567"
+                inputMode="tel"
+              />
+            </Field>
+
+            <Field label="Email (optional)" icon={Mail}>
+              <input
+                className={input}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+              />
+            </Field>
+
+            {error && <ErrorBox>{error}</ErrorBox>}
+
+            <button
+              onClick={requestCode}
+              disabled={!canRequest}
+              className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
+            >
+              {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+              {busy ? "Sending code…" : "Send me a code"}
+            </button>
+
+            <p className="text-center text-[11px] text-ink-faint">
+              By continuing you agree to ZuriDrive&apos;s terms of service.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-5 space-y-3">
+            {devOtp && (
+              <div className="rounded-lg bg-warning-bg px-3 py-2">
+                <p className="text-xs text-warning">
+                  Development mode — your code is{" "}
+                  <strong className="font-mono text-sm">{devOtp}</strong>
+                </p>
+              </div>
+            )}
+
+            <Field label="6-digit code">
+              <input
+                className={`${input} text-center font-mono text-lg tracking-[0.4em]`}
+                value={code}
+                onChange={(e) =>
+                  setCode(e.target.value.replace(/[^\d]/g, "").slice(0, 6))
+                }
+                inputMode="numeric"
+                placeholder="000000"
+                autoFocus
+              />
+            </Field>
+
+            {error && <ErrorBox>{error}</ErrorBox>}
+
+            <button
+              onClick={verify}
+              disabled={code.length !== 6 || busy}
+              className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
+            >
+              {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+              {busy ? "Verifying…" : "Create account"}
+            </button>
+
+            <button
+              onClick={() => {
+                setStep("details");
+                setCode("");
+                setError(null);
+              }}
+              className="flex w-full items-center justify-center gap-1 text-xs font-semibold text-ink-soft hover:text-ink"
+            >
+              <ArrowLeft className="h-3 w-3" />
+              Change details
+            </button>
+          </div>
+        )}
+      </div>
+
+      <p className="mt-4 text-center text-sm text-ink-soft">
+        Already have an account?{" "}
+        <Link href={routes.login} className="font-semibold text-brand hover:underline">
+          Sign in
+        </Link>
+      </p>
+
+      <p className="mt-2 text-center text-sm text-ink-soft">
+        {isOwner ? (
+          <>
+            Looking to rent instead?{" "}
+            <Link href={routes.signup} className="font-semibold text-brand hover:underline">
+              Create a renter account
+            </Link>
+          </>
+        ) : (
+          <>
+            Have a car to rent out?{" "}
+            <Link href={routes.signupOwner} className="font-semibold text-brand hover:underline">
+              List your car
+            </Link>
+          </>
+        )}
+      </p>
+    </div>
+  );
+}
+
+/** Matches the server's normalisation so sign-in finds the account. */
+function normalise(phone: string) {
+  const cleaned = phone.replace(/[\s\-()]/g, "");
+  if (/^\+250[0-9]{9}$/.test(cleaned)) return cleaned;
+  if (/^250[0-9]{9}$/.test(cleaned)) return `+${cleaned}`;
+  if (/^0[0-9]{9}$/.test(cleaned)) return `+250${cleaned.slice(1)}`;
+  return cleaned;
+}
+
+const input =
+  "w-full rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand/20";
+
+function Field({
+  label,
+  icon: Icon,
+  children,
+}: {
+  label: string;
+  icon?: React.ElementType;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-ink-muted">
+        {Icon && <Icon className="h-3 w-3 text-ink-faint" />}
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function ErrorBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-2 rounded-lg bg-danger-bg p-2.5">
+      <AlertCircle className="mt-px h-3.5 w-3.5 shrink-0 text-danger" />
+      <p className="text-xs text-danger">{children}</p>
+    </div>
+  );
+}

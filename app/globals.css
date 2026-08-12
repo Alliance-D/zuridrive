@@ -1,0 +1,812 @@
+/* =============================================================================
+   ZuriDrive — Global Stylesheet
+   Typography, animations, base resets, and the CSS-variable mirror of the
+   colour tokens.
+
+   COLOUR LIVES IN lib/design/tokens.ts. That file feeds tailwind.config.ts,
+   and the :root variables below mirror it for the pages that style with CSS
+   variables rather than utility classes. If you change a colour, change it
+   there first and update the mirror — the two drifted once already.
+   ============================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* -------------------------------------------------------------------------- */
+/* TAILWIND                                                                    */
+/*                                                                             */
+/* These three lines were missing. Without them Tailwind emits nothing, so     */
+/* every utility class in the app — the whole admin, owner and client UI —     */
+/* resolved to no styling at all. The marketing pages looked fine only         */
+/* because they use inline styles.                                             */
+/*                                                                             */
+/* Order matters: Preflight first, then the custom reset further down          */
+/* overrides the parts of it we disagree with, and utilities last so a class   */
+/* always beats an element selector.                                           */
+/* -------------------------------------------------------------------------- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------------------------------------------------- */
+/* DESIGN TOKENS                                                               */
+/* -------------------------------------------------------------------------- */
+
+:root {
+  /* Colors */
+  /* These MUST match lib/design/tokens.ts — that file is the source of truth
+     and feeds tailwind.config.ts. They had already drifted once: the page
+     background here said #FAF8F4 while every app screen used #F7F5F0. */
+  --color-primary:        #1B4332;
+  --color-primary-light:  #2D6A4F;
+  --color-primary-dark:   #0F2B1F;
+  --color-accent:         #D4A017;
+  --color-accent-light:   #E8BC3A;
+  --color-accent-dark:    #A87C0F;
+
+  --color-bg:             #F7F5F0;
+  --color-surface:        #F0EDE8;
+  --color-surface-2:      #E5E0D8;
+  --color-border:         #DDD5C8;
+  --color-border-light:   #EDE7DC;
+
+  --color-text:           #1C1C1C;
+  --color-text-muted:     #6B7280;
+  --color-text-subtle:    #9CA3AF;
+
+  --color-white:          #FFFFFF;
+  --color-black:          #0A0A0A;
+
+  /* Status colors */
+  --color-success:        #2D6A4F;
+  --color-warning:        #D4A017;
+  --color-error:          #C0392B;
+  --color-info:           #2471A3;
+
+  /* Typography */
+  --font-display:  'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans:     'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Courier New', monospace;
+
+  /* Type scale — fluid via clamp() */
+  --text-xs:    clamp(0.625rem, 0.6rem + 0.13vw, 0.75rem);
+  --text-sm:    clamp(0.75rem, 0.72rem + 0.16vw, 0.875rem);
+  --text-base:  clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  --text-lg:    clamp(1.0625rem, 1rem + 0.31vw, 1.25rem);
+  --text-xl:    clamp(1.25rem, 1.1rem + 0.75vw, 1.625rem);
+  --text-2xl:   clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+  --text-3xl:   clamp(2rem, 1.5rem + 2.5vw, 3.5rem);
+  --text-4xl:   clamp(2.5rem, 1.5rem + 5vw, 5.5rem);
+  --text-hero:  clamp(3rem, 1rem + 8vw, 8.5rem);
+
+  /* Spacing */
+  --space-1:   0.25rem;
+  --space-2:   0.5rem;
+  --space-3:   0.75rem;
+  --space-4:   1rem;
+  --space-5:   1.25rem;
+  --space-6:   1.5rem;
+  --space-8:   2rem;
+  --space-10:  2.5rem;
+  --space-12:  3rem;
+  --space-16:  4rem;
+  --space-20:  5rem;
+  --space-24:  6rem;
+  --space-32:  8rem;
+
+  /* Border radius */
+  --radius-sm:   0.25rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   1rem;
+  --radius-xl:   1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(20, 20, 20, 0.06), 0 1px 2px rgba(20, 20, 20, 0.04);
+  --shadow-md:  0 4px 16px rgba(20, 20, 20, 0.08), 0 2px 6px rgba(20, 20, 20, 0.04);
+  --shadow-lg:  0 12px 40px rgba(20, 20, 20, 0.12), 0 4px 12px rgba(20, 20, 20, 0.06);
+  --shadow-xl:  0 24px 64px rgba(20, 20, 20, 0.16), 0 8px 24px rgba(20, 20, 20, 0.08);
+  --shadow-card-hover: 0 20px 48px rgba(27, 67, 50, 0.14), 0 6px 16px rgba(27, 67, 50, 0.08);
+
+  /* Transitions */
+  --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base:   250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Z-index layers */
+  --z-below:    -1;
+  --z-base:      0;
+  --z-raised:   10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-overlay:  300;
+  --z-modal:    400;
+  --z-toast:    500;
+
+  /* Layout */
+  --container-max:  1320px;
+  --container-wide: 1600px;
+  --nav-height:     72px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* RESET & BASE                                                                */
+/* -------------------------------------------------------------------------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.65;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar — subtle and branded */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-subtle); }
+
+/* Custom text selection */
+::selection {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* Images */
+img, video {
+  display: block;
+  max-width: 100%;
+}
+
+/* Links */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Buttons */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Focus styles — accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* -------------------------------------------------------------------------- */
+/* TYPOGRAPHY UTILITIES                                                        */
+/* -------------------------------------------------------------------------- */
+
+/* Only classes Tailwind does NOT define live here.
+ *
+ * .font-sans/.font-mono and the whole .text-xs…4xl scale used to be redeclared
+ * below the Tailwind import, which silently overrode Tailwind's own sizes for
+ * the 23 places in the app that use them — those were written expecting
+ * Tailwind's fixed rem values, not the fluid marketing scale.
+ *
+ * The fluid scale is still available everywhere as var(--text-*), which is how
+ * the marketing pages consume it. */
+/* .font-display and .font-mono are now generated by Tailwind from the
+   fontFamily config, so they are no longer declared here — two rules with the
+   same name is exactly the trap this comment block warns about. */
+/* ==========================================================================
+   COMPONENT CLASSES — wrapped in @layer components
+   ==========================================================================
+   These are declared AFTER `@tailwind utilities`, so before this wrapper they
+   won every property they set against any utility of equal specificity, purely
+   on source order. That is backwards: a utility written at the call site is
+   meant to be the override.
+
+   It was not theoretical. .label beat text-brand and rendered eyebrows grey,
+   .container beat max-w-[760px] and re-wrapped a heading, .badge beat
+   text-[10px], and .input beat pl-11 and put icons on top of the placeholder
+   text. Each needed a `!` at the call site to undo.
+
+   Inside @layer components, Tailwind orders base -> components -> utilities
+   regardless of where the source sits, so utilities win by default and the
+   `!` escape hatches become unnecessary.
+   ========================================================================== */
+@layer components {
+  .text-hero    { font-size: var(--text-hero); }
+
+  /* Micro-label style — uppercase, tracked, mono */
+  .label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* LAYOUT UTILITIES                                                            */
+  /* -------------------------------------------------------------------------- */
+
+  .container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 5vw, 4rem);
+  }
+
+  .container-wide {
+    width: 100%;
+    max-width: var(--container-wide);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 5vw, 4rem);
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* BUTTON COMPONENTS                                                           */
+  /* -------------------------------------------------------------------------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: 0.75rem 1.75rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Primary button — forest green */
+  .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-white);
+    border: 1.5px solid var(--color-primary);
+  }
+  .btn-primary:hover {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary-light);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(27, 67, 50, 0.28);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  /* Secondary button — outlined */
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-primary);
+    border: 1.5px solid var(--color-primary);
+  }
+  .btn-secondary:hover {
+    background: var(--color-primary);
+    color: var(--color-white);
+    transform: translateY(-1px);
+  }
+
+  /* Accent button — gold */
+  .btn-accent {
+    background: var(--color-accent);
+    color: var(--color-text);
+    border: 1.5px solid var(--color-accent);
+    font-weight: 700;
+  }
+  .btn-accent:hover {
+    background: var(--color-accent-light);
+    border-color: var(--color-accent-light);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(212, 160, 23, 0.32);
+  }
+
+  /* Ghost button — white text for dark backgrounds */
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--color-white);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+  }
+
+  /* Button sizes */
+  .btn-sm { padding: 0.5rem 1.25rem; font-size: var(--text-xs); }
+  .btn-lg { padding: 1rem 2.5rem; font-size: var(--text-base); }
+  .btn-xl { padding: 1.125rem 3rem; font-size: var(--text-lg); }
+
+  /* Disabled state */
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Loading state */
+  .btn-loading {
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* CARD COMPONENT                                                              */
+  /* -------------------------------------------------------------------------- */
+
+  .card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: all var(--transition-slow);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: transparent;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* BADGE COMPONENT                                                             */
+  /* -------------------------------------------------------------------------- */
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0.25rem 0.625rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    border-radius: var(--radius-full);
+  }
+
+  .badge-green  { background: #D1FAE5; color: #065F46; }
+  .badge-gold   { background: #FEF3C7; color: #92400E; }
+  .badge-gray   { background: var(--color-surface-2); color: var(--color-text-muted); }
+  .badge-red    { background: #FEE2E2; color: #991B1B; }
+  .badge-blue   { background: #DBEAFE; color: #1E40AF; }
+
+  /* -------------------------------------------------------------------------- */
+  /* SKELETON LOADING SCREENS                                                    */
+  /* Never use spinners — always use skeletons that match content layout         */
+  /* -------------------------------------------------------------------------- */
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-surface) 25%,
+      var(--color-surface-2) 50%,
+      var(--color-surface) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+    border-radius: var(--radius-md);
+  }
+
+  @keyframes skeleton-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* FORM ELEMENTS                                                               */
+  /* -------------------------------------------------------------------------- */
+
+  .input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    color: var(--color-text);
+    background: var(--color-white);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+  }
+
+  .input::placeholder { color: var(--color-text-subtle); }
+
+  .input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.12);
+  }
+
+  .input-error {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+  }
+
+  .input-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-2);
+  }
+
+  .input-error-msg {
+    font-size: var(--text-sm);
+    color: var(--color-error);
+    margin-top: var(--space-1);
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* ANIMATIONS                                                                  */
+  /* -------------------------------------------------------------------------- */
+
+  /* Scroll reveal lives in components/scroll-reveal.tsx as React state.
+     The .reveal / .reveal-stagger classes that used to sit here set opacity: 0
+     and depended on a "visible" class that no JavaScript ever added, so anything
+     using them would have been permanently invisible. Removed rather than left
+     as a trap. */
+
+  /* Fade in */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Slide up */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(32px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Slide in from right */
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Checkmark draw animation — used on booking confirmation */
+  @keyframes checkDraw {
+    from { stroke-dashoffset: 100; }
+    to   { stroke-dashoffset: 0; }
+  }
+
+  /* Scale in — for modals, toasts */
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* Pulse — for live/active indicators */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  /* Spin — for loading indicators when skeleton isn't applicable */
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* NAVIGATION                                                                  */
+  /* -------------------------------------------------------------------------- */
+
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--nav-height);
+    z-index: var(--z-sticky);
+    transition: background var(--transition-base), box-shadow var(--transition-base);
+  }
+
+  .nav-transparent {
+    background: transparent;
+  }
+
+  .nav-solid {
+    background: rgba(250, 248, 244, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 1px 0 var(--color-border-light);
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* PAGE TRANSITIONS                                                            */
+  /* -------------------------------------------------------------------------- */
+
+  .page-enter {
+    animation: fadeIn 0.35s ease forwards;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* RWF CURRENCY FORMATTING                                                     */
+  /* Always display as: RWF 15,000 — never decimals                             */
+  /* -------------------------------------------------------------------------- */
+
+  .rwf-amount {
+    font-family: var(--font-mono);
+    font-size: 0.95em;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* EMPTY STATES                                                                */
+  /* Never show blank white space — always illustrated empty states              */
+  /* -------------------------------------------------------------------------- */
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-16) var(--space-8);
+    gap: var(--space-4);
+  }
+
+  .empty-state-icon {
+    width: 80px;
+    height: 80px;
+    color: var(--color-border);
+    margin-bottom: var(--space-4);
+  }
+
+  .empty-state-title {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 400;
+    color: var(--color-text);
+  }
+
+  .empty-state-body {
+    font-size: var(--text-base);
+    color: var(--color-text-muted);
+    max-width: 40ch;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* TOAST NOTIFICATIONS                                                         */
+  /* -------------------------------------------------------------------------- */
+
+  .toast {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    z-index: var(--z-toast);
+    max-width: 400px;
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-text);
+    color: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    animation: slideInRight 0.3s var(--transition-spring) forwards;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .toast-success { background: var(--color-primary); }
+  .toast-error   { background: var(--color-error); }
+  .toast-warning { background: #92400E; }
+
+  /* -------------------------------------------------------------------------- */
+  /* FUEL POLICY BADGES                                                          */
+  /* Displayed prominently on listings and booking flow                         */
+  /* -------------------------------------------------------------------------- */
+
+  .fuel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .fuel-badge-full-to-full  { background: #D1FAE5; color: #065F46; }
+  .fuel-badge-same-level    { background: #DBEAFE; color: #1E40AF; }
+  .fuel-badge-free-tank     { background: #FEF3C7; color: #92400E; }
+  .fuel-badge-owner-handles { background: #FEE2E2; color: #991B1B; }
+
+  /* -------------------------------------------------------------------------- */
+  /* CAR STATUS BADGES                                                           */
+  /* -------------------------------------------------------------------------- */
+
+  .status-draft           { background: var(--color-surface-2); color: var(--color-text-muted); }
+  .status-pending         { background: #FEF3C7; color: #92400E; }
+  .status-live            { background: #D1FAE5; color: #065F46; }
+  .status-suspended       { background: #FEE2E2; color: #991B1B; }
+
+  /* -------------------------------------------------------------------------- */
+  /* RESPONSIVE UTILITIES                                                        */
+  /* -------------------------------------------------------------------------- */
+
+  @media (max-width: 768px) {
+    .hide-mobile { display: none !important; }
+  }
+
+  @media (min-width: 769px) {
+    .hide-desktop { display: none !important; }
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* PRINT                                                                       */
+  /* -------------------------------------------------------------------------- */
+
+  @media print {
+    .nav, .btn, .toast { display: none !important; }
+    body { background: white; color: black; }
+  }
+
+  /* ---------------------------------------------------------------------------
+     Homepage card hover states.
+     These live here rather than as inline onMouseEnter/onMouseLeave handlers
+     because app/page.tsx is a server component and cannot pass event handlers
+     to the client.
+  --------------------------------------------------------------------------- */
+
+  .step-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all var(--transition-slow);
+  }
+
+  .step-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(212, 160, 23, 0.4);
+  }
+
+  .prop-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border-light);
+    transition: all var(--transition-slow);
+  }
+
+  .prop-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Footer links — hover handled in CSS so Footer can stay a server component. */
+  .footer-link {
+    color: rgba(255, 255, 255, 0.55);
+    transition: color var(--transition-fast);
+  }
+
+  .footer-link:hover {
+    color: #ffffff;
+  }
+
+  /* =============================================================================
+     Prose pages — legal, help, about, contact.
+     Scoped to .prose-page so it can never leak into app UI.
+     ========================================================================== */
+  .prose-page p {
+    margin-bottom: var(--space-4);
+  }
+  .prose-page p:last-child {
+    margin-bottom: 0;
+  }
+  .prose-page ul,
+  .prose-page ol {
+    margin: 0 0 var(--space-4);
+    padding-left: 1.25rem;
+  }
+  /* Tailwind Preflight sets list-style: none on ul/ol, which would leave these
+     as unmarked indented text. Put the markers back for prose only. */
+  .prose-page ul {
+    list-style: disc;
+  }
+  .prose-page ol {
+    list-style: decimal;
+  }
+  .prose-page li {
+    margin-bottom: var(--space-2);
+  }
+  .prose-page li::marker {
+    color: var(--color-text-subtle);
+  }
+  .prose-page strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .prose-page a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose-page a:hover {
+    color: var(--color-primary-dark);
+  }
+  .prose-page dt {
+    color: var(--color-text);
+    font-weight: 600;
+    margin-top: var(--space-4);
+  }
+  .prose-page dd {
+    margin: 0 0 var(--space-2);
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* RESPONSIVE OVERRIDES                                                        */
+/*                                                                             */
+/* These used to be six separate <style>{`…`}</style> tags injected inside      */
+/* components. React hydrates the text content of an inline <style>, and the    */
+/* server and client copies did not match, so EVERY page threw a hydration      */
+/* error and React discarded the server-rendered HTML to re-render the whole    */
+/* document on the client. That is the worst possible outcome for a first       */
+/* paint on a mobile connection, and it made navigation feel slow.              */
+/*                                                                             */
+/* Static CSS belongs in the stylesheet. It is parsed once, cached, deduped,    */
+/* and cannot desynchronise from anything.                                      */
+/* -------------------------------------------------------------------------- */
+
+/* Card image zoom on hover */
+.car-card-img { transition: transform 0.5s ease; }
+a:hover .car-card-img { transform: scale(1.04); }
+
+/* Spinner used by the auth screens */
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* !important is load-bearing here: these grids set their columns via an inline
+   style attribute, which outranks any normal stylesheet rule. Dropping it
+   silently un-does the mobile layout. */
+/* 1023.98px is Tailwind's `lg` breakpoint (1024px) minus a hair, so these
+   layout rules and the `lg:` utility classes in the components switch at the
+   SAME width. They used to disagree — the CSS broke at 900px while the
+   components used lg — which meant a 950px-wide window got a stacked layout
+   with the desktop version of the filter panel. */
+@media (max-width: 1023.98px) {
+  .cars-layout      { grid-template-columns: 1fr !important; }
+  .cars-sidebar     { position: static !important; }
+  .car-detail-grid  { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 768px) {
+  .footer-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 640px) {
+  .hero-search-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 480px) {
+  .footer-grid { grid-template-columns: 1fr !important; }
+}

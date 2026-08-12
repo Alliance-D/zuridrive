@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "AdminActionType" ADD VALUE 'SUPPORT_TICKET_UPDATED';

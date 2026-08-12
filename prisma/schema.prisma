@@ -1,0 +1,1298 @@
+// =============================================================================
+// ZuriDrive — Prisma Schema
+// Database: PostgreSQL via Supabase
+// All monetary values stored as integers in RWF (e.g. 15000 = RWF 15,000)
+// All financial records are IMMUTABLE — append-only, never edited after creation
+// All admin actions must be logged via AdminAction model
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+// User roles across the platform
+enum UserRole {
+  SUPER_ADMIN
+  SUB_ADMIN
+  OWNER
+  CLIENT
+}
+
+// Sub-admin permission modules — each controls a sidebar section
+enum AdminRoleModule {
+  USER_MANAGER // View, suspend, delete clients and owners
+  FLEET_MANAGER // Approve, feature, suspend car listings
+  BOOKING_MANAGER // View bookings, intervene in disputes
+  FINANCE_MANAGER // Payments, bank confirmations, payout processing
+  DEPOSIT_MANAGER // Release, withhold, resolve deposit disputes
+  CONTENT_MODERATOR // Reviews, owner custom locations, neighborhoods
+  COMMUNICATIONS // SMS/email broadcasts
+  ANALYTICS_VIEWER // Read-only reports and analytics
+  SUPPORT_AGENT // Answer support tickets
+}
+
+// Booking lifecycle statuses — in order of progression
+enum BookingStatus {
+  PENDING_PAYMENT // Created, awaiting payment
+  PAYMENT_CONFIRMED // Payment verified, awaiting owner
+  AWAITING_OWNER_CONFIRMATION // Owner must accept/reject within 2hrs
+  CONFIRMED // Owner accepted, trip upcoming
+  ACTIVE // Trip in progress
+  COMPLETED // Trip done, both parties confirmed return
+  CANCELLED // Cancelled before completion
+  DISPUTED // Either party flagged a problem
+}
+
+// Car listing statuses
+enum CarStatus {
+  DRAFT // Owner still editing, not submitted
+  PENDING_APPROVAL // Submitted, awaiting admin review
+  LIVE // Published and visible to clients
+  SUSPENDED // Hidden by admin (policy violation, etc.)
+}
+
+// Payout statuses — semi-manual flow
+enum PayoutStatus {
+  PENDING_REQUEST // Owner requested, awaiting Finance Manager
+  APPROVED // Finance Manager approved, processing
+  PAID // Externally transferred, proof uploaded
+  FAILED // Transfer failed, owner notified
+}
+
+// Damage deposit statuses
+enum DepositStatus {
+  PENDING // Booking created, payment not yet confirmed — no money collected
+  HELD // Money received and held, trip in progress or upcoming
+  RELEASED // Returned 100% to client after successful trip
+  PARTIALLY_WITHHELD // Partial amount kept (damage/fuel dispute)
+  FULLY_WITHHELD // Full amount kept (major damage/dispute resolved for owner)
+}
+
+// Payment methods available on the platform
+enum PaymentMethod {
+  MTN_MOMO // Mobile Money — USSD push flow
+  BANK_TRANSFER // Manual — client uploads proof, Finance Manager confirms
+  /// Phase 1: no money moves through ZuriDrive. The renter pays the owner
+  /// at handover and the platform only records that the booking exists.
+  DIRECT
+}
+
+// Status of an individual payment record
+enum PaymentStatus {
+  PENDING // Initiated, not yet confirmed
+  CONFIRMED // Verified and accepted
+  FAILED // Failed or rejected
+  REFUNDED // Refund issued — original record kept, new refund record created
+}
+
+// Rental period types — determines which pricing tier applies
+enum RentalType {
+  PER_DAY // Uses in-city or outside-city daily rate
+  PER_WEEK // Uses in-city or outside-city weekly rate
+  PER_MONTH // Uses flat monthly rate — no city distinction
+}
+
+// Trip scope — only applies to PER_DAY and PER_WEEK rentals
+enum TripScope {
+  IN_CITY // Stays within city limits
+  OUTSIDE_CITY // Travels outside city
+}
+
+// Fuel policy options — owner sets per car
+enum FuelPolicyType {
+  FULL_TO_FULL // Client must return full tank or pay refueling fee
+  SAME_LEVEL // Client returns at same level as pickup
+  FREE_TANK // Owner provides full tank, client returns at any level
+  OWNER_HANDLES // Fuel managed separately, not tracked on platform
+}
+
+// Car categories for filtering and display
+enum CarCategory {
+  ECONOMY
+  SUV
+  LUXURY
+  VAN
+  MINIBUS
+}
+
+// Fuel types
+enum FuelType {
+  PETROL
+  DIESEL
+  ELECTRIC
+  HYBRID
+}
+
+// Transmission types
+enum TransmissionType {
+  AUTOMATIC
+  MANUAL
+}
+
+// Dispute types
+enum DisputeType {
+  DAMAGE // Physical damage claim
+  FUEL // Fuel level dispute
+  LATE_RETURN // Car returned late
+  NO_SHOW // Client didn't show up / Owner didn't deliver
+  OTHER // General dispute
+}
+
+// Dispute resolution outcome
+enum DisputeOutcome {
+  RESOLVED_FOR_CLIENT // Client wins — deposit returned
+  RESOLVED_FOR_OWNER // Owner wins — deposit withheld
+  SPLIT // Deposit split between parties
+  DISMISSED // No valid claim — deposit returned to client
+}
+
+// Subscription plan tier names
+enum SubscriptionTier {
+  BASIC
+  PRO
+  PREMIUM
+}
+
+// Status of an owner's subscription
+enum SubscriptionStatus {
+  ACTIVE // Paid and current
+  LAPSED // Payment missed - features downgraded
+  CANCELLED // Owner cancelled
+  TRIAL // Free trial period
+  /// Owner chose a plan; money not verified yet. Grants NOTHING - every
+  /// entitlement check looks for ACTIVE or TRIAL only.
+  PENDING_PAYMENT
+}
+
+// Notification delivery channel
+enum NotificationChannel {
+  SMS
+  IN_APP
+  BOTH
+}
+
+// Types of notifications sent throughout the platform
+enum NotificationType {
+  OTP
+  ACCOUNT_CREATED
+  BOOKING_REQUEST
+  BOOKING_CONFIRMED
+  BOOKING_REJECTED
+  BOOKING_CANCELLED
+  PAYMENT_CONFIRMED
+  TRIP_STARTING_TOMORROW
+  PRE_TRIP_PHOTO_REMINDER
+  RETURN_CONFIRMED
+  TRIP_COMPLETED
+  REVIEW_REMINDER
+  POST_TRIP_PHOTO_REMINDER
+  CONDITION_PHOTOS_DELETING
+  DEPOSIT_RELEASED
+  DEPOSIT_WITHHELD
+  DISPUTE_OPENED
+  DISPUTE_RESOLVED
+  PAYOUT_REQUESTED
+  PAYOUT_PROCESSED
+  SUBSCRIPTION_RENEWING
+  SUBSCRIPTION_EXPIRED
+  BANK_TRANSFER_PENDING
+  ADMIN_BROADCAST
+  SUPPORT_TICKET_REPLY
+}
+
+// What type of action an admin took — for immutable audit log
+enum AdminActionType {
+  // User management
+  USER_SUSPENDED
+  USER_UNSUSPENDED
+  USER_DELETED
+  USER_ROLE_CHANGED
+  // Car management
+  CAR_APPROVED
+  CAR_FEATURED
+  CAR_UNFEATURED
+  CAR_SUSPENDED
+  CAR_DELETED
+  // Booking management
+  BOOKING_INTERVENED
+  BOOKING_CANCELLED_BY_ADMIN
+  // Finance
+  PAYMENT_CONFIRMED_MANUAL
+  PAYMENT_REFUNDED
+  PAYOUT_APPROVED
+  PAYOUT_MARKED_PAID
+  PAYOUT_FAILED
+  PAYOUT_THRESHOLD_OVERRIDDEN
+  // Deposits
+  DEPOSIT_RELEASED
+  DEPOSIT_PARTIALLY_WITHHELD
+  DEPOSIT_FULLY_WITHHELD
+  // Disputes
+  DISPUTE_OPENED
+  DISPUTE_RESOLVED
+  DISPUTE_DISMISSED
+  // Reviews
+  REVIEW_REMOVED
+  // Locations
+  OWNER_LOCATION_APPROVED
+  OWNER_LOCATION_REJECTED
+  // Sub-admin management
+  SUBADMIN_CREATED
+  SUBADMIN_SUSPENDED
+  SUBADMIN_DELETED
+  SUBADMIN_ROLES_UPDATED
+  // Subscription
+  SUBSCRIPTION_OVERRIDDEN
+  // Photos
+  CONDITION_PHOTOS_LOCKED
+  CONDITION_PHOTOS_UNLOCKED
+  // Settings
+  PLATFORM_SETTINGS_UPDATED
+  COMMISSION_RATE_UPDATED
+  SUBSCRIPTION_PLAN_UPDATED
+  // Reconciliation
+  RECONCILIATION_ALERT_ACKNOWLEDGED
+  // Support
+  SUPPORT_TICKET_UPDATED
+}
+
+// Extra charge types applied post-trip
+enum ExtraChargeType {
+  REFUELING_FEE // Fuel not returned at agreed level
+  DAMAGE_FEE // Physical damage assessed after trip
+  LATE_RETURN_FEE // Car returned after agreed time
+  OTHER
+}
+
+// Status of an extra charge
+enum ExtraChargeStatus {
+  PENDING // Raised, awaiting collection
+  COLLECTED // Deducted from deposit or charged separately
+  WAIVED // Admin or owner waived the charge
+}
+
+// =============================================================================
+// CORE USER MODELS
+// =============================================================================
+
+// The single User model handles all roles
+// Phone is the primary identifier — always prioritized over email
+model User {
+  id            String    @id @default(cuid())
+  phone         String    @unique // Primary identifier — never nullable
+  email         String?   @unique // Optional secondary identifier
+  name          String?
+  passwordHash  String? // Hashed with bcrypt (salt 12) — null for OTP-only users
+  role          UserRole  @default(CLIENT)
+  /// Identity documents are DELIBERATELY NOT STORED. The licence is checked
+  /// in person at handover instead - see the identity-check note on Booking.
+  profilePhoto  String? // Cloudinary URL
+  isVerified    Boolean   @default(false) // Identity verified by admin
+  isSuspended   Boolean   @default(false) // Suspended by admin
+  suspendedAt   DateTime?
+  suspendedById String? // Admin who suspended
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Auth: OTP flow
+  otpCode        String?
+  otpExpiresAt   DateTime?
+  otpAttempts    Int       @default(0)
+  otpLockedUntil DateTime? // 15-minute lockout after 3 failed attempts
+
+  /// Send-rate limiting, stored here rather than in process memory: every
+  /// serverless instance has its own memory, so an in-process counter lets an
+  /// attacker multiply their allowance by the number of running instances —
+  /// and every extra send costs real money in SMS fees.
+  otpSendCount       Int       @default(0)
+  otpWindowStartedAt DateTime?
+
+  /// Null until the number has been proven. Phase 1 launches without an SMS
+  /// provider, so accounts are created unverified and verification is required
+  /// only before a consequential action (listing a car, confirming a booking).
+  phoneVerifiedAt DateTime?
+
+  // Relations
+  carOwnerProfile  CarOwnerProfile?
+  subAdminProfile  SubAdminProfile?
+  bookingsAsClient Booking[]        @relation("ClientBookings")
+  notifications    Notification[]
+  reviews          Review[]
+  reviewReplies    ReviewReply[]
+  adminActions     AdminAction[]    @relation("AdminActorActions")
+  targetedActions  AdminAction[]    @relation("AdminTargetActions")
+  smsLogs          SmsLog[]
+  supportTickets   SupportTicket[]  @relation("UserTickets")
+  assignedTickets  SupportTicket[]  @relation("AssignedTickets")
+  supportMessages  SupportMessage[] @relation("SupportMessages")
+
+  @@map("users")
+}
+
+// Extended profile for car owners — created during onboarding
+// Onboarding is a 4-step checklist; owner cannot receive bookings until steps 1–3 done
+/// Whether this owner is a person or a registered business.
+///
+/// Deliberately NOT multi-user. A company here is one person operating under a
+/// business identity — which is how small fleet operators actually work — so
+/// the profile stays tied to a single User and the audit trail keeps naming a
+/// real person on every confirmation, price change and dispute reply.
+///
+/// If companies ever need several staff logging in, that is a Company model
+/// with memberships, not a flag. This field is what tells you which owners
+/// would need migrating when that day comes.
+enum OwnerType {
+  INDIVIDUAL
+  COMPANY
+}
+
+model CarOwnerProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Business identity. Null for individuals.
+  ownerType          OwnerType @default(INDIVIDUAL)
+  businessName       String?   // Shown instead of the person's name on listings
+  registrationNumber String?   // RDB company registration
+  tin                String?   // Tax ID, needed on invoices the company files
+
+  // Payout details — required before listing cars
+  momoNumber        String? // MTN MoMo phone number
+  bankName          String?
+  bankAccountName   String?
+  bankAccountNumber String?
+
+  // Onboarding state — each step is a focused screen
+  onboardingStep       Int     @default(1) // 1=Profile, 2=Payout, 3=Subscription, 4=FirstCar
+  isOnboardingComplete Boolean @default(false)
+
+  // Plan state, denormalised from the active subscription so search ordering
+  // and badges can be queried directly. Kept in sync by syncOwnerPlanState().
+  searchPriority   Int     @default(3) // 1 = top (Premium), 2 = Pro, 3 = standard
+  hasVerifiedBadge Boolean @default(false)
+
+  // Public profile stats (auto-calculated)
+  avgResponseTimeMinutes Int? // Updated automatically from booking response history
+  totalCarsListed        Int      @default(0)
+  memberSince            DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  cars          Car[]
+  subscriptions OwnerSubscription[]
+  payouts       Payout[]
+
+  @@map("car_owner_profiles")
+}
+
+// Extended profile for sub-admins — created by Super Admin
+model SubAdminProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Assigned role modules — only these sections appear in sidebar
+  roleModules AdminRoleModule[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String // Super Admin ID who created this sub-admin
+
+  @@map("sub_admin_profiles")
+}
+
+// =============================================================================
+// CAR & FLEET MODELS
+// =============================================================================
+
+// A car listing — created through the 5-step guided form
+model Car {
+  id      String          @id @default(cuid())
+  ownerId String
+  owner   CarOwnerProfile @relation(fields: [ownerId], references: [id])
+
+  // Step 1 — Basic Info
+  make            String
+  model           String
+  year            Int
+  color           String
+  licensePlate    String           @unique
+  category        CarCategory
+  fuelType        FuelType
+  transmission    TransmissionType
+  seatingCapacity Int
+
+  // Meta
+  status          CarStatus @default(DRAFT)
+  isFeatured      Boolean   @default(false) // Set by admin (Fleet Manager)
+  featuredUntil   DateTime? // Optional expiry for featured status
+  isActive        Boolean   @default(true) // Owner can toggle on/off
+  adminNotes      String? // Internal notes from admin review
+  rejectionReason String? // Shown to owner if rejected
+
+  /// Set when a lapsed subscription forced this car offline. Renewing the plan
+  /// re-lists exactly these, and never the cars the owner paused themselves.
+  unlistedByPlanAt DateTime?
+
+  // Step 4 — Availability settings
+  minBookingDays  Int? // Owner's minimum booking duration
+  deliverAnywhere Boolean @default(false) // "I deliver anywhere in Kigali"
+  deliveryFee     Int? // RWF — flat fee if deliverAnywhere is true
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime? // When first went LIVE
+
+  // Relations
+  photos       CarPhoto[]
+  pricing      PricingMatrix?
+  fuelPolicy   FuelPolicy?
+  availability AvailabilityBlock[]
+  locations    OwnerLocation[]
+  bookings     Booking[]
+  reviews      Review[]
+
+  @@map("cars")
+}
+
+// Car photos — uploaded via Cloudinary
+// First photo (order = 0) is the cover photo
+model CarPhoto {
+  id        String   @id @default(cuid())
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  url       String // Cloudinary URL
+  publicId  String // Cloudinary public ID — needed for deletion
+  order     Int // 0 = cover photo, draggable to reorder
+  createdAt DateTime @default(now())
+
+  @@map("car_photos")
+}
+
+// Pricing matrix — one per car, all rates in RWF (stored as integers)
+// Monthly rate has no in-city/outside distinction — client goes anywhere
+model PricingMatrix {
+  id    String @id @default(cuid())
+  carId String @unique
+  car   Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  // Per day rates
+  perDayInCity      Int // RWF
+  perDayOutsideCity Int // RWF
+
+  // Per week rates
+  perWeekInCity      Int // RWF
+  perWeekOutsideCity Int // RWF
+
+  // Per month — flat rate, no city distinction
+  perMonth Int // RWF
+
+  // Driver surcharge — added per day when client selects driver
+  driverEnabled         Boolean @default(false)
+  driverSurchargePerDay Int? // RWF — only relevant if driverEnabled
+
+  // Damage deposit
+  depositEnabled Boolean @default(false)
+  depositAmount  Int? // RWF — held separately, never commissionable
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("pricing_matrices")
+}
+
+// Fuel policy — one per car
+model FuelPolicy {
+  id           String         @id @default(cuid())
+  carId        String         @unique
+  car          Car            @relation(fields: [carId], references: [id], onDelete: Cascade)
+  type         FuelPolicyType
+  // Only relevant for FULL_TO_FULL — fee charged if car not returned full
+  refuelingFee Int? // RWF
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@map("fuel_policies")
+}
+
+// Owner's unavailable date ranges — bookings cannot be made in these windows
+model AvailabilityBlock {
+  id        String   @id @default(cuid())
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  startDate DateTime
+  endDate   DateTime
+  reason    String? // Optional internal note from owner
+  createdAt DateTime @default(now())
+
+  @@map("availability_blocks")
+}
+
+// =============================================================================
+// LOCATION MODELS
+// =============================================================================
+
+// Tier 1 — Platform Fixed Locations (admin-managed, pre-verified named points)
+// Examples: Kigali Airport, Serena Hotel, City Center Office
+model PlatformLocation {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  address     String?
+  latitude    Float? // Optional — maps never forced
+  longitude   Float?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0) // Display order in dropdowns
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  bookingLocations BookingLocation[]
+
+  @@map("platform_locations")
+}
+
+// Admin-managed neighborhood tags — used to label owner custom locations
+model Neighborhood {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  city      String   @default("Kigali")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  // Relations
+  ownerLocations OwnerLocation[]
+
+  @@map("neighborhoods")
+}
+
+// Tier 2 — Owner Custom Locations (owner-created, Content Moderator approved)
+model OwnerLocation {
+  id             String        @id @default(cuid())
+  carId          String
+  car            Car           @relation(fields: [carId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  neighborhoodId String?
+  neighborhood   Neighborhood? @relation(fields: [neighborhoodId], references: [id])
+  deliveryFee    Int? // RWF — optional fee for this specific location
+  isApproved     Boolean       @default(false) // Set by Content Moderator
+  approvedById   String? // Admin who approved
+  approvedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  bookingLocations BookingLocation[]
+
+  @@map("owner_locations")
+}
+
+// =============================================================================
+// BOOKING MODELS
+// =============================================================================
+
+// Core booking record — the heart of the platform
+model Booking {
+  id        String @id @default(cuid())
+  reference String @unique @default(cuid()) // Human-friendly ref shown to users
+  carId     String
+  car       Car    @relation(fields: [carId], references: [id])
+  clientId  String
+  client    User   @relation("ClientBookings", fields: [clientId], references: [id])
+
+  // Booking configuration
+  rentalType      RentalType
+  tripScope       TripScope? // Null for PER_MONTH — no city distinction
+  startDate       DateTime
+  endDate         DateTime
+  driverRequested Boolean    @default(false)
+  totalDays       Int // Calculated from start/end dates
+
+  // Pricing snapshot — stored at time of booking (prices may change later)
+  // All amounts in RWF integers
+  baseRatePerDay   Int // Rate used for calculation
+  baseAmount       Int // Base rental total (days × rate)
+  driverTotal      Int @default(0) // Driver surcharge total
+  deliveryFee      Int @default(0)
+  subtotal         Int // baseAmount + driverTotal + deliveryFee
+  commissionRate   Int @default(20) // % at time of booking — immutable
+  commissionAmount Int // Calculated: (baseAmount + driverTotal) × commissionRate%
+  ownerEarnings    Int // subtotal - commissionAmount (excl. delivery)
+  depositAmount    Int @default(0) // Separate — never commissionable
+
+  // Status
+  status BookingStatus @default(PENDING_PAYMENT)
+
+  // Guest booking — if client was a guest at time of booking
+  isGuestBooking Boolean @default(false)
+  guestName      String?
+  guestEmail     String?
+
+  // ---------------------------------------------------------------------
+  // IDENTITY CHECK
+  //
+  // ZuriDrive does not store national ID numbers, licence numbers or licence
+  // photos. Holding them made the platform a target worth attacking, put it
+  // squarely inside Rwanda's Law No. 058/2021 obligations, and proved very
+  // little - an uploaded photo says nothing about who actually turns up.
+  //
+  // Instead the check happens in person, and we record only that it happened:
+  //   * the renter attests at checkout that they hold a valid licence
+  //   * the owner confirms at handover that they have seen it
+  //
+  // A timestamped confirmation from the owner who was physically present is
+  // better evidence in a dispute than an unverified image, and carries none
+  // of the breach risk.
+  // ---------------------------------------------------------------------
+  /// Renter confirmed at checkout that they hold a valid licence and ID.
+  licenceAttestedAt   DateTime?
+  /// Owner confirmed at handover that they saw the renter's licence and ID.
+  idCheckedByOwnerAt  DateTime?
+  /// Owner recorded that the documents did NOT match, and why.
+  idCheckFailedReason String?
+
+  // Lifecycle timestamps
+  paymentConfirmedAt   DateTime?
+  ownerConfirmedAt     DateTime?
+  ownerRejectedAt      DateTime?
+  ownerRejectionReason String?
+  tripStartedAt        DateTime?
+  tripEndedAt          DateTime?
+  cancelledAt          DateTime?
+  cancelledById        String? // User or admin who cancelled
+  cancellationReason   String?
+
+  // Return confirmation flow
+  clientConfirmedReturn   Boolean   @default(false)
+  clientReturnConfirmedAt DateTime?
+  ownerConfirmedReturn    Boolean   @default(false)
+  ownerReturnConfirmedAt  DateTime?
+  autoCompletedAt         DateTime? // Set if auto-completed after 48hrs
+  autoConfirmedAt         DateTime? // Set if owner never responded within 2hrs
+
+  // Cron de-duplication. Without these the scheduled jobs re-send the same
+  // SMS on every run (every 15 minutes / hourly).
+  reminderSmsSentAt     DateTime? // "Trip starts tomorrow" reminder
+  photoWarningSmsSentAt DateTime? // "Condition photos are about to be deleted"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  location        BookingLocation?
+  conditionPhotos BookingConditionPhoto[]
+  payments        Payment[]
+  deposit         Deposit?
+  commission      Commission?
+  dispute         Dispute?
+  review          Review?
+  extraCharges    ExtraCharge[]
+  payoutItems     PayoutItem[]
+  supportTickets  SupportTicket[]
+
+  @@map("bookings")
+}
+
+// Pickup/dropoff location for a booking — snapshot of the chosen tier
+// Stores which tier was used and the relevant reference
+model BookingLocation {
+  id        String  @id @default(cuid())
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  // Which tier was selected
+  platformLocationId String?
+  platformLocation   PlatformLocation? @relation(fields: [platformLocationId], references: [id])
+  ownerLocationId    String?
+  ownerLocation      OwnerLocation?    @relation(fields: [ownerLocationId], references: [id])
+
+  // Tier 3 — Client custom location
+  customDescription String? // Free text from client
+  customLatitude    Float? // Optional — maps never forced
+  customLongitude   Float?
+
+  createdAt DateTime @default(now())
+
+  @@map("booking_locations")
+}
+
+// Condition photos linked to a booking — uploaded pre and post trip
+// Deletion is managed by a daily cron job checking retainUntil
+model BookingConditionPhoto {
+  id           String  @id @default(cuid())
+  bookingId    String
+  booking      Booking @relation(fields: [bookingId], references: [id])
+  uploadedById String // User ID of uploader (client or owner)
+  isPreTrip    Boolean // true = pre-trip, false = post-trip
+  url          String // Cloudinary URL
+  publicId     String // Cloudinary public ID — needed for API deletion
+  caption      String? // e.g. "Front exterior", "Fuel gauge"
+  isFuelGauge  Boolean @default(false) // Flagged for fuel dispute resolution
+
+  // Retention management
+  retainUntil DateTime? // Null = use default 3-day rule
+  isLocked    Boolean   @default(false) // Admin locked — never auto-deleted
+  isDeleted   Boolean   @default(false) // Soft-delete before Cloudinary purge
+  deletedAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@map("booking_condition_photos")
+}
+
+// =============================================================================
+// DISPUTE MODELS
+// =============================================================================
+
+// Dispute raised by either client or owner during/after a trip
+model Dispute {
+  id           String      @id @default(cuid())
+  bookingId    String      @unique
+  booking      Booking     @relation(fields: [bookingId], references: [id])
+  raisedById   String // User who opened the dispute
+  type         DisputeType
+  description  String
+  status       String      @default("OPEN") // OPEN | UNDER_REVIEW | RESOLVED | DISMISSED
+  assignedToId String? // Admin assigned to handle this dispute
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  resolution DisputeResolution?
+
+  @@map("disputes")
+}
+
+// Resolution record — created when admin resolves a dispute
+// Immutable once created
+model DisputeResolution {
+  id                 String         @id @default(cuid())
+  disputeId          String         @unique
+  dispute            Dispute        @relation(fields: [disputeId], references: [id])
+  resolvedById       String // Admin ID
+  outcome            DisputeOutcome
+  notes              String // Required — admin must explain decision
+  depositAction      DepositStatus // What happens to the deposit
+  clientRefundAmount Int            @default(0) // RWF returned to client
+  ownerAwardAmount   Int            @default(0) // RWF awarded to owner
+  resolvedAt         DateTime       @default(now())
+
+  @@map("dispute_resolutions")
+}
+
+// =============================================================================
+// FINANCIAL MODELS
+// =============================================================================
+// CRITICAL: All financial records are IMMUTABLE — append-only
+// Never edit a payment, deposit, commission, or payout record after creation
+// To correct: void the original and create a new record with reason logged
+
+// Individual payment record — one per transaction
+model Payment {
+  id        String        @id @default(cuid())
+  bookingId String
+  booking   Booking       @relation(fields: [bookingId], references: [id])
+  method    PaymentMethod
+  status    PaymentStatus @default(PENDING)
+
+  // Amounts in RWF
+  rentalAmount  Int // Base + driver surcharge + delivery (no deposit)
+  depositAmount Int @default(0) // Deposit portion — stored separately
+  totalAmount   Int // rentalAmount + depositAmount
+
+  // MTN MoMo specifics
+  momoNumber        String?
+  momoTransactionId String?
+  momoReference     String?
+
+  // Why a FAILED payment failed — surfaced to Finance during reconciliation
+  failureReason String?
+
+  // Bank transfer specifics
+  proofUrl      String? // Cloudinary URL — uploaded by client
+  confirmedById String? // Finance Manager who confirmed
+  confirmedAt   DateTime?
+
+  // Void/refund tracking — original record never edited
+  isVoided   Boolean   @default(false)
+  voidedAt   DateTime?
+  voidedById String?
+  voidReason String?
+
+  // For refunds — points back to original payment
+  isRefund          Boolean @default(false)
+  originalPaymentId String?
+
+  createdAt DateTime @default(now())
+
+  @@map("payments")
+}
+
+// Deposit record — completely separate from rental payment
+// 100% returned to client on successful completion
+// Never subject to commission
+model Deposit {
+  id                 String        @id @default(cuid())
+  bookingId          String        @unique
+  booking            Booking       @relation(fields: [bookingId], references: [id])
+  amount             Int // RWF — original deposit amount
+  status             DepositStatus @default(HELD)
+  heldAt             DateTime      @default(now())
+  releasedAt         DateTime?
+  releaseTriggeredBy String? // "BOTH_CONFIRMED" | "AUTO_48H" | "ADMIN_MANUAL"
+  releasedById       String? // Admin ID if manually released
+  clientRefundAmount Int? // RWF returned to client on resolution
+  ownerAwardAmount   Int? // RWF sent to owner on resolution
+
+  // Relations
+  movements DepositMovement[]
+
+  @@map("deposits")
+}
+
+// Immutable log of every deposit state change
+// Required: reason and actor on every movement
+model DepositMovement {
+  id         String        @id @default(cuid())
+  depositId  String
+  deposit    Deposit       @relation(fields: [depositId], references: [id])
+  fromStatus DepositStatus
+  toStatus   DepositStatus
+  amount     Int // RWF amount involved in this movement
+  reason     String // Required — must explain why
+  actorId    String // Who triggered this (admin ID or "SYSTEM")
+  createdAt  DateTime      @default(now())
+
+  @@map("deposit_movements")
+}
+
+// Commission record — one per booking, created when payment confirmed
+// Commission applies only to: base rental + driver surcharge
+// Never on: deposit or delivery fees
+model Commission {
+  id               String   @id @default(cuid())
+  bookingId        String   @unique
+  booking          Booking  @relation(fields: [bookingId], references: [id])
+  rate             Int // Percentage at time of booking (e.g. 20)
+  baseAmount       Int // Amount commission was calculated on (rental + driver)
+  commissionAmount Int // Calculated: baseAmount × rate / 100
+  netOwnerAmount   Int // baseAmount - commissionAmount
+  createdAt        DateTime @default(now())
+
+  @@map("commissions")
+}
+
+// Payout request — owner requests payout for completed bookings
+model Payout {
+  id      String          @id @default(cuid())
+  ownerId String
+  owner   CarOwnerProfile @relation(fields: [ownerId], references: [id])
+  status  PayoutStatus    @default(PENDING_REQUEST)
+
+  // Amounts in RWF
+  grossAmount        Int // Total before commission
+  commissionDeducted Int // Total commission on included bookings
+  netAmount          Int // What owner actually receives
+
+  // Payout method
+  method            PaymentMethod
+  momoNumber        String?
+  bankName          String?
+  bankAccountNumber String?
+
+  // Processing details
+  requestedAt     DateTime  @default(now())
+  approvedAt      DateTime?
+  approvedById    String?
+  paidAt          DateTime?
+  paidById        String? // Finance Manager who marked paid
+  proofUrl        String? // Cloudinary URL — proof of transfer uploaded by Finance Manager
+  referenceNumber String? // External transfer reference
+  failureReason   String?
+
+  // Large payout approval — threshold set by Super Admin
+  requiresSuperAdminApproval Boolean   @default(false)
+  superAdminApprovedAt       DateTime?
+  superAdminApprovedById     String?
+
+  // Relations
+  items PayoutItem[]
+
+  @@map("payouts")
+}
+
+// Individual booking items included in a payout
+model PayoutItem {
+  id        String   @id @default(cuid())
+  payoutId  String
+  payout    Payout   @relation(fields: [payoutId], references: [id])
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  amount    Int // Net amount for this booking included in payout
+  createdAt DateTime @default(now())
+
+  @@map("payout_items")
+}
+
+// Post-trip extra charges — e.g. refueling fee, damage fee
+// Created after trip, deducted from deposit or charged separately
+model ExtraCharge {
+  id           String            @id @default(cuid())
+  bookingId    String
+  booking      Booking           @relation(fields: [bookingId], references: [id])
+  type         ExtraChargeType
+  amount       Int // RWF
+  description  String
+  status       ExtraChargeStatus @default(PENDING)
+  raisedById   String // Admin or owner who raised the charge
+  resolvedById String? // Admin who actioned it
+  resolvedAt   DateTime?
+  waivedReason String? // Required if status = WAIVED
+  createdAt    DateTime          @default(now())
+
+  @@map("extra_charges")
+}
+
+// =============================================================================
+// SUBSCRIPTION MODELS
+// =============================================================================
+
+// Plan definitions — managed by Super Admin (prices in RWF)
+model SubscriptionPlan {
+  id                 String           @id @default(cuid())
+  tier               SubscriptionTier @unique
+  name               String // Display name
+  priceMonthly       Int // RWF
+  maxListings        Int? // Null = unlimited
+  isFeatured         Boolean          @default(false) // Appears in search results
+  featuredPriority   Int? // 1 = top of search (PREMIUM), 2 = standard (PRO)
+  hasVerifiedBadge   Boolean          @default(false)
+  analyticsLevel     String           @default("BASIC") // BASIC | ADVANCED | FULL
+  hasHomepageBanner  Boolean          @default(false)
+  hasPrioritySupport Boolean          @default(false)
+  isActive           Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  // Relations
+  subscriptions OwnerSubscription[]
+
+  @@map("subscription_plans")
+}
+
+// An owner's active subscription — one active record per owner at a time
+model OwnerSubscription {
+  id      String             @id @default(cuid())
+  ownerId String
+  owner   CarOwnerProfile    @relation(fields: [ownerId], references: [id])
+  planId  String
+  plan    SubscriptionPlan   @relation(fields: [planId], references: [id])
+  status  SubscriptionStatus @default(ACTIVE)
+
+  // Billing cycle
+  startedAt   DateTime  @default(now())
+  expiresAt   DateTime
+  renewedAt   DateTime?
+  cancelledAt DateTime?
+
+  // Payment record for this subscription cycle
+  paymentMethod        PaymentMethod?
+  paymentProofUrl      String? // For bank transfer subscriptions
+  paymentConfirmedById String?
+  paymentConfirmedAt   DateTime?
+
+  /// Price snapshot in RWF, taken when the owner committed to the plan.
+  /// Changing a plan's price must never rewrite what someone already paid.
+  pricePaid Int?
+
+  // MTN MoMo specifics for this cycle
+  momoNumber      String?
+  momoReference   String?
+  rejectionReason String? // Why Finance rejected the payment
+
+  // Admin override (Super Admin can manually set any status)
+  isManualOverride Boolean @default(false)
+  overrideById     String?
+  overrideNote     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("owner_subscriptions")
+}
+
+// =============================================================================
+// REVIEW MODELS
+// =============================================================================
+
+// Review submitted by a client after a completed booking
+// Only clients with a COMPLETED booking for that specific car can review
+model Review {
+  id        String  @id @default(cuid())
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id])
+  carId     String
+  car       Car     @relation(fields: [carId], references: [id])
+  clientId  String
+  client    User    @relation(fields: [clientId], references: [id])
+
+  // Four rating categories — 1 to 5 stars each
+  cleanlinessRating   Int // 1–5
+  comfortRating       Int // 1–5
+  valueRating         Int // 1–5
+  communicationRating Int // 1–5
+  overallRating       Float // Calculated average of four categories
+
+  comment       String?
+  isVisible     Boolean  @default(true) // Set to false by Content Moderator if removed
+  removedById   String?
+  removedReason String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  reply ReviewReply?
+
+  @@map("reviews")
+}
+
+// Owner's reply to a review — one reply per review maximum
+model ReviewReply {
+  id        String   @id @default(cuid())
+  reviewId  String   @unique
+  review    Review   @relation(fields: [reviewId], references: [id])
+  authorId  String // Car owner's User ID
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("review_replies")
+}
+
+// =============================================================================
+// NOTIFICATION & COMMUNICATION MODELS
+// =============================================================================
+
+// In-app notification record — one per notification per user
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id])
+  type      NotificationType
+  channel   NotificationChannel
+  title     String
+  body      String
+  isRead    Boolean             @default(false)
+  readAt    DateTime?
+  // Optional deep link — e.g. "/dashboard/bookings/clxxx"
+  actionUrl String?
+  // Context data — e.g. bookingId, carId for deep linking
+  metadata  Json?
+  createdAt DateTime            @default(now())
+
+  @@map("notifications")
+}
+
+// SMS delivery log — every SMS sent through Africa's Talking
+// Used for debugging, compliance, and resend logic
+model SmsLog {
+  id          String           @id @default(cuid())
+  userId      String?
+  user        User?            @relation(fields: [userId], references: [id])
+  phone       String // Always stored even if user record changes
+  type        NotificationType
+  message     String
+  // Africa's Talking API response
+  messageId   String? // AT message ID
+  status      String? // AT delivery status
+  cost        String? // AT reported cost
+  networkCode String? // Mobile network code
+  createdAt   DateTime         @default(now())
+
+  @@map("sms_logs")
+}
+
+// =============================================================================
+// AUDIT & RECONCILIATION MODELS
+// =============================================================================
+
+// Immutable audit log of every admin and sub-admin action
+// Never deleted — compliance record
+model AdminAction {
+  id           String          @id @default(cuid())
+  actorId      String // Admin or sub-admin who took the action
+  actor        User            @relation("AdminActorActions", fields: [actorId], references: [id])
+  actionType   AdminActionType
+  // Free-form id of the entity affected (carId, bookingId, depositId, ...).
+  // Deliberately NOT a foreign key — it points at many different models.
+  targetId     String?
+  targetModel  String? // Model name: "User" | "Car" | "Booking" | "Payment" etc.
+  // Set ONLY when the target really is a user, so the relation stays valid.
+  targetUserId String?
+  targetUser   User?           @relation("AdminTargetActions", fields: [targetUserId], references: [id])
+  description  String // Human-readable summary of what was done
+  reason       String? // Required for suspension, deletion, financial actions
+  metadata     Json? // Extra context — e.g. old value, new value, amounts
+  ipAddress    String? // Logged for security
+  createdAt    DateTime        @default(now())
+
+  @@map("admin_actions")
+}
+
+// Financial reconciliation log — daily check that totals balance
+// Total collected = Total paid out + Total commission + Total deposits held
+// Mismatches trigger automatic Super Admin alert
+model ReconciliationLog {
+  id                    String    @id @default(cuid())
+  runAt                 DateTime  @default(now())
+  totalCollected        Int // RWF — all confirmed payments
+  totalPaidOut          Int // RWF — all PAID payouts
+  totalCommission       Int // RWF — all commission records
+  totalDepositsHeld     Int // RWF — all HELD deposits
+  totalDepositsReleased Int // RWF — all RELEASED deposits
+  totalDepositsWithheld Int // RWF — PARTIALLY + FULLY withheld
+  discrepancyAmount     Int // 0 = balanced, non-zero = mismatch
+  hasMismatch           Boolean   @default(false)
+  mismatchAlertSentAt   DateTime? // When Super Admin was notified
+  acknowledgedById      String? // Super Admin who acknowledged the alert
+  acknowledgedAt        DateTime?
+  notes                 String? // Admin notes on any discrepancy
+  createdAt             DateTime  @default(now())
+
+  @@map("reconciliation_logs")
+}
+
+// =============================================================================
+// PLATFORM SETTINGS
+// =============================================================================
+
+/// Editable platform configuration — a single row, id always "singleton".
+///
+/// A typed row rather than a key/value table so values keep their types and
+/// Prisma validates them. Adding a setting is a migration, which is the right
+/// amount of friction for something that changes how money is calculated.
+///
+/// IMPORTANT: changing commissionRatePercent never rewrites history. Every
+/// Booking and Commission row stores the rate that applied when it was created.
+model PlatformSetting {
+  id String @id @default("singleton")
+
+  // Finance
+  commissionRatePercent Int @default(20) // Applied to new bookings only
+  largePayoutThreshold  Int @default(1000000) // Above this, Super Admin must approve
+
+  // Fleet
+  autoPublishListings Boolean @default(false) // Skip Fleet Manager review
+  freeTierMaxListings Int     @default(1) // Allowed without an active plan
+
+  // Late cancellation. A booking cancelled inside the window keeps a share of
+  // the deposit as compensation for the owner; outside it, the refund is full.
+  lateCancellationWindowHours Int @default(24)
+  lateCancellationFeePercent  Int @default(50) // % of the deposit
+
+  // Photo retention & timers
+  photoRetentionDays      Int @default(3)
+  ownerConfirmWindowHours Int @default(2)
+  autoCompleteHours       Int @default(48)
+
+  updatedAt   DateTime @updatedAt
+  updatedById String? // Super Admin who last changed these
+
+  @@map("platform_settings")
+}
+
+// =============================================================================
+// SUPPORT MODELS
+//
+// Where SubscriptionPlan.hasPrioritySupport is enforced. Priority is decided
+// once, when a ticket is opened, and snapshotted onto the ticket — a plan that
+// lapses next week must not silently demote a ticket already in the queue, and
+// a plan bought after a complaint must not retroactively jump it.
+// =============================================================================
+
+model SupportTicket {
+  id        String @id @default(cuid())
+  reference String @unique // Human-friendly, e.g. ZD-T-8F3K
+  userId    String
+  user      User   @relation("UserTickets", fields: [userId], references: [id])
+
+  subject  String
+  category SupportCategory
+  status   SupportStatus   @default(OPEN)
+
+  // Priority snapshot — see the section note above.
+  isPriority       Boolean @default(false)
+  priorityPlanName String? // The plan that granted it, for the audit trail
+
+  // First-response target. Derived from isPriority at creation, so the queue
+  // can be ordered by "who is closest to being let down" rather than by tier.
+  firstResponseDueAt DateTime
+  firstRespondedAt   DateTime?
+
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedTickets", fields: [assignedToId], references: [id])
+
+  // Optional context — most tickets are about something specific.
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+
+  resolvedAt DateTime?
+  closedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  messages SupportMessage[]
+
+  @@index([status, firstResponseDueAt])
+  @@index([userId])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id       String        @id @default(cuid())
+  ticketId String
+  ticket   SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User          @relation("SupportMessages", fields: [authorId], references: [id])
+
+  body        String
+  attachments String[] // Cloudinary URLs
+  /// True when written by an admin. Snapshotted so a staff member who later
+  /// loses their role doesn't turn their past replies into user messages.
+  isStaff     Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([ticketId, createdAt])
+  @@map("support_messages")
+}
+
+enum SupportCategory {
+  PAYOUT // Money owed, payout not received
+  BOOKING // A specific trip
+  LISTING // Car approval, photos, availability
+  SUBSCRIPTION // Plan, billing, benefits
+  ACCOUNT // Login, verification, profile
+  OTHER
+}
+
+enum SupportStatus {
+  OPEN // Waiting on us
+  AWAITING_USER // We replied, waiting on them
+  RESOLVED // Answered, can be reopened by a reply
+  CLOSED // Done
+}

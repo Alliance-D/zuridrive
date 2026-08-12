@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 169" width="300" height="169" role="img" aria-label="van placeholder">
+  <rect width="300" height="169" fill="#E5E0D8"/>
+  <path d="M55 128 L55 78 Q55 69 66 69 L215 69 Q228 69 234 78 L250 100 L250 128 Z" fill="#1B4332" opacity="0.9"/>
+  <circle cx="97" cy="128" r="15" fill="#1C1C1C"/>
+  <circle cx="97" cy="128" r="6" fill="#E5E0D8"/>
+  <circle cx="207" cy="128" r="15" fill="#1C1C1C"/>
+  <circle cx="207" cy="128" r="6" fill="#E5E0D8"/>
+  <rect x="0" y="156" width="300" height="3" fill="#D4A017" opacity="0.5"/>
+  <text x="150" y="28" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12"
+        letter-spacing="2.5" fill="#1C1C1C" opacity="0.4">VAN</text>
+</svg>

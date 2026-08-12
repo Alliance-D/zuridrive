@@ -1,0 +1,63 @@
+{
+  "name": "zuridrive",
+  "version": "0.1.0",
+  "description": "ZuriDrive - Complete Car Rental Platform",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "prisma:studio": "prisma studio",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate",
+    "prisma:seed": "npx tsx prisma/seed.ts",
+    "test": "cross-env TEST_DATABASE_URL=postgresql://zuridrive:zuridrive@localhost:5432/zuridrive_test vitest run",
+    "test:watch": "cross-env TEST_DATABASE_URL=postgresql://zuridrive:zuridrive@localhost:5432/zuridrive_test vitest",
+    "test:coverage": "cross-env TEST_DATABASE_URL=postgresql://zuridrive:zuridrive@localhost:5432/zuridrive_test vitest run --coverage",
+    "test:db:setup": "cross-env DATABASE_URL=postgresql://zuridrive:zuridrive@localhost:5432/zuridrive_test prisma migrate deploy",
+    "load:smoke": "k6 run tests/load/smoke.js",
+    "load:stress": "k6 run tests/load/stress.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "@sentry/nextjs": "^10.69.0",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.10.0",
+    "framer-motion": "^11.18.2",
+    "lucide-react": "^0.460.0",
+    "next": "^14.2.35",
+    "next-auth": "^4.24.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/typography": "^0.5.20",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitest/coverage-v8": "^4.1.10",
+    "autoprefixer": "^10.4.0",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.4.2",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
+    "playwright": "^1.62.1",
+    "postcss": "^8.4.0",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^3.4.0",
+    "tsx": "^4.23.1",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.10"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  }
+}
