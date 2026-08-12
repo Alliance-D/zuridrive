@@ -63,7 +63,7 @@
     "specSeats": "Intebe",
     "specFuel": "Lisansi",
     "specTransmission": "Transmission",
-    "passengers": "abagenzi {count}",
+    "passengers": "imyanya {count}",
     "perMonthSuffix": "/ukwezi",
     "perDaySuffix": "/umunsi"
   },
@@ -153,8 +153,8 @@
     "category": {
       "ECONOMY": "Iyoroheje",
       "SUV": "SUV",
-      "LUXURY": "Iy'umunezero",
-      "VAN": "Ikamyonete",
+      "LUXURY": "Ihebuje",
+      "VAN": "Van",
       "MINIBUS": "Minibisi"
     },
     "fuelType": {
@@ -168,7 +168,7 @@
       "MANUAL": "Manual"
     },
     "fuelPolicy": {
-      "FULL_TO_FULL": "Uzuye ugarure yuzuye",
+      "FULL_TO_FULL": "Iruzuye uyigarure yuzuye",
       "SAME_LEVEL": "Urwego rumwe",
       "FREE_TANK": "Tanki y'ubuntu",
       "OWNER_HANDLES": "Nyir'imodoka abyishyura"

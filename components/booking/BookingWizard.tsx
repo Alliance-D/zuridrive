@@ -17,6 +17,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { paymentsEnabledClient } from '@/lib/deposit-copy'
 import Image from "next/image";
@@ -142,6 +143,7 @@ export function BookingWizard({
   isLoggedIn,
   prefill,
 }: BookingWizardProps) {
+  const t = useTranslations('booking')
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -405,7 +407,7 @@ export function BookingWizard({
                 >
                   {/* Rental type */}
                   <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100">
-                    <h2 className="text-lg font-semibold text-stone-900 mb-4">Rental Type</h2>
+                    <h2 className="text-lg font-semibold text-stone-900 mb-4">{t("rentalType")}</h2>
                     <RentalTypeSelector
                       value={form.rentalType}
                       onChange={(v) => update('rentalType', v)}
@@ -415,7 +417,7 @@ export function BookingWizard({
                     {/* Trip scope — hidden for monthly */}
                     {form.rentalType !== 'PER_MONTH' && (
                       <div className="mt-5">
-                        <p className="text-sm font-medium text-stone-700 mb-3">Trip Scope</p>
+                        <p className="text-sm font-medium text-stone-700 mb-3">{t("tripScope")}</p>
                         <div className="grid grid-cols-2 gap-3">
                           {(['IN_CITY', 'OUTSIDE_CITY'] as const).map((scope) => (
                             <button
@@ -429,7 +431,7 @@ export function BookingWizard({
                                 }
                               `}
                             >
-                              {scope === 'IN_CITY' ? 'In-City' : 'Outside City'}
+                              {scope === 'IN_CITY' ? t('inCity') : t('outsideCity')}
                             </button>
                           ))}
                         </div>
@@ -445,7 +447,7 @@ export function BookingWizard({
 
                   {/* Date range */}
                   <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100">
-                    <h2 className="text-lg font-semibold text-stone-900 mb-4">Select Dates</h2>
+                    <h2 className="text-lg font-semibold text-stone-900 mb-4">{t("selectDates")}</h2>
                     <DateRangePicker
                       startDate={form.startDate}
                       endDate={form.endDate}
@@ -476,7 +478,7 @@ export function BookingWizard({
 
                   {/* Pickup location */}
                   <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100">
-                    <h2 className="text-lg font-semibold text-stone-900 mb-2">Pickup Location</h2>
+                    <h2 className="text-lg font-semibold text-stone-900 mb-2">{t("pickupLocation")}</h2>
                     <p className="text-sm text-stone-500 mb-4">Where would you like to pick up the car?</p>
                     <LocationPicker
                       platformLocations={locations.platformLocations}
@@ -566,7 +568,7 @@ export function BookingWizard({
                   className="flex items-center gap-2 px-5 py-3 rounded-xl border border-stone-300 text-stone-700 font-medium hover:border-stone-400 transition-colors"
                 >
                   <ChevronLeft size={18} />
-                  Back
+                  {t("back")}
                 </button>
               ) : (
                 /* Step 1 had an empty div here, so the only way out of the
@@ -577,7 +579,7 @@ export function BookingWizard({
                   className="flex items-center gap-2 px-5 py-3 rounded-xl border border-stone-300 text-stone-700 font-medium hover:border-stone-400 transition-colors"
                 >
                   <ChevronLeft size={18} />
-                  Back to car
+                  {t("backToCar")}
                 </Link>
               )}
 
@@ -586,7 +588,7 @@ export function BookingWizard({
                   onClick={nextStep}
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-brand text-white font-semibold hover:bg-brand-deep transition-colors shadow-sm"
                 >
-                  Continue
+                  {t("continue")}
                   <ChevronRight size={18} />
                 </button>
               ) : (
