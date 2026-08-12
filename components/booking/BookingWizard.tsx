@@ -479,7 +479,7 @@ export function BookingWizard({
                   {/* Pickup location */}
                   <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100">
                     <h2 className="text-lg font-semibold text-stone-900 mb-2">{t("pickupLocation")}</h2>
-                    <p className="text-sm text-stone-500 mb-4">Where would you like to pick up the car?</p>
+                    <p className="text-sm text-stone-500 mb-4">{t("whereCollect")}</p>
                     <LocationPicker
                       platformLocations={locations.platformLocations}
                       ownerLocations={locations.ownerLocations}

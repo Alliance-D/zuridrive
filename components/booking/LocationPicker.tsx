@@ -12,6 +12,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { MapPin, Building2, Home, PenLine, ChevronDown } from 'lucide-react'
 
 interface PlatformLocation {
@@ -48,6 +49,7 @@ export function LocationPicker({
   onSelectId,
   onCustomText,
 }: LocationPickerProps) {
+  const t = useTranslations('booking')
   // Default to first available tab
   const defaultTab: Tab =
     platformLocations.length > 0 ? 'platform'
@@ -61,9 +63,9 @@ export function LocationPicker({
   )
 
   const tabs = [
-    ...(platformLocations.length > 0 ? [{ id: 'platform' as Tab, label: 'Named Locations', icon: Building2, color: 'blue' }] : []),
-    ...(ownerLocations.length > 0 ? [{ id: 'owner' as Tab, label: 'Owner Pickup Points', icon: Home, color: 'green' }] : []),
-    { id: 'custom' as Tab, label: 'Somewhere Else', icon: PenLine, color: 'amber' },
+    ...(platformLocations.length > 0 ? [{ id: 'platform' as Tab, label: t('namedLocations'), icon: Building2, color: 'blue' }] : []),
+    ...(ownerLocations.length > 0 ? [{ id: 'owner' as Tab, label: t('ownerPickupPoints'), icon: Home, color: 'green' }] : []),
+    { id: 'custom' as Tab, label: t('somewhereElse'), icon: PenLine, color: 'amber' },
   ]
 
   return (

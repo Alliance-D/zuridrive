@@ -100,7 +100,13 @@
     "confirmAndPay": "Emeza wishyure",
     "howYoullPay": "Uko uzishyura",
     "orderSummary": "Incamake y'ubusabe",
-    "rental": "Ubukode"
+    "rental": "Ubukode",
+    "daysSelected": "{count, plural, =1 {umunsi # watoranyijwe} other {iminsi # yatoranyijwe}}",
+    "driverHelp": "Emerera nyir'imodoka kuguha umushoferi w'umwuga.",
+    "total": "byose",
+    "perDayFrom": "guhera kuri {amount}/umunsi",
+    "perWeekFrom": "guhera kuri {amount}/icyumweru",
+    "perMonthFlat": "{amount}/ukwezi"
   },
   "deposit": {
     "labelPlatform": "Ingwate isubizwa",

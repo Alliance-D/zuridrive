@@ -6,6 +6,7 @@
  */
 
 import { formatRWF } from '@/lib/currency'
+import { useTranslations } from 'next-intl'
 import { CalendarDays, CalendarRange, CalendarClock } from 'lucide-react';
 
 interface Pricing {
@@ -23,9 +24,9 @@ interface RentalTypeSelectorProps {
 }
 
 const TYPES = [
-  { id: 'PER_DAY' as const, label: 'Per Day', Icon: CalendarDays },
-  { id: 'PER_WEEK' as const, label: 'Per Week', Icon: CalendarRange },
-  { id: 'PER_MONTH' as const, label: 'Per Month', Icon: CalendarClock },
+  { id: 'PER_DAY' as const, labelKey: 'perDayLabel', Icon: CalendarDays },
+  { id: 'PER_WEEK' as const, labelKey: 'perWeek', Icon: CalendarRange },
+  { id: 'PER_MONTH' as const, labelKey: 'perMonth', Icon: CalendarClock },
 ]
 
 function getRateLabel(type: 'PER_DAY' | 'PER_WEEK' | 'PER_MONTH', pricing: Pricing | null): string {
@@ -36,6 +37,7 @@ function getRateLabel(type: 'PER_DAY' | 'PER_WEEK' | 'PER_MONTH', pricing: Prici
 }
 
 export function RentalTypeSelector({ value, onChange, pricing }: RentalTypeSelectorProps) {
+  const tc = useTranslations('carDetail')
   return (
     <div className="grid grid-cols-3 gap-3">
       {TYPES.map((type) => (
@@ -52,7 +54,7 @@ export function RentalTypeSelector({ value, onChange, pricing }: RentalTypeSelec
         >
           <type.Icon className="h-5 w-5 text-brand" aria-hidden />
           <span className={`text-sm font-semibold ${value === type.id ? 'text-brand' : 'text-stone-700'}`}>
-            {type.label}
+            {tc(type.labelKey)}
           </span>
           <span className="text-xs text-stone-500">{getRateLabel(type.id, pricing)}</span>
         </button>

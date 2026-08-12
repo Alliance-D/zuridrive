@@ -13,6 +13,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { CalendarDays, AlertCircle } from 'lucide-react'
 
 interface DateRangePickerProps {
@@ -55,6 +56,7 @@ export function DateRangePicker({
   blockedDates,
   minBookingDays,
 }: DateRangePickerProps) {
+  const t = useTranslations('booking')
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const todayStr = toInputValue(today)
@@ -86,7 +88,7 @@ export function DateRangePicker({
         {/* Pickup date */}
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-1.5">
-            Pickup Date
+            {t("pickupDate")}
           </label>
           <div className="relative">
             <CalendarDays
@@ -111,7 +113,7 @@ export function DateRangePicker({
         {/* Return date */}
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-1.5">
-            Return Date
+            {t("returnDate")}
           </label>
           <div className="relative">
             <CalendarDays

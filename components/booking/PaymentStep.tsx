@@ -12,6 +12,7 @@
  */
 
 import type { BookingFormUpdater } from './BookingWizard'
+import { useTranslations } from 'next-intl'
 import { getDepositCopy } from '@/lib/deposit-copy';
 import { Smartphone, Landmark, Shield, Copy, Check } from 'lucide-react'
 import { formatRWF } from '@/lib/currency'
@@ -41,6 +42,7 @@ const BANK_DETAILS = {
 export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: PaymentStepProps) {
   // Client component, so read the browser-side mirror.
   const depositCopy = getDepositCopy({ client: true });
+  const t = useTranslations('booking')
   const [copied, setCopied] = useState<string | null>(null)
 
   function copyToClipboard(text: string, key: string) {
@@ -55,7 +57,7 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
       {/* Order summary */}
       {pricing && (
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">Order Summary</h2>
+          <h2 className="text-lg font-semibold text-stone-900 mb-4">{t("orderSummary")}</h2>
           <div className="space-y-2">
             <SummaryLine label="Rental" value={formatRWF(pricing.baseAmount)} />
             {pricing.driverSurchargeTotal > 0 && (

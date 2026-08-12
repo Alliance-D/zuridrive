@@ -14,6 +14,7 @@
  */
 
 import { formatRWF } from '@/lib/currency'
+import { useTranslations } from 'next-intl'
 import { getDepositCopy } from '@/lib/deposit-copy';
 import { CalendarDays } from 'lucide-react';
 import type { PricingBreakdown } from '@/lib/booking/pricing'
@@ -39,13 +40,14 @@ interface PriceBreakdownProps {
 export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
   // Client component, so read the browser-side mirror.
   const depositCopy = getDepositCopy({ client: true });
+  const t = useTranslations('booking')
   const hasDates = form.startDate && form.endDate
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
       {/* Header */}
       <div className="bg-brand px-5 py-4">
-        <p className="text-white font-semibold text-sm">Price Summary</p>
+        <p className="text-white font-semibold text-sm">{t("priceSummary")}</p>
         <p className="text-green-200 text-xs mt-0.5">{car.year} {car.make} {car.model}</p>
       </div>
 
@@ -55,7 +57,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
             <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <CalendarDays className="h-6 w-6 text-brand" aria-hidden />
             </div>
-            <p className="text-stone-500 text-sm">Select dates to see pricing</p>
+            <p className="text-stone-500 text-sm">{t("selectDatesForPricing")}</p>
           </div>
         ) : !pricing ? (
           /* Skeleton while calculating */
@@ -94,7 +96,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
             {/* Subtotal divider */}
             <div className="border-t border-stone-100 my-2 pt-2">
               <LineItem
-                label="Subtotal"
+                label={t("subtotal")}
                 value={formatRWF(pricing.subtotalBeforeDeposit)}
                 bold
               />
@@ -121,7 +123,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
             {/* Total */}
             <div className="border-t border-stone-200 mt-3 pt-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold text-stone-900">{depositCopy.heldBy === 'owner' ? 'Total payable to owner' : 'Total charged now'}</span>
+                <span className="text-sm font-bold text-stone-900">{depositCopy.heldBy === 'owner' ? t('totalPayableToOwner') : t('totalChargedNow')}</span>
                 <span className="text-lg font-bold text-brand">{formatRWF(pricing.totalChargedNow)}</span>
               </div>
               {pricing.depositEnabled && pricing.depositAmount > 0 && (

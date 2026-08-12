@@ -99,7 +99,13 @@
     "confirmAndPay": "Confirm & Pay",
     "howYoullPay": "How you'll pay",
     "orderSummary": "Order Summary",
-    "rental": "Rental"
+    "rental": "Rental",
+    "daysSelected": "{count, plural, =1 {# day selected} other {# days selected}}",
+    "driverHelp": "Let the owner provide a professional driver.",
+    "total": "total",
+    "perDayFrom": "from {amount}/day",
+    "perWeekFrom": "from {amount}/week",
+    "perMonthFlat": "{amount}/month"
   },
   "deposit": {
     "labelPlatform": "Refundable deposit",

@@ -6,6 +6,7 @@
  */
 
 import { formatRWF } from '@/lib/currency'
+import { useTranslations } from 'next-intl'
 import { User } from 'lucide-react'
 
 interface DriverToggleProps {
@@ -16,13 +17,14 @@ interface DriverToggleProps {
 }
 
 export function DriverToggle({ enabled, onChange, surchargePerDay, durationDays }: DriverToggleProps) {
+  const t = useTranslations('booking')
   const totalSurcharge = durationDays ? surchargePerDay * durationDays : null
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-stone-900 mb-1">Driver Option</h2>
+      <h2 className="text-lg font-semibold text-stone-900 mb-1">{t("driverOption")}</h2>
       <p className="text-sm text-stone-500 mb-4">
-        Let the owner provide a professional driver.
+        {t("driverHelp")}
       </p>
 
       <div
@@ -38,7 +40,7 @@ export function DriverToggle({ enabled, onChange, surchargePerDay, durationDays 
           </div>
           <div>
             <p className={`text-sm font-semibold ${enabled ? 'text-brand' : 'text-stone-700'}`}>
-              Include a Driver
+              {t("includeDriver")}
             </p>
             <p className="text-xs text-stone-500">
               {formatRWF(surchargePerDay)}/day surcharge
