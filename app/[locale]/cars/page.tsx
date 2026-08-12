@@ -117,11 +117,12 @@ async function getCars(filters: FilterParams) {
 }
 
 interface CarsPageProps {
+  params: { locale: string };
   searchParams: Record<string, string | string[] | undefined>;
 }
 
-export default async function CarsPage({ searchParams }: CarsPageProps) {
-  const t = await getTranslations("cars");
+export default async function CarsPage({ params, searchParams }: CarsPageProps) {
+  const t = await getTranslations({ locale: params.locale, namespace: "cars" });
   const filters = parseFilters(searchParams);
   const { cars, total, totalPages } = await getCars(filters);
   const currentPage = filters.page ?? 1;

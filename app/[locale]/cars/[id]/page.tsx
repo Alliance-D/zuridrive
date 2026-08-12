@@ -6,6 +6,7 @@
 // =============================================================================
 
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { ownerDisplayName } from "@/lib/owner-identity"
 import { getDepositCopy } from "@/lib/deposit-copy";
 import { formatEnumLabel } from "@/lib/labels";
@@ -24,7 +25,7 @@ import {
 } from "lucide-react";
 
 interface CarDetailPageProps {
-  params: { id: string };
+  params: { id: string; locale: string };
 }
 
 async function getCar(id: string) {
@@ -77,6 +78,7 @@ export async function generateMetadata({ params }: CarDetailPageProps): Promise<
 }
 
 export default async function CarDetailPage({ params }: CarDetailPageProps) {
+  const t = await getTranslations({ locale: params.locale, namespace: "carDetail" });
   const car = await getCar(params.id);
   if (!car) notFound();
 
@@ -177,33 +179,33 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {/* ---- PRICING TABLE ---- */}
             {pricing && (
               <section className="mb-8">
-                <SectionHeading>Pricing</SectionHeading>
+                <SectionHeading>{t("pricing")}</SectionHeading>
                 <div className="overflow-hidden rounded-3xl border border-sand-light bg-white">
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="bg-sand">
-                        <th className={TH}>Period</th>
-                        <th className={TH}>In-City</th>
-                        <th className={TH}>Outside City</th>
+                        <th className={TH}>{t("period")}</th>
+                        <th className={TH}>{t("inCity")}</th>
+                        <th className={TH}>{t("outsideCity")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       <PricingRow
-                        period="Per Day"
+                        period={t("perDayLabel")}
                         inCity={formatRWF(pricing.perDayInCity)}
                         outside={formatRWF(pricing.perDayOutsideCity)}
                       />
                       <PricingRow
-                        period="Per Week"
+                        period={t("perWeek")}
                         inCity={formatRWF(pricing.perWeekInCity)}
                         outside={formatRWF(pricing.perWeekOutsideCity)}
                         isAlt
                       />
                       <tr>
                         <td className={`${TD} text-fluid-sm`}>
-                          <strong>Per Month</strong>
+                          <strong>{t("perMonth")}</strong>
                           <span className="mt-0.5 block text-fluid-xs text-ink-soft">
-                            Go anywhere — no restrictions
+                            {t("goAnywhere")}
                           </span>
                         </td>
                         <td className={`${TD} text-fluid-sm text-center`} colSpan={2}>
@@ -230,7 +232,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {/* ---- FUEL POLICY ---- */}
             {fuelPolicy && (
               <section className="mb-8">
-                <SectionHeading>Fuel Policy</SectionHeading>
+                <SectionHeading>{t("fuelPolicy")}</SectionHeading>
                 <FuelPolicyCard policy={fuelPolicy.type} refuelingFee={fuelPolicy.refuelingFee} />
               </section>
             )}
@@ -238,7 +240,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {/* ---- DEPOSIT ---- */}
             {pricing?.depositEnabled && pricing.depositAmount && (
               <section className="mb-8">
-                <SectionHeading>Damage Deposit</SectionHeading>
+                <SectionHeading>{t("damageDeposit")}</SectionHeading>
                 <div className="flex items-start gap-4 rounded-3xl border border-sand-light bg-white p-5">
                   {/* The mint/green pair here are literals rather than tokens —
                       success/success-bg are the palette's greens and read very
@@ -263,7 +265,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {/* ---- PICKUP LOCATIONS ---- */}
             {car.locations.length > 0 && (
               <section className="mb-8">
-                <SectionHeading>Pickup Locations</SectionHeading>
+                <SectionHeading>{t("pickupLocations")}</SectionHeading>
                 <div className="flex flex-col gap-3">
                   {car.locations.map((loc) => (
                     <div
@@ -297,7 +299,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
             {/* ---- OWNER PROFILE SNIPPET ---- */}
             <section className="mb-8">
-              <SectionHeading>Your Host</SectionHeading>
+              <SectionHeading>{t("yourHost")}</SectionHeading>
               <div className="flex items-start gap-5 rounded-3xl border border-sand-light bg-white p-5">
                 {/* Avatar */}
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand font-display text-fluid-xl font-semibold text-white">
@@ -324,7 +326,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
           {/* ---- RIGHT COLUMN — Booking Widget (desktop only) ---- */}
           <div className="hide-mobile sticky top-[calc(var(--nav-height)_+_1.5rem)]">
-            <BookingWidget car={car} />
+            <BookingWidget car={car} locale={params.locale} />
           </div>
         </div>
       </div>
@@ -418,7 +420,8 @@ function OwnerStat({ icon, label }: { icon: React.ReactNode; label: string }) {
 }
 
 // Desktop booking widget — mirrored in the booking flow (Step 3)
-function BookingWidget({ car }: { car: Parameters<typeof CarDetailPage>[0]["params"] extends { id: string } ? Awaited<ReturnType<typeof getCar>> : never }) {
+async function BookingWidget({ car, locale }: { locale: string; car: Parameters<typeof CarDetailPage>[0]["params"] extends { id: string } ? Awaited<ReturnType<typeof getCar>> : never }) {
+  const t = await getTranslations("carDetail");
   if (!car) return null;
   const pricing = car.pricing;
 
@@ -438,10 +441,10 @@ function BookingWidget({ car }: { car: Parameters<typeof CarDetailPage>[0]["para
 
       {/* Booking CTA */}
       <a href={ROUTES.book(car.id)} className="btn btn-primary btn-lg mb-3 w-full justify-center">
-        Book This Car
+        {t("bookThisCar")}
       </a>
       <p className="text-center text-fluid-xs leading-normal text-ink-soft">
-        No charge until you confirm. Free cancellation within policy window.
+        {t("noChargeUntilConfirm")}
       </p>
 
       {/* Quick facts */}
