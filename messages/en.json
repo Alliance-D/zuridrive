@@ -57,7 +57,14 @@
     "reviews": "Reviews",
     "noReviewsYet": "No reviews yet — be the first to rent this car and share your experience.",
     "tripsCompleted": "{count, plural, =1 {# trip completed} other {# trips completed}}",
-    "photos": "{count} photos"
+    "photos": "{count} photos",
+    "specCategory": "Category",
+    "specSeats": "Seats",
+    "specFuel": "Fuel",
+    "specTransmission": "Transmission",
+    "passengers": "{count} passengers",
+    "perMonthSuffix": "/month",
+    "perDaySuffix": "/day"
   },
   "booking": {
     "configure": "Configure",
@@ -140,5 +147,30 @@
   "language": {
     "label": "Language",
     "change": "Change language"
+  },
+  "enum": {
+    "category": {
+      "ECONOMY": "Economy",
+      "SUV": "SUV",
+      "LUXURY": "Luxury",
+      "VAN": "Van",
+      "MINIBUS": "Minibus"
+    },
+    "fuelType": {
+      "PETROL": "Petrol",
+      "DIESEL": "Diesel",
+      "ELECTRIC": "Electric",
+      "HYBRID": "Hybrid"
+    },
+    "transmission": {
+      "AUTOMATIC": "Automatic",
+      "MANUAL": "Manual"
+    },
+    "fuelPolicy": {
+      "FULL_TO_FULL": "Full to Full",
+      "SAME_LEVEL": "Same Level",
+      "FREE_TANK": "Free Tank",
+      "OWNER_HANDLES": "Owner Handles"
+    }
   }
 }

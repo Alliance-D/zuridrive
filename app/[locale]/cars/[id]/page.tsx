@@ -6,6 +6,7 @@
 // =============================================================================
 
 import { notFound } from "next/navigation";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { getTranslations } from "next-intl/server";
 import { ownerDisplayName } from "@/lib/owner-identity"
 import { getDepositCopy } from "@/lib/deposit-copy";
@@ -79,6 +80,7 @@ export async function generateMetadata({ params }: CarDetailPageProps): Promise<
 
 export default async function CarDetailPage({ params }: CarDetailPageProps) {
   const t = await getTranslations({ locale: params.locale, namespace: "carDetail" });
+  const label = await getEnumLabeller(params.locale);
   const car = await getCar(params.id);
   if (!car) notFound();
 
@@ -156,10 +158,10 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {/* Quick specs */}
             <div className="mb-8 grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
               {[
-                { icon: <Car size={16} />, label: "Category", value: formatEnumLabel(car.category) },
-                { icon: <Users size={16} />, label: "Seats", value: `${car.seatingCapacity} passengers` },
-                { icon: car.fuelType === "ELECTRIC" ? <Zap size={16} /> : <Fuel size={16} />, label: "Fuel", value: formatEnumLabel(car.fuelType) },
-                { icon: <Settings2 size={16} />, label: "Transmission", value: formatEnumLabel(car.transmission) },
+                { icon: <Car size={16} />, label: t("specCategory"), value: label("category", car.category) },
+                { icon: <Users size={16} />, label: t("specSeats"), value: t("passengers", { count: car.seatingCapacity }) },
+                { icon: car.fuelType === "ELECTRIC" ? <Zap size={16} /> : <Fuel size={16} />, label: t("specFuel"), value: label("fuelType", car.fuelType) },
+                { icon: <Settings2 size={16} />, label: t("specTransmission"), value: label("transmission", car.transmission) },
               ].map((spec) => (
                 <div
                   key={spec.label}
@@ -212,7 +214,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                           <span className="font-display text-fluid-xl font-semibold text-brand">
                             {formatRWF(pricing.perMonth)}
                           </span>
-                          <span className="ml-1 text-fluid-xs text-ink-soft">/month</span>
+                          <span className="ml-1 text-fluid-xs text-ink-soft">{t("perMonthSuffix")}</span>
                         </td>
                       </tr>
                     </tbody>

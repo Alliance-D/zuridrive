@@ -5,6 +5,7 @@
 // =============================================================================
 
 import { Suspense } from "react";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { getTranslations } from "next-intl/server";
 import { formatEnumLabel } from "@/lib/labels";
 import Navbar from "@/components/navbar";
@@ -138,7 +139,7 @@ export default async function CarsPage({ params, searchParams }: CarsPageProps) 
             {/* Same naive capitalise that rendered SUV as "Suv" on the detail
                 page — formatEnumLabel keeps acronyms intact. */}
             {filters.category
-              ? t("categoryTitle", { category: formatEnumLabel(filters.category) })
+              ? t("categoryTitle", { category: (await getEnumLabeller(params.locale))("category", filters.category) })
               : t("title")}
           </h1>
           <p className="text-fluid-sm text-ink-soft">

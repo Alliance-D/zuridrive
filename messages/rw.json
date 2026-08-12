@@ -58,7 +58,14 @@
     "reviews": "Ibitekerezo",
     "noReviewsYet": "Nta bitekerezo birahari — ba uwa mbere ufata iyi modoka.",
     "tripsCompleted": "{count, plural, =1 {urugendo # rwarangiye} other {ingendo # zarangiye}}",
-    "photos": "amafoto {count}"
+    "photos": "amafoto {count}",
+    "specCategory": "Ubwoko",
+    "specSeats": "Intebe",
+    "specFuel": "Lisansi",
+    "specTransmission": "Transmission",
+    "passengers": "abagenzi {count}",
+    "perMonthSuffix": "/ukwezi",
+    "perDaySuffix": "/umunsi"
   },
   "booking": {
     "configure": "Hitamo",
@@ -141,5 +148,30 @@
   "language": {
     "label": "Ururimi",
     "change": "Hindura ururimi"
+  },
+  "enum": {
+    "category": {
+      "ECONOMY": "Iyoroheje",
+      "SUV": "SUV",
+      "LUXURY": "Iy'umunezero",
+      "VAN": "Ikamyonete",
+      "MINIBUS": "Minibisi"
+    },
+    "fuelType": {
+      "PETROL": "Esansi",
+      "DIESEL": "Mazutu",
+      "ELECTRIC": "Amashanyarazi",
+      "HYBRID": "Hybrid"
+    },
+    "transmission": {
+      "AUTOMATIC": "Automatic",
+      "MANUAL": "Manual"
+    },
+    "fuelPolicy": {
+      "FULL_TO_FULL": "Uzuye ugarure yuzuye",
+      "SAME_LEVEL": "Urwego rumwe",
+      "FREE_TANK": "Tanki y'ubuntu",
+      "OWNER_HANDLES": "Nyir'imodoka abyishyura"
+    }
   }
 }
