@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { formatRWF } from "@/lib/currency";
 import { routes } from "@/lib/routes";
 
@@ -11,6 +12,7 @@ interface BookNowBarProps {
 }
 
 export function BookNowBar({ carId, startingPrice }: BookNowBarProps) {
+  const t = useTranslations("cars");
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export function BookNowBar({ carId, startingPrice }: BookNowBarProps) {
     <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t border-gray-200 shadow-lg p-4">
       <div className="flex gap-2">
         <div className="flex-1">
-          <div className="text-sm text-gray-600">Price per day</div>
+          <div className="text-sm text-gray-600">{t("pricePerDayLabel")}</div>
           <div className="text-2xl font-bold text-blue-600">
             {startingPrice != null ? formatRWF(startingPrice) : "—"}
           </div>
@@ -36,7 +38,7 @@ export function BookNowBar({ carId, startingPrice }: BookNowBarProps) {
           href={routes.book(carId)}
           className="flex flex-1 items-center justify-center bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition py-3"
         >
-          Book Now
+          {t("bookNow")}
         </a>
       </div>
     </div>

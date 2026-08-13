@@ -1,5 +1,9 @@
 /**
  * DashboardSkeletons — Skeleton loading screens for every dashboard section.
+ *
+ * The aria-label arrives as a prop. These render as Suspense fallbacks inside
+ * server components, and awaiting a translator in a fallback would defer the
+ * very thing the fallback exists to show immediately.
  * Used instead of spinners — always matches the shape of the real content.
  * Server component (pure CSS, no state).
  */
@@ -17,9 +21,9 @@ function Sk({ className = "" }: { className?: string }) {
 
 // ─── Overview Page Skeleton ─────────────────────────────────────────────────
 
-export function OverviewSkeleton() {
+export function OverviewSkeleton({ label }: { label?: string } = {}) {
   return (
-    <div className="space-y-6" aria-label="Loading dashboard…">
+    <div className="space-y-6" aria-label={label}>
       {/* Welcome banner */}
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <Sk className="mb-2 h-7 w-48" />
@@ -93,9 +97,9 @@ export function OverviewSkeleton() {
 
 // ─── Bookings List Skeleton ─────────────────────────────────────────────────
 
-export function BookingsListSkeleton() {
+export function BookingsListSkeleton({ label }: { label?: string } = {}) {
   return (
-    <div className="space-y-4" aria-label="Loading bookings…">
+    <div className="space-y-4" aria-label={label}>
       {/* Filter bar */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {[...Array(5)].map((_, i) => (
@@ -129,9 +133,9 @@ export function BookingsListSkeleton() {
 
 // ─── Profile Skeleton ────────────────────────────────────────────────────────
 
-export function ProfileSkeleton() {
+export function ProfileSkeleton({ label }: { label?: string } = {}) {
   return (
-    <div className="space-y-6" aria-label="Loading profile…">
+    <div className="space-y-6" aria-label={label}>
       {/* Photo section */}
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <div className="flex items-center gap-5">
@@ -169,9 +173,9 @@ export function ProfileSkeleton() {
 
 // ─── Single Booking Detail Skeleton (reused from trip lifecycle) ────────────
 
-export function BookingDetailSkeleton() {
+export function BookingDetailSkeleton({ label }: { label?: string } = {}) {
   return (
-    <div className="space-y-5" aria-label="Loading booking…">
+    <div className="space-y-5" aria-label={label}>
       {/* Status timeline */}
       <div className="rounded-2xl bg-white p-5 shadow-sm">
         <Sk className="mb-4 h-5 w-32" />

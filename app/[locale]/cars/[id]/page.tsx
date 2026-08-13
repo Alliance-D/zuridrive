@@ -324,7 +324,11 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             </section>
 
             {/* ---- REVIEWS ---- */}
-            <ReviewsSection reviews={reviews} avgRatings={avgRatings} />
+            <ReviewsSection
+              reviews={reviews}
+              avgRatings={avgRatings}
+              locale={params.locale}
+            />
           </div>
 
           {/* ---- RIGHT COLUMN — Booking Widget (desktop only) ---- */}

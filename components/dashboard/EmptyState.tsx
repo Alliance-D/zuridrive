@@ -5,6 +5,7 @@
  */
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 type EmptyVariant =
   | "no-bookings"
@@ -126,42 +127,42 @@ function BellIllustration() {
 
 const DEFAULTS: Record<
   EmptyVariant,
-  { title: string; description: string; actionLabel?: string; actionHref?: string; Illustration: React.FC }
+  { titleKey: string; descKey: string; actionKey?: string; actionHref?: string; Illustration: React.FC }
 > = {
   "no-bookings": {
-    title: "No bookings yet",
-    description: "Explore available cars in Kigali and beyond — your first adventure is just a few taps away.",
-    actionLabel: "Browse Cars",
+    titleKey: "emptyNoBookingsTitle",
+    descKey: "emptyNoBookingsBody",
+    actionKey: "emptyBrowseCars",
     actionHref: "/cars",
     Illustration: CarJourneyIllustration,
   },
   "no-active-trip": {
-    title: "No active trip",
-    description: "You don't have a car out right now. Ready to plan your next journey?",
-    actionLabel: "Find a Car",
+    titleKey: "emptyNoActiveTitle",
+    descKey: "emptyNoActiveBody",
+    actionKey: "emptyFindCar",
     actionHref: "/cars",
     Illustration: NoActiveTripIllustration,
   },
   "no-upcoming": {
-    title: "Nothing coming up",
-    description: "You have no upcoming bookings. When you book a car, it will appear here.",
-    actionLabel: "Book a Car",
+    titleKey: "emptyNoUpcomingTitle",
+    descKey: "emptyNoUpcomingBody",
+    actionKey: "emptyBookCar",
     actionHref: "/cars",
     Illustration: CalendarEmptyIllustration,
   },
   "no-notifications": {
-    title: "All caught up",
-    description: "You have no new notifications. We'll let you know when something needs your attention.",
+    titleKey: "emptyNoNotificationsTitle",
+    descKey: "emptyNoNotificationsBody",
     Illustration: BellIllustration,
   },
   "no-reviews": {
-    title: "No reviews yet",
-    description: "Reviews appear after you complete a trip. Your honest feedback helps other travellers.",
+    titleKey: "emptyNoReviewsTitle",
+    descKey: "emptyNoReviewsBody",
     Illustration: CarJourneyIllustration,
   },
   generic: {
-    title: "Nothing here yet",
-    description: "This section will fill up as you use ZuriDrive.",
+    titleKey: "emptyGenericTitle",
+    descKey: "emptyGenericBody",
     Illustration: CarJourneyIllustration,
   },
 };
@@ -175,12 +176,14 @@ export default function EmptyState({
   actionLabel,
   actionHref,
 }: EmptyStateProps) {
+  const t = useTranslations("dashboard");
   const defaults = DEFAULTS[variant];
   const { Illustration } = defaults;
 
-  const displayTitle       = title       ?? defaults.title;
-  const displayDescription = description ?? defaults.description;
-  const displayActionLabel = actionLabel ?? defaults.actionLabel;
+  const displayTitle       = title       ?? t(defaults.titleKey);
+  const displayDescription = description ?? t(defaults.descKey);
+  const displayActionLabel =
+    actionLabel ?? (defaults.actionKey ? t(defaults.actionKey) : undefined);
   const displayActionHref  = actionHref  ?? defaults.actionHref;
 
   return (

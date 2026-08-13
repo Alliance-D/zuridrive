@@ -8,6 +8,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { CalendarDays, MapPin, Camera, ChevronRight, User } from "lucide-react";
 import { formatRWF } from "@/lib/currency";
@@ -44,19 +45,20 @@ interface BookingCardProps {
 }
 
 // ─── Status Config ────────────────────────────────────────────────────────────
-// Single source of truth for colours + labels — shared with BookingStatusTimeline
+// Single source of truth for colours + label keys. Text lives in the message
+// files; this is module scope, where no translator exists.
 export const STATUS_CONFIG: Record<
   BookingStatus,
-  { label: string; bg: string; text: string; dot: string }
+  { labelKey: string; bg: string; text: string; dot: string }
 > = {
-  PENDING_PAYMENT:             { label: "Pending Payment",   bg: "bg-amber-50",  text: "text-amber-700",  dot: "bg-amber-500"  },
-  PAYMENT_CONFIRMED:           { label: "Payment Confirmed", bg: "bg-blue-50",   text: "text-blue-700",   dot: "bg-blue-500"   },
-  AWAITING_OWNER_CONFIRMATION: { label: "Awaiting Owner",    bg: "bg-violet-50", text: "text-violet-700", dot: "bg-violet-500" },
-  CONFIRMED:                   { label: "Confirmed",         bg: "bg-emerald-50",text: "text-emerald-700",dot: "bg-emerald-500"},
-  ACTIVE:                      { label: "Active Trip",       bg: "bg-brand", text: "text-white",      dot: "bg-accent"  },
-  COMPLETED:                   { label: "Completed",         bg: "bg-gray-100",  text: "text-gray-600",   dot: "bg-gray-400"   },
-  CANCELLED:                   { label: "Cancelled",         bg: "bg-red-50",    text: "text-red-600",    dot: "bg-red-400"    },
-  DISPUTED:                    { label: "Disputed",          bg: "bg-orange-50", text: "text-orange-700", dot: "bg-orange-500" },
+  PENDING_PAYMENT:             { labelKey: "statusPendingPayment",   bg: "bg-amber-50",  text: "text-amber-700",  dot: "bg-amber-500"  },
+  PAYMENT_CONFIRMED:           { labelKey: "statusPaymentConfirmed", bg: "bg-blue-50",   text: "text-blue-700",   dot: "bg-blue-500"   },
+  AWAITING_OWNER_CONFIRMATION: { labelKey: "statusAwaitingOwner",    bg: "bg-violet-50", text: "text-violet-700", dot: "bg-violet-500" },
+  CONFIRMED:                   { labelKey: "statusConfirmed",         bg: "bg-emerald-50",text: "text-emerald-700",dot: "bg-emerald-500"},
+  ACTIVE:                      { labelKey: "statusActive",       bg: "bg-brand", text: "text-white",      dot: "bg-accent"  },
+  COMPLETED:                   { labelKey: "statusCompleted",         bg: "bg-gray-100",  text: "text-gray-600",   dot: "bg-gray-400"   },
+  CANCELLED:                   { labelKey: "statusCancelled",         bg: "bg-red-50",    text: "text-red-600",    dot: "bg-red-400"    },
+  DISPUTED:                    { labelKey: "statusDisputed",          bg: "bg-orange-50", text: "text-orange-700", dot: "bg-orange-500" },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -90,6 +92,8 @@ export default function BookingCard({
   preTripPhotoPending  = false,
   postTripPhotoPending = false,
 }: BookingCardProps) {
+  const t = useTranslations("dashboard");
+  const tt = useTranslations("trip");
   const cfg  = STATUS_CONFIG[status];
   const days = dayCount(startDate, endDate);
 
@@ -142,7 +146,7 @@ export default function BookingCard({
                 className={`flex-shrink-0 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${cfg.bg} ${cfg.text}`}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                {cfg.label}
+                {tt(cfg.labelKey)}
               </span>
             </div>
 
@@ -159,7 +163,7 @@ export default function BookingCard({
               {hasDriverOption && (
                 <span className="flex items-center gap-1">
                   <User className="h-3 w-3" />
-                  With driver
+                  {t("withDriver")}
                 </span>
               )}
             </div>

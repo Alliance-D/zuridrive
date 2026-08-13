@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { formatRWF } from '@/lib/currency'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -20,6 +21,7 @@ import { Smartphone, Upload, Check, X, Clock, RefreshCw } from 'lucide-react'
 type PaymentStatus = 'POLLING' | 'CONFIRMED' | 'FAILED' | 'UPLOADING' | 'UPLOADED'
 
 export default function PaymentPage({ params }: { params: { carId: string } }) {
+  const t = useTranslations('payment')
   const router = useRouter()
   const { carId } = params
   const searchParams = useSearchParams()
@@ -74,7 +76,7 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
           clearInterval(pollRef.current!)
           clearInterval(timerRef.current!)
           setStatus('FAILED')
-          setErrorMessage('Payment was declined or timed out. Please try again.')
+          setErrorMessage(t('declinedOrTimedOut'))
         }
       } catch {
         // Network error — keep polling
@@ -87,7 +89,7 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
       clearInterval(timerRef.current!)
       if (statusRef.current === 'POLLING') {
         setStatus('FAILED')
-        setErrorMessage('Payment confirmation timed out. If your money was deducted, please contact support.')
+        setErrorMessage(t('confirmationTimedOut'))
       }
     }, 3 * 60 * 1000)
 
@@ -96,7 +98,7 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
       clearInterval(timerRef.current!)
       clearTimeout(timeout)
     }
-  }, [method, bookingId, carId, router])
+  }, [method, bookingId, carId, router, t])
 
   // ─── Bank transfer proof upload ─────────────────────────────────────────────
   async function handleProofUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -135,7 +137,7 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
         throw new Error('Submission failed')
       }
     } catch {
-      setErrorMessage('Could not submit your proof. Please try again.')
+      setErrorMessage(t('couldNotSubmitProof'))
     } finally {
       setUploading(false)
     }
@@ -162,7 +164,7 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
             href={`/book/${carId}`}
             className="btn btn-primary"
           >
-            Start again
+            {t('startAgain')}
           </a>
         </div>
       </div>
@@ -189,33 +191,29 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
                 </div>
               </div>
 
-              <h2 className="text-xl font-bold text-stone-900 mb-2">Waiting for Payment</h2>
+              <h2 className="text-xl font-bold text-stone-900 mb-2">{t('waitingForPayment')}</h2>
               <p className="text-stone-600 text-sm leading-relaxed mb-6">
-                A payment prompt has been sent to your phone. Please open it and
-                approve{' '}
-                {amount !== null ? (
-                  <>
-                    the payment of{' '}
-                    <strong className="text-brand">{formatRWF(amount)}</strong>{' '}
-                  </>
-                ) : (
-                  'the payment '
-                )}
-                to confirm your booking.
+                {amount !== null
+                  ? t('promptSentWithAmount', { amount: formatRWF(amount) })
+                  : t('promptSent')}
               </p>
 
               <div className="flex items-center justify-center gap-2 text-stone-400 text-sm">
                 <Clock size={14} />
-                <span>Waiting... {Math.floor(secondsElapsed / 60)}:{String(secondsElapsed % 60).padStart(2, '0')}</span>
+                <span>
+                  {t('waitingTimer', {
+                    time: `${Math.floor(secondsElapsed / 60)}:${String(secondsElapsed % 60).padStart(2, '0')}`,
+                  })}
+                </span>
               </div>
 
               <p className="text-xs text-stone-400 mt-4">
-                Didn&apos;t get the prompt?{' '}
+                {t('didntGetPrompt')}{' '}
                 <button
                   onClick={() => router.push(`/book/${params.carId}?bookingId=${bookingId}`)}
                   className="text-brand underline"
                 >
-                  Try a different payment method
+                  {t('tryDifferentMethod')}
                 </button>
               </p>
             </motion.div>
@@ -232,8 +230,8 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
               <div className="w-20 h-20 rounded-full bg-brand flex items-center justify-center mx-auto mb-6">
                 <Check size={36} className="text-white" strokeWidth={2.5} />
               </div>
-              <h2 className="text-xl font-bold text-stone-900 mb-2">Payment Confirmed!</h2>
-              <p className="text-stone-500 text-sm">Redirecting to your booking confirmation...</p>
+              <h2 className="text-xl font-bold text-stone-900 mb-2">{t('paymentConfirmed')}</h2>
+              <p className="text-stone-500 text-sm">{t('redirecting')}</p>
             </motion.div>
           )}
 
@@ -248,14 +246,14 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
               <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
                 <X size={36} className="text-red-500" />
               </div>
-              <h2 className="text-xl font-bold text-stone-900 mb-2">Payment Failed</h2>
+              <h2 className="text-xl font-bold text-stone-900 mb-2">{t('paymentFailed')}</h2>
               <p className="text-stone-500 text-sm mb-6">{errorMessage}</p>
               <button
                 onClick={() => router.back()}
                 className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl bg-brand text-white font-medium hover:bg-brand-deep transition-colors"
               >
                 <RefreshCw size={15} />
-                Try Again
+                {t('tryAgain')}
               </button>
             </motion.div>
           )}
@@ -272,9 +270,9 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
                 <div className="w-16 h-16 rounded-full bg-blue-50 border-2 border-blue-200 flex items-center justify-center mx-auto mb-4">
                   <Upload size={24} className="text-blue-500" />
                 </div>
-                <h2 className="text-xl font-bold text-stone-900">Upload Transfer Proof</h2>
+                <h2 className="text-xl font-bold text-stone-900">{t('uploadTransferProof')}</h2>
                 <p className="text-stone-500 text-sm mt-1">
-                  Upload your bank transfer receipt or screenshot
+                  {t('uploadReceipt')}
                 </p>
               </div>
 
@@ -285,8 +283,8 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
                 ">
                   <Upload size={24} className="text-stone-300" />
                   <div className="text-center">
-                    <p className="text-sm font-medium text-stone-700">Click to upload</p>
-                    <p className="text-xs text-stone-400">JPG, PNG or PDF · max 5MB</p>
+                    <p className="text-sm font-medium text-stone-700">{t('clickToUpload')}</p>
+                    <p className="text-xs text-stone-400">{t('fileTypes')}</p>
                   </div>
                   <input
                     type="file"
@@ -313,7 +311,7 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
                     disabled={uploading}
                     className="w-full py-3 rounded-xl bg-brand text-white font-semibold hover:bg-brand-deep transition-colors disabled:opacity-60"
                   >
-                    {uploading ? 'Submitting...' : 'Submit Proof of Payment'}
+                    {uploading ? t('submitting') : t('submitProof')}
                   </button>
                 </div>
               )}
@@ -335,10 +333,9 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
               <div className="w-20 h-20 rounded-full bg-brand flex items-center justify-center mx-auto mb-6">
                 <Check size={36} className="text-white" strokeWidth={2.5} />
               </div>
-              <h2 className="text-xl font-bold text-stone-900 mb-2">Proof Received!</h2>
+              <h2 className="text-xl font-bold text-stone-900 mb-2">{t('proofReceived')}</h2>
               <p className="text-stone-500 text-sm">
-                Our finance team will confirm your payment within a few hours.
-                Redirecting to your booking summary...
+                {t('proofReceivedBody')}
               </p>
             </motion.div>
           )}

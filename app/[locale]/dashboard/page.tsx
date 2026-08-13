@@ -249,6 +249,10 @@ export default async function DashboardPage({
 }: {
   params: { locale: string };
 }) {
+  const t = await getTranslations({
+    locale: params.locale,
+    namespace: "dashboard",
+  });
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect(await loginPath("/dashboard"));
 
@@ -256,7 +260,7 @@ export default async function DashboardPage({
     <Suspense
       fallback={
         <DashboardLayout>
-          <OverviewSkeleton />
+          <OverviewSkeleton label={t("loadingDashboard")} />
         </DashboardLayout>
       }
     >

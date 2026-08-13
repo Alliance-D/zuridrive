@@ -1,9 +1,17 @@
 /** /signup/owner — owner account creation, then straight into onboarding. */
 
 import SignupForm from "@/components/auth/SignupForm";
+import { getTranslations } from "next-intl/server";
 import Navbar from "@/components/navbar";
 
-export const metadata = { title: "Become an owner — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "auth" });
+  return { title: `${t("becomeOwnerTitle")} — ZuriDrive` };
+}
 
 export default function OwnerSignupPage() {
   return (

@@ -10,6 +10,7 @@
  */
 
 import { useState, useRef, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import {
   User, Phone, Mail, CreditCard, Car,
@@ -79,7 +80,8 @@ async function uploadToCloudinary(
   form.append("folder", folder);
 
   const res = await fetch("/api/upload", { method: "POST", body: form });
-  if (!res.ok) throw new Error("Upload failed. Please try again.");
+  // Module scope — no translator. The caller turns this into text.
+  if (!res.ok) throw new Error("UPLOAD_FAILED");
   const { url } = await res.json();
   return url as string;
 }
@@ -91,6 +93,8 @@ export default function ProfileForm({
   initialData,
   memberSince,
 }: ProfileFormProps) {
+  const t = useTranslations("dashboard");
+  const tc = useTranslations("common");
   const [data,   setData]   = useState<ProfileData>(initialData);
   const [errors, setErrors] = useState<Partial<Record<keyof ProfileData, string>>>({});
   const [saved,  setSaved]  = useState(false);
@@ -115,9 +119,9 @@ export default function ProfileForm({
 
   function validate(): boolean {
     const errs: typeof errors = {};
-    if (!data.name.trim())          errs.name = "Your full name is required.";
+    if (!data.name.trim())          errs.name = t("errNameRequired");
     if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
-      errs.email = "Please enter a valid email address.";
+      errs.email = t("errValidEmail");
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -128,7 +132,7 @@ export default function ProfileForm({
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      setGlobalError("Profile photo must be under 5 MB.");
+      setGlobalError(t("errPhotoTooBig"));
       return;
     }
     setProfileUploading(true);
@@ -137,7 +141,7 @@ export default function ProfileForm({
       const url = await uploadToCloudinary(file, "zuridrive/profiles");
       setData((d) => ({ ...d, profilePhotoUrl: url }));
     } catch {
-      setGlobalError("Profile photo upload failed. Please try a different image.");
+      setGlobalError(t("errPhotoUpload"));
     } finally {
       setProfileUploading(false);
     }
@@ -150,7 +154,7 @@ export default function ProfileForm({
 
   async function handleSendOtp() {
     if (!/^(\+250|0)[0-9]{9}$/.test(newPhone.replace(/\s/g, ""))) {
-      setOtpError("Enter a valid Rwandan phone number (e.g. 078 123 4567).");
+      setOtpError(t("errValidRwandanPhone"));
       return;
     }
     setOtpLoading(true);
@@ -164,7 +168,7 @@ export default function ProfileForm({
       if (!res.ok) throw new Error();
       setOtpSent(true);
     } catch {
-      setOtpError("Couldn't send the verification code. Please try again in a moment.");
+      setOtpError(t("errCouldntSendCode"));
     } finally {
       setOtpLoading(false);
     }
@@ -174,7 +178,7 @@ export default function ProfileForm({
 
   async function handleVerifyOtp() {
     if (otpValue.length !== 6) {
-      setOtpError("Enter the 6-digit code sent to your new number.");
+      setOtpError(t("errEnterSixDigit"));
       return;
     }
     setOtpLoading(true);
@@ -192,7 +196,7 @@ export default function ProfileForm({
       setOtpValue("");
       setNewPhone("");
     } catch {
-      setOtpError("That code is incorrect or has expired. Please request a new one.");
+      setOtpError(t("errCodeIncorrect"));
     } finally {
       setOtpLoading(false);
     }
@@ -221,7 +225,7 @@ export default function ProfileForm({
       } catch (err: any) {
         setGlobalError(
           err.message === "Save failed"
-            ? "We couldn't save your changes. Please try again."
+            ? t("errCouldntSave")
             : err.message
         );
       }
@@ -247,7 +251,7 @@ export default function ProfileForm({
               {data.profilePhotoUrl ? (
                 <Image
                   src={data.profilePhotoUrl}
-                  alt="Profile photo"
+                  alt={t("profilePhoto")}
                   width={80}
                   height={80}
                   className="h-full w-full object-cover"
@@ -263,7 +267,7 @@ export default function ProfileForm({
               onClick={() => profileInputRef.current?.click()}
               disabled={profileUploading}
               className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-brand text-white shadow hover:bg-brand-light transition-colors disabled:opacity-60"
-              aria-label="Change profile photo"
+              aria-label={t("changeProfilePhoto")}
             >
               {profileUploading ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -283,7 +287,7 @@ export default function ProfileForm({
           {/* Name + member since */}
           <div className="min-w-0">
             <h2 className="truncate text-lg font-bold text-ink">
-              {data.name || "Your Name"}
+              {data.name || t("yourNamePlaceholder")}
             </h2>
             <p className="text-sm text-ink-soft">Member since {memberSinceStr}</p>
             <p className="mt-1 text-xs text-ink-faint">Max 5 MB · JPG, PNG, or WebP</p>
@@ -293,15 +297,15 @@ export default function ProfileForm({
 
       {/* ── Personal Info Card ─────────────────────────────────────────── */}
       <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-sand-dark">
-        <h3 className="mb-5 text-sm font-semibold text-ink">Personal Information</h3>
+        <h3 className="mb-5 text-sm font-semibold text-ink">{t("personalInformation")}</h3>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Full name */}
-          <Field label="Full Name" icon={User} error={errors.name}>
+          <Field label={t("fullName")} icon={User} error={errors.name}>
             <input
               type="text"
               value={data.name}
-              placeholder="Your full legal name"
+              placeholder={t("yourFullLegalName")}
               onChange={(e) => setData((d) => ({ ...d, name: e.target.value }))}
               className={inputCls}
             />
@@ -309,15 +313,15 @@ export default function ProfileForm({
 
           {/* Email */}
           <Field
-            label="Email Address"
+            label={t("emailAddress")}
             icon={Mail}
-            hint="Optional — used for booking receipts"
+            hint={t("emailOptionalReceipts")}
             error={errors.email}
           >
             <input
               type="email"
               value={data.email}
-              placeholder="you@example.com"
+              placeholder={t("emailPlaceholder")}
               onChange={(e) => setData((d) => ({ ...d, email: e.target.value }))}
               className={inputCls}
             />
@@ -328,7 +332,11 @@ export default function ProfileForm({
 
         {/* ── Phone number (with OTP change flow) ──────────────────────── */}
         <div className="mt-4">
-          <Field label="Phone Number" icon={Phone} hint="Primary identifier — requires OTP to change">
+          <Field
+            label={t("phoneNumber")}
+            icon={Phone}
+            hint={t("phoneRequiresOtp")}
+          >
             <div className="flex gap-2">
               <input
                 type="tel"
@@ -341,7 +349,7 @@ export default function ProfileForm({
                 onClick={() => { setPhoneChangeMode(true); setOtpSent(false); setOtpError(""); }}
                 className="flex items-center gap-1.5 rounded-xl border border-sand-dark px-3 text-sm font-medium text-brand hover:border-brand hover:bg-sand transition-colors"
               >
-                <Edit2 className="h-3.5 w-3.5" /> Change
+                <Edit2 className="h-3.5 w-3.5" /> {t("change")}
               </button>
             </div>
           </Field>
@@ -358,7 +366,7 @@ export default function ProfileForm({
                     type="tel"
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
-                    placeholder="07X XXX XXXX"
+                    placeholder={t("phonePlaceholder")}
                     className={`${inputCls} flex-1`}
                   />
                   <button
@@ -366,7 +374,7 @@ export default function ProfileForm({
                     disabled={otpLoading}
                     className="flex items-center gap-1.5 rounded-xl bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-light disabled:opacity-60 transition-colors"
                   >
-                    {otpLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Code"}
+                    {otpLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("sendCode")}
                   </button>
                 </div>
               ) : (
@@ -377,7 +385,7 @@ export default function ProfileForm({
                     maxLength={6}
                     value={otpValue}
                     onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ""))}
-                    placeholder="6-digit code"
+                    placeholder={t("sixDigitCode")}
                     className={`${inputCls} flex-1 text-center tracking-widest`}
                   />
                   <button
@@ -385,7 +393,7 @@ export default function ProfileForm({
                     disabled={otpLoading}
                     className="flex items-center gap-1.5 rounded-xl bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-light disabled:opacity-60 transition-colors"
                   >
-                    {otpLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify"}
+                    {otpLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("verify")}
                   </button>
                 </div>
               )}
@@ -398,7 +406,7 @@ export default function ProfileForm({
                 onClick={() => { setPhoneChangeMode(false); setOtpSent(false); setNewPhone(""); setOtpValue(""); }}
                 className="text-xs text-ink-faint hover:text-ink-muted"
               >
-                Cancel
+                {tc("cancel")}
               </button>
             </div>
           )}
@@ -416,10 +424,10 @@ export default function ProfileForm({
         ) : saved ? (
           <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-600">
             <CheckCircle2 className="h-4 w-4" />
-            Profile saved successfully
+            {t("profileSaved")}
           </p>
         ) : (
-          <p className="text-xs text-ink-faint">Changes are saved to your account.</p>
+          <p className="text-xs text-ink-faint">{t("changesSaved")}</p>
         )}
 
         <button
@@ -428,9 +436,9 @@ export default function ProfileForm({
           className="flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-brand-light active:scale-95 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isPending ? (
-            <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</>
+            <><Loader2 className="h-4 w-4 animate-spin" /> {t("saving")}</>
           ) : (
-            "Save Changes"
+            t("saveChanges")
           )}
         </button>
       </div>

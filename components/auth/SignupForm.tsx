@@ -12,6 +12,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -19,6 +20,8 @@ import { routes } from "@/lib/routes";
 import { Loader2, AlertCircle, ArrowLeft, Phone, User, Mail , Building2} from "lucide-react";
 
 export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
+  const t = useTranslations("auth");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [step, setStep] = useState<"details" | "code">("details");
   const [name, setName] = useState("");
@@ -60,14 +63,14 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message ?? data.error ?? "We couldn't send your code.");
+        setError(data.message ?? data.error ?? t("couldntSendCode"));
         return;
       }
 
       setDevOtp(data.devOtp ?? null);
       setStep("code");
     } catch {
-      setError("Network problem. Please check your connection and retry.");
+      setError(tc("networkError"));
     } finally {
       setBusy(false);
     }
@@ -86,10 +89,10 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
       if (result?.error) {
         setError(
           result.error === "OTP_INVALID"
-            ? "That code isn't right. Check your SMS and try again."
+            ? t("codeNotRight")
             : result.error === "OTP_EXPIRED"
-              ? "That code has expired. Request a new one."
-              : "We couldn't sign you in. Please try again.",
+              ? t("codeHasExpired")
+              : t("couldntSignYouIn"),
         );
         return;
       }
@@ -97,7 +100,7 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
       router.push(isOwner ? "/owner/onboarding" : routes.dashboard);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -110,14 +113,14 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
     <div className="w-full max-w-md">
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <h1 className="text-xl font-bold text-ink">
-          {isOwner ? "List your car on ZuriDrive" : "Create your account"}
+          {isOwner ? t("listYourCarOnZuriDrive") : t("createYourAccount")}
         </h1>
         <p className="mt-1 text-sm text-ink-soft">
           {step === "details"
             ? isOwner
-              ? "Start earning from a car that's sitting idle."
-              : "You'll sign in with your phone — no password to remember."
-            : `We sent a 6-digit code to ${phone}.`}
+              ? t("ownerIntro")
+              : t("renterIntro")
+            : t("codeSentToDot", { phone })}
         </p>
 
         {step === "details" ? (
@@ -125,21 +128,21 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
             {isOwner && (
               <div>
                 <p className="mb-2 text-xs font-medium text-ink-muted">
-                  Are you listing as yourself or as a business?
+                  {t("listingAsYourselfOrBusiness")}
                 </p>
                 <div className="flex gap-2">
-                  {(["INDIVIDUAL", "COMPANY"] as const).map((t) => (
+                  {(["INDIVIDUAL", "COMPANY"] as const).map((option) => (
                     <button
-                      key={t}
+                      key={option}
                       type="button"
-                      onClick={() => setOwnerType(t)}
+                      onClick={() => setOwnerType(option)}
                       className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-                        ownerType === t
+                        ownerType === option
                           ? "border-brand bg-brand text-white"
                           : "border-sand-edge bg-white text-ink-muted hover:border-brand"
                       }`}
                     >
-                      {t === "INDIVIDUAL" ? "Myself" : "A business"}
+                      {option === "INDIVIDUAL" ? t("myself") : t("aBusiness")}
                     </button>
                   ))}
                 </div>
@@ -147,37 +150,48 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
             )}
 
             {isOwner && ownerType === "COMPANY" && (
-              <Field label="Business name" icon={Building2}>
+              <Field label={t("businessName")} icon={Building2}>
                 <input
                   className={input}
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="Kigali Fleet Ltd"
+                  placeholder={t("businessNamePlaceholder")}
                 />
               </Field>
             )}
 
-            <Field label={isOwner && ownerType === "COMPANY" ? "Your full name" : "Full name"} icon={User}>
+            <Field
+              label={
+                isOwner && ownerType === "COMPANY"
+                  ? t("yourFullName")
+                  : t("fullName")
+              }
+              icon={User}
+            >
               <input
                 className={input}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={isOwner && ownerType === "COMPANY" ? "The person managing this account" : "Your legal name"}
+                placeholder={
+                  isOwner && ownerType === "COMPANY"
+                    ? t("personManaging")
+                    : t("yourLegalName")
+                }
                 autoFocus
               />
             </Field>
 
-            <Field label="Phone number" icon={Phone}>
+            <Field label={t("phoneNumber")} icon={Phone}>
               <input
                 className={input}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="078 123 4567"
+                placeholder={t("phonePlaceholder")}
                 inputMode="tel"
               />
             </Field>
 
-            <Field label="Email (optional)" icon={Mail}>
+            <Field label={t("emailOptional")} icon={Mail}>
               <input
                 className={input}
                 value={email}
@@ -194,11 +208,11 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
               className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
             >
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-              {busy ? "Sending code…" : "Send me a code"}
+              {busy ? t("sendingCode") : t("sendMeACode")}
             </button>
 
             <p className="text-center text-[11px] text-ink-faint">
-              By continuing you agree to ZuriDrive&apos;s terms of service.
+              {t("agreeToTerms")}
             </p>
           </div>
         ) : (
@@ -206,13 +220,13 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
             {devOtp && (
               <div className="rounded-lg bg-warning-bg px-3 py-2">
                 <p className="text-xs text-warning">
-                  Development mode — your code is{" "}
+                  {t("devModeCode")}{" "}
                   <strong className="font-mono text-sm">{devOtp}</strong>
                 </p>
               </div>
             )}
 
-            <Field label="6-digit code">
+            <Field label={t("sixDigitCode")}>
               <input
                 className={`${input} text-center font-mono text-lg tracking-[0.4em]`}
                 value={code}
@@ -220,7 +234,7 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
                   setCode(e.target.value.replace(/[^\d]/g, "").slice(0, 6))
                 }
                 inputMode="numeric"
-                placeholder="000000"
+                placeholder={t("sixDigitCodePlaceholder")}
                 autoFocus
               />
             </Field>
@@ -233,7 +247,7 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
               className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
             >
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-              {busy ? "Verifying…" : "Create account"}
+              {busy ? t("creatingAccount") : t("createAccount")}
             </button>
 
             <button
@@ -252,25 +266,25 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
       </div>
 
       <p className="mt-4 text-center text-sm text-ink-soft">
-        Already have an account?{" "}
+        {t("alreadyHaveAccount")}{" "}
         <Link href={routes.login} className="font-semibold text-brand hover:underline">
-          Sign in
+          {t("signIn")}
         </Link>
       </p>
 
       <p className="mt-2 text-center text-sm text-ink-soft">
         {isOwner ? (
           <>
-            Looking to rent instead?{" "}
+            {t("lookingToRent")}{" "}
             <Link href={routes.signup} className="font-semibold text-brand hover:underline">
-              Create a renter account
+              {t("createRenterAccount")}
             </Link>
           </>
         ) : (
           <>
-            Have a car to rent out?{" "}
+            {t("haveCarToRentOut")}{" "}
             <Link href={routes.signupOwner} className="font-semibold text-brand hover:underline">
-              List your car
+              {t("listYourCar")}
             </Link>
           </>
         )}

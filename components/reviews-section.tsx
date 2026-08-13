@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 /**
  * Renders a car's reviews plus its per-category rating averages.
@@ -33,6 +34,8 @@ export interface AvgRatings {
 }
 
 interface ReviewsSectionProps {
+  /** Threaded down: server components have no ambient locale. */
+  locale: string;
   reviews: ReviewItem[];
   avgRatings: AvgRatings | null;
 }
@@ -84,14 +87,20 @@ function formatDate(d: Date | string) {
   });
 }
 
-export function ReviewsSection({ reviews, avgRatings }: ReviewsSectionProps) {
+export async function ReviewsSection({
+  reviews,
+  avgRatings,
+  locale,
+}: ReviewsSectionProps) {
+  const t = await getTranslations({ locale, namespace: "cars" });
+
   if (reviews.length === 0) {
     return (
       <section className="mt-6">
-        <h2 className="mb-3">Reviews</h2>
+        <h2 className="mb-3">{t("reviewsHeading")}</h2>
         {/* --color-muted again: undefined, so this fell back to inherited. */}
         <p className="text-[14px] text-ink-soft">
-          No reviews yet — be the first to rent this car and share your experience.
+          {t("noReviewsBeFirst")}
         </p>
       </section>
     );
@@ -112,10 +121,10 @@ export function ReviewsSection({ reviews, avgRatings }: ReviewsSectionProps) {
             <Stars value={avgRatings.overall} size={18} />
           </div>
 
-          <CategoryBar label="Cleanliness" value={avgRatings.cleanliness} />
-          <CategoryBar label="Comfort" value={avgRatings.comfort} />
-          <CategoryBar label="Value" value={avgRatings.value} />
-          <CategoryBar label="Communication" value={avgRatings.communication} />
+          <CategoryBar label={t("ratingCleanliness")} value={avgRatings.cleanliness} />
+          <CategoryBar label={t("ratingComfort")} value={avgRatings.comfort} />
+          <CategoryBar label={t("ratingValue")} value={avgRatings.value} />
+          <CategoryBar label={t("ratingCommunication")} value={avgRatings.communication} />
         </div>
       )}
 
@@ -128,7 +137,7 @@ export function ReviewsSection({ reviews, avgRatings }: ReviewsSectionProps) {
             <div className="mb-2 flex items-center justify-between">
               <div>
                 <strong className="text-[14px]">
-                  {review.client.name ?? "ZuriDrive renter"}
+                  {review.client.name ?? t("zuriDriveRenter")}
                 </strong>
                 {/* third --color-muted usage; same undefined-variable fallback */}
                 <div className="text-[12px] text-ink-soft">
@@ -145,7 +154,7 @@ export function ReviewsSection({ reviews, avgRatings }: ReviewsSectionProps) {
             {review.reply && (
               <div className="mt-3 rounded-lg bg-sand p-3">
                 <strong className="text-[13px]">
-                  {review.reply.author.name ?? "Owner"} replied
+                  {t("ownerReplied", { name: review.reply.author.name ?? t("ownerFallback") })}
                 </strong>
                 <p className="mt-1 text-[13px] leading-[1.6]">
                   {review.reply.content}

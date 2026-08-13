@@ -7,18 +7,21 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle, Upload, X, CheckCircle2 } from "lucide-react";
 
 export default function ReplyBox({
   ticketId,
-  placeholder = "Write a reply…",
-  submitLabel = "Send reply",
+  placeholder,
+  submitLabel,
 }: {
   ticketId: string;
   placeholder?: string;
   submitLabel?: string;
 }) {
+  const t = useTranslations("ticket");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [body, setBody] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
@@ -41,13 +44,13 @@ export default function ReplyBox({
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         const data = await res.json();
         if (!res.ok) {
-          setError(data.error ?? "Upload failed.");
+          setError(data.error ?? t("uploadFailed"));
           break;
         }
         setAttachments((a) => [...a, data.url]);
       }
     } catch {
-      setError("Upload failed. Please retry.");
+      setError(t("uploadRetry"));
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -72,7 +75,7 @@ export default function ReplyBox({
       setAttachments([]);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -81,14 +84,14 @@ export default function ReplyBox({
   return (
     <div className="rounded-2xl bg-white p-4 shadow-sm">
       <label htmlFor="reply-body" className="sr-only">
-        Your reply
+        {t("yourReply")}
       </label>
       <textarea
         id="reply-body"
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={4}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("writeReply")}
         className="w-full rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand/20"
       />
 
@@ -129,7 +132,7 @@ export default function ReplyBox({
           className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
         >
           {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-          {busy ? "Sending…" : submitLabel}
+          {busy ? t("sending") : (submitLabel ?? t("sendReply"))}
         </button>
 
         <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-ink-soft hover:text-brand">

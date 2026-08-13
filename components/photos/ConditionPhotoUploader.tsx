@@ -12,6 +12,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { useRouter } from 'next/navigation'
@@ -22,15 +23,16 @@ import {
   AlertCircle, Fuel, X, ZoomIn, Info
 } from 'lucide-react'
 
-// Photo categories in upload order
+// Photo categories in upload order. Keys, not text — module scope has no
+// translator.
 const PHOTO_STEPS = [
-  { id: 'EXTERIOR_FRONT', label: 'Front of car',      Icon: CarFront, hint: 'Full front view, include license plate',     required: true },
-  { id: 'EXTERIOR_REAR',  label: 'Rear of car',       Icon: RotateCcw, hint: 'Full rear view, include license plate',      required: true },
-  { id: 'EXTERIOR_LEFT',  label: 'Left side',         Icon: ChevronLeft,  hint: 'Full left side from front to back',          required: true },
-  { id: 'EXTERIOR_RIGHT', label: 'Right side',        Icon: ChevronRight,  hint: 'Full right side from front to back',         required: true },
-  { id: 'INTERIOR',       label: 'Interior',          Icon: Armchair, hint: 'Dashboard, seats, and general interior condition', required: true },
-  { id: 'FUEL_GAUGE',     label: 'Fuel gauge',        Icon: Fuel, hint: 'Clear photo of the dashboard fuel gauge',    required: false }, // dynamically required
-  { id: 'OTHER',          label: 'Additional (optional)', Icon: Camera, hint: 'Any other relevant condition',           required: false },
+  { id: 'EXTERIOR_FRONT', labelKey: 'angleFront',      Icon: CarFront, hintKey: 'hintFront',     required: true },
+  { id: 'EXTERIOR_REAR',  labelKey: 'angleRear',       Icon: RotateCcw, hintKey: 'hintRear',      required: true },
+  { id: 'EXTERIOR_LEFT',  labelKey: 'angleLeft',         Icon: ChevronLeft,  hintKey: 'hintLeft',          required: true },
+  { id: 'EXTERIOR_RIGHT', labelKey: 'angleRight',        Icon: ChevronRight,  hintKey: 'hintRight',         required: true },
+  { id: 'INTERIOR',       labelKey: 'angleInterior',          Icon: Armchair, hintKey: 'hintInterior', required: true },
+  { id: 'FUEL_GAUGE',     labelKey: 'angleFuel',        Icon: Fuel, hintKey: 'hintFuel',    required: false }, // dynamically required
+  { id: 'OTHER',          labelKey: 'angleOther', Icon: Camera, hintKey: 'hintOther',           required: false },
 ]
 
 interface ExistingPhoto {
@@ -78,6 +80,8 @@ export function ConditionPhotoUploader({
   fuelRefuelFee,
   existingPhotos,
 }: ConditionPhotoUploaderProps) {
+  const t = useTranslations('photos')
+  const te = useTranslations('enum')
   const router = useRouter()
 
   // Build effective steps — make FUEL_GAUGE required if policy demands it
@@ -284,7 +288,12 @@ export function ConditionPhotoUploader({
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-stone-400">
               <span>{uploadedRequired} of {requiredSteps.length} required photos</span>
-              <span>Step {currentStepIndex + 1} of {effectiveSteps.length}</span>
+              <span>
+                {t('stepOf', {
+                  current: currentStepIndex + 1,
+                  total: effectiveSteps.length,
+                })}
+              </span>
             </div>
             <div className="h-1.5 bg-stone-800 rounded-full overflow-hidden">
               <motion.div
@@ -304,7 +313,11 @@ export function ConditionPhotoUploader({
           <div className="max-w-lg mx-auto flex items-center gap-2">
             <Fuel size={14} className="text-amber-400 flex-shrink-0" />
             <p className="text-xs text-amber-300">
-              <strong>Fuel policy: {FUEL_POLICY_LABELS[fuelPolicyType ?? ''] ?? fuelPolicyType}</strong>
+              <strong>
+                  {t('fuelPolicyLine', {
+                    policy: te(`fuelPolicyLong.${fuelPolicyType}` as never),
+                  })}
+                </strong>
               {fuelRefuelFee
                 ? ` — A refueling fee of RWF ${fuelRefuelFee.toLocaleString()} applies if returned below this level.`
                 : ' — Please include a clear photo of the fuel gauge.'}
@@ -333,7 +346,7 @@ export function ConditionPhotoUploader({
                     <Image
                       loader={cloudinaryLoader}
                       src={uploads[step.id].url}
-                      alt={step.label}
+                      alt={t(step.labelKey)}
                       fill
                       sizes="56px"
                       className="object-cover"
@@ -376,7 +389,7 @@ export function ConditionPhotoUploader({
               <currentStep.Icon className="h-8 w-8 text-brand" aria-hidden />
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold">{currentStep.label}</h2>
+                  <h2 className="text-lg font-bold">{t(currentStep.labelKey)}</h2>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     currentStep.required
                       ? 'bg-red-900/50 text-red-300 border border-red-800'
@@ -385,7 +398,7 @@ export function ConditionPhotoUploader({
                     {currentStep.required ? 'Required' : 'Optional'}
                   </span>
                 </div>
-                <p className="text-stone-400 text-sm mt-0.5">{currentStep.hint}</p>
+                <p className="text-stone-400 text-sm mt-0.5">{t(currentStep.hintKey)}</p>
               </div>
             </div>
 
@@ -408,7 +421,7 @@ export function ConditionPhotoUploader({
                 <Image
                   loader={cloudinaryLoader}
                   src={currentUpload.url}
-                  alt={currentStep.label}
+                  alt={t(currentStep.labelKey)}
                   fill
                   sizes="(max-width: 768px) 100vw, 640px"
                   className="object-cover"
@@ -564,7 +577,7 @@ export function ConditionPhotoUploader({
               >
                 <span className="text-base w-6 text-center"><step.Icon className="h-4 w-4" aria-hidden /></span>
                 <span className={`text-sm flex-1 ${uploaded ? 'text-white' : 'text-stone-400'}`}>
-                  {step.label}
+                  {t(step.labelKey)}
                 </span>
                 {step.required && <span className="text-xs text-red-400">Required</span>}
                 {uploaded && <Check size={14} className="text-brand" strokeWidth={2.5} />}

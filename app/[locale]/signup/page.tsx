@@ -1,9 +1,17 @@
 /** /signup — client account creation. */
 
 import SignupForm from "@/components/auth/SignupForm";
+import { getTranslations } from "next-intl/server";
 import Navbar from "@/components/navbar";
 
-export const metadata = { title: "Sign up — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "auth" });
+  return { title: `${t("signUpTitle")} — ZuriDrive` };
+}
 
 export default function SignupPage() {
   return (

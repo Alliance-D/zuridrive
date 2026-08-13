@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -77,6 +78,7 @@ export default function ActiveTripCard({
   preTripPhotosDone,
   postTripPhotosDone,
 }: ActiveTripCardProps) {
+  const t = useTranslations("dashboard");
   const { days, hours, minutes, seconds, isOverdue } = useCountdown(returnDate);
 
   const countdownLabel = isOverdue
@@ -110,7 +112,7 @@ export default function ActiveTripCard({
               <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-accent opacity-60" />
             </span>
             <span className="text-xs font-semibold uppercase tracking-widest text-brand-tint">
-              Active Trip
+              {t("activeTripBadge")}
             </span>
           </div>
           <span className="text-xs text-brand-tint">Ref: {reference}</span>
@@ -202,7 +204,7 @@ export default function ActiveTripCard({
             href={`/dashboard/bookings/${bookingId}`}
             className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand hover:bg-bone active:scale-95 transition-all duration-150"
           >
-            View Trip Details
+            {t("viewTripDetails")}
             <ChevronRight className="h-4 w-4" />
           </Link>
           {!preTripPhotosDone && (
@@ -211,7 +213,7 @@ export default function ActiveTripCard({
               className="flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-ink hover:bg-accent-mid active:scale-95 transition-all duration-150"
             >
               <Camera className="h-4 w-4" />
-              Upload Photos
+              {t("uploadPhotos")}
             </Link>
           )}
           <Link
@@ -219,7 +221,7 @@ export default function ActiveTripCard({
             className="flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 active:scale-95 transition-all duration-150"
           >
             <AlertTriangle className="h-4 w-4" />
-            Report Issue
+            {t("reportIssue")}
           </Link>
         </div>
       </div>

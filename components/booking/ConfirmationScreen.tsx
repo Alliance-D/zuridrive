@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { motion } from 'framer-motion'
@@ -54,6 +55,7 @@ interface ConfirmationScreenProps {
 }
 
 export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
+  const t = useTranslations('confirmation')
   const [copied, setCopied] = useState(false)
   const isBankTransfer = booking.paymentMethod === 'BANK_TRANSFER'
   const isPending = booking.status === 'PENDING_PAYMENT'
@@ -114,17 +116,15 @@ export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
             transition={{ delay: 0.6 }}
           >
             <h1 className="text-2xl font-bold text-stone-900 mb-1">
-              {isBankTransfer ? 'Payment Proof Received!' : 'Booking Confirmed!'}
+              {isBankTransfer ? t("proofReceived") : t("bookingConfirmed")}
             </h1>
             <p className="text-stone-500 text-sm mb-5">
-              {isBankTransfer
-                ? 'Our finance team will verify your transfer and confirm your booking within a few hours.'
-                : 'Your owner will confirm within 2 hours. We\'ll SMS you as soon as it\'s confirmed.'}
+              {isBankTransfer ? t("bankIntro") : t("directIntro")}
             </p>
 
             {/* Booking reference */}
             <div className="inline-flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5">
-              <span className="text-xs text-stone-500 font-medium">Booking Ref</span>
+              <span className="text-xs text-stone-500 font-medium">{t("bookingRef")}</span>
               <span className="text-base font-bold text-brand font-mono tracking-wider">
                 {booking.reference}
               </span>
@@ -134,7 +134,7 @@ export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
             </div>
 
             <p className="text-xs text-stone-400 mt-2">
-              Save this reference number for your records
+              {t("saveReference")}
             </p>
           </motion.div>
         </motion.div>
@@ -162,7 +162,9 @@ export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
               <p className="font-semibold text-stone-900">
                 {booking.car.year} {booking.car.make} {booking.car.model}
               </p>
-              <p className="text-sm text-stone-500">With {booking.car.ownerName}</p>
+              <p className="text-sm text-stone-500">
+                {t("withOwner", { name: booking.car.ownerName })}
+              </p>
             </div>
           </div>
 
@@ -170,50 +172,50 @@ export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
           <div className="p-5 space-y-3">
             <DetailRow
               icon={CalendarDays}
-              label="Pickup"
+              label={t("pickup")}
               value={formatDate(startDate)}
             />
             <DetailRow
               icon={CalendarDays}
-              label="Return"
+              label={t("return")}
               value={formatDate(endDate)}
             />
             <DetailRow
               icon={MapPin}
-              label="Location"
+              label={t("location")}
               value={booking.pickupLocation}
             />
             {booking.withDriver && (
               <DetailRow
                 icon={Car}
-                label="Driver"
-                value="Professional driver included"
+                label={t("driver")}
+                value={t("driverIncluded")}
               />
             )}
           </div>
 
           {/* Price breakdown */}
           <div className="px-5 pb-5 space-y-1.5 border-t border-stone-100 pt-4">
-            <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">Payment Summary</p>
+            <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">{t("paymentSummary")}</p>
 
-            <PriceLine label="Base rental" value={formatRWF(booking.baseAmount)} />
+            <PriceLine label={t("baseRental")} value={formatRWF(booking.baseAmount)} />
             {booking.driverSurchargeTotal > 0 && (
-              <PriceLine label="Driver surcharge" value={formatRWF(booking.driverSurchargeTotal)} />
+              <PriceLine label={t("driverSurcharge")} value={formatRWF(booking.driverSurchargeTotal)} />
             )}
             {booking.deliveryFee > 0 && (
-              <PriceLine label="Delivery fee" value={formatRWF(booking.deliveryFee)} />
+              <PriceLine label={t("deliveryFee")} value={formatRWF(booking.deliveryFee)} />
             )}
-            <PriceLine label="Rental subtotal" value={formatRWF(booking.subtotal)} bold />
+            <PriceLine label={t("rentalSubtotal")} value={formatRWF(booking.subtotal)} bold />
 
             {booking.depositAmount > 0 && (
               <div className="flex justify-between items-center py-1.5 bg-amber-50 rounded-lg px-3 mt-2 border border-amber-100">
-                <span className="text-xs text-amber-700 font-medium">Deposit (refundable)</span>
+                <span className="text-xs text-amber-700 font-medium">{t("depositRefundable")}</span>
                 <span className="text-xs font-bold text-amber-700">{formatRWF(booking.depositAmount)}</span>
               </div>
             )}
 
             <div className="border-t border-stone-100 pt-2 mt-2">
-              <PriceLine label="Total charged" value={formatRWF(booking.totalChargedNow)} bold large />
+              <PriceLine label={t("totalCharged")} value={formatRWF(booking.totalChargedNow)} bold large />
             </div>
           </div>
         </motion.div>
@@ -225,27 +227,17 @@ export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
           transition={{ delay: 0.85 }}
           className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100"
         >
-          <h3 className="text-sm font-semibold text-stone-700 mb-4">What happens next?</h3>
+          <h3 className="text-sm font-semibold text-stone-700 mb-4">{t("whatHappensNext")}</h3>
           <div className="space-y-3">
             {(isBankTransfer
-              ? [
-                  { step: 1, text: 'Our finance team verifies your bank transfer (a few hours)' },
-                  { step: 2, text: 'You receive an SMS confirmation once verified' },
-                  { step: 3, text: 'Your owner confirms the booking (within 2 hours of verification)' },
-                  { step: 4, text: 'Final SMS confirmation with all trip details' },
-                ]
-              : [
-                  { step: 1, text: 'Your owner will confirm within 2 hours — we\'ll SMS you' },
-                  { step: 2, text: 'Upload pre-trip condition photos when you pick up the car' },
-                  { step: 3, text: 'Enjoy your trip!' },
-                  { step: 4, text: 'After return, your deposit is released automatically' },
-                ]
-            ).map(({ step, text }) => (
-              <div key={step} className="flex items-start gap-3">
+              ? ['bankStep1', 'bankStep2', 'bankStep3', 'bankStep4']
+              : ['directStep1', 'directStep2', 'directStep3', 'directStep4']
+            ).map((stepKey, index) => (
+              <div key={stepKey} className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-brand/10 text-brand text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                  {step}
+                  {index + 1}
                 </div>
-                <p className="text-sm text-stone-600 leading-snug">{text}</p>
+                <p className="text-sm text-stone-600 leading-snug">{t(stepKey)}</p>
               </div>
             ))}
           </div>
@@ -262,10 +254,9 @@ export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
             <div className="flex items-start gap-3">
               <MessageSquare size={20} className="text-green-300 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-sm mb-1">Your ZuriDrive account has been created</p>
+                <p className="font-semibold text-sm mb-1">{t("accountCreated")}</p>
                 <p className="text-green-200 text-xs leading-relaxed">
-                  We&apos;ve sent an SMS to {booking.client.phone} with a login link.
-                  No password needed — just tap the link to access your dashboard.
+                  {t("accountCreatedBody", { phone: booking.client.phone })}
                 </p>
               </div>
             </div>
@@ -283,14 +274,14 @@ export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
             href="/dashboard/bookings"
             className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-brand text-white font-semibold hover:bg-brand-deep transition-colors text-sm"
           >
-            View My Bookings
+            {t("viewMyBookings")}
             <ArrowRight size={15} />
           </Link>
           <Link
             href="/cars"
             className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-stone-300 text-stone-700 font-medium hover:border-stone-400 transition-colors text-sm"
           >
-            Browse More Cars
+            {t("browseMoreCars")}
           </Link>
         </motion.div>
 

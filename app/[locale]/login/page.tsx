@@ -8,6 +8,7 @@
 // =============================================================================
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
@@ -20,6 +21,7 @@ type LoginMode = "phone" | "email";
 type PhoneStep = "enterPhone" | "enterOtp";
 
 export default function LoginPage() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -108,7 +110,7 @@ export default function LoginPage() {
 
       await goToLanding();
     } catch {
-      setError("Sign-in failed. Please try again.");
+      setError(t("signInFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +140,7 @@ export default function LoginPage() {
       setPhoneStep("enterOtp");
       setOtpTimer(300); // 5 minutes countdown
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(t("somethingWentWrong"));
     } finally {
       setIsLoading(false);
     }
@@ -222,7 +224,7 @@ export default function LoginPage() {
           href={ROUTES.home}
           className="flex items-center gap-1.5 text-fluid-sm text-ink-soft no-underline"
         >
-          <ArrowLeft size={14} /> Back to home
+          <ArrowLeft size={14} /> {t("backToHome")}
         </Link>
       </div>
 
@@ -232,14 +234,14 @@ export default function LoginPage() {
           {/* Heading */}
           <div className="mb-6">
             <h1 className="mb-2 font-display text-fluid-2xl font-normal tracking-[-0.03em] text-ink">
-              {phoneStep === "enterOtp" ? "Enter your code" : "Welcome back"}
+              {phoneStep === "enterOtp" ? t("enterYourCode") : t("welcomeBack")}
             </h1>
             <p className="text-fluid-sm text-ink-soft">
               {phoneStep === "enterOtp"
-                ? `We sent a 6-digit code to ${phone}`
+                ? t("codeSentTo", { phone })
                 : mode === "phone"
-                  ? "Sign in with your phone number and password"
-                  : "Sign in with your email and password"}
+                  ? t("signInWithPhonePassword")
+                  : t("signInWithEmailPassword")}
             </p>
           </div>
 
@@ -251,7 +253,7 @@ export default function LoginPage() {
               {error}
               {attemptsLeft !== null && attemptsLeft > 0 && (
                 <span className="mt-1 block font-semibold">
-                  {attemptsLeft} attempt{attemptsLeft !== 1 ? "s" : ""} remaining.
+                  {t("attemptsRemaining", { count: attemptsLeft })}
                 </span>
               )}
             </div>
@@ -262,13 +264,13 @@ export default function LoginPage() {
             <>
               {phoneStep === "enterPhone" ? (
                 <div>
-                  <label className="input-label">Phone Number</label>
+                  <label className="input-label">{t("phoneNumber")}</label>
                   <div className="relative">
                     <Phone size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-soft" />
                     <input
                       type="tel"
                       className="input pl-11"
-                      placeholder="078 123 4567"
+                      placeholder={t("phonePlaceholder")}
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSendOtp()}
@@ -276,17 +278,17 @@ export default function LoginPage() {
                     />
                   </div>
                   <p className="mt-2 text-fluid-xs text-ink-faint">
-                    Rwandan numbers: 07X XXX XXXX or +250 XXX XXX XXX
+                    {t("rwandanNumbers")}
                   </p>
 
                   <div className="mt-4">
-                    <label className="input-label">Password</label>
+                    <label className="input-label">{t("password")}</label>
                     <div className="relative">
                       <Lock size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-soft" />
                       <input
                         type={showPassword ? "text" : "password"}
                         className="input px-11"
-                        placeholder="Your password"
+                        placeholder={t("passwordPlaceholder")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handlePasswordSignIn()}
@@ -294,7 +296,7 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
-                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-label={showPassword ? t("hidePassword") : t("showPassword")}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-soft"
                       >
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -307,7 +309,7 @@ export default function LoginPage() {
                     disabled={isLoading || phone.length < 9 || password.length < 1}
                     className="btn btn-primary btn-lg mt-5 w-full justify-center"
                   >
-                    {isLoading ? <><Loader2 size={16} className="spin" /> Signing in...</> : "Sign In"}
+                    {isLoading ? <><Loader2 size={16} className="spin" /> {t("signingIn")}</> : t("signIn")}
                   </button>
 
                   <button
@@ -315,7 +317,7 @@ export default function LoginPage() {
                     disabled={isLoading || phone.length < 9}
                     className="mt-3 w-full bg-none text-fluid-sm text-ink-soft underline"
                   >
-                    Forgot it? Sign in with a one-time code
+                    {t("forgotOneTimeCode")}
                   </button>
                 </div>
               ) : (
@@ -325,15 +327,15 @@ export default function LoginPage() {
                     onClick={() => { setPhoneStep("enterPhone"); setOtp(""); setError(null); }}
                     className="mb-4 flex cursor-pointer items-center gap-1.5 border-none bg-none p-0 font-sans text-fluid-sm text-ink-soft"
                   >
-                    <ArrowLeft size={14} /> Change number
+                    <ArrowLeft size={14} /> {t("changeNumber")}
                   </button>
 
-                  <label className="input-label">6-Digit Code</label>
+                  <label className="input-label">{t("sixDigitCode")}</label>
                   <input
                     type="text"
                     inputMode="numeric"
                     className="input text-fluid-xl text-center font-mono tracking-[0.3em]"
-                    placeholder="000000"
+                    placeholder={t("sixDigitCodePlaceholder")}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     onKeyDown={(e) => e.key === "Enter" && otp.length === 6 && handleVerifyOtp()}
@@ -345,15 +347,15 @@ export default function LoginPage() {
                   <div className="mt-3 flex items-center justify-between text-fluid-sm text-ink-soft">
                     <span>
                       {otpTimer > 0
-                        ? `Code expires in ${formatTimer(otpTimer)}`
-                        : "Code expired"}
+                        ? t("codeExpiresIn", { time: formatTimer(otpTimer) })
+                        : t("codeExpired")}
                     </span>
                     {otpTimer === 0 && (
                       <button
                         onClick={() => { setPhoneStep("enterPhone"); setOtp(""); }}
                         className="cursor-pointer border-none bg-none font-sans text-fluid-sm font-semibold text-brand"
                       >
-                        Resend
+                        {t("resend")}
                       </button>
                     )}
                   </div>
@@ -363,7 +365,7 @@ export default function LoginPage() {
                     disabled={isLoading || otp.length !== 6}
                     className="btn btn-primary btn-lg mt-5 w-full justify-center"
                   >
-                    {isLoading ? <><Loader2 size={16} /> Verifying...</> : "Verify & Sign In"}
+                    {isLoading ? <><Loader2 size={16} /> {t("verifying")}</> : t("verifyAndSignIn")}
                   </button>
                 </div>
               )}
@@ -374,13 +376,13 @@ export default function LoginPage() {
           {mode === "email" && (
             <div>
               <div className="mb-4">
-                <label className="input-label">Email Address</label>
+                <label className="input-label">{t("emailAddress")}</label>
                 <div className="relative">
                   <Mail size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-soft" />
                   <input
                     type="email"
                     className="input pl-11"
-                    placeholder="you@example.com"
+                    placeholder={t("emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoFocus
@@ -389,12 +391,12 @@ export default function LoginPage() {
               </div>
 
               <div className="mb-5">
-                <label className="input-label">Password</label>
+                <label className="input-label">{t("password")}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     className="input pr-12"
-                    placeholder="Your password"
+                    placeholder={t("passwordPlaceholder")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleEmailSignIn()}
@@ -414,7 +416,7 @@ export default function LoginPage() {
                 disabled={isLoading || !email || !password}
                 className="btn btn-primary btn-lg w-full justify-center"
               >
-                {isLoading ? <><Loader2 size={16} /> Signing in...</> : "Sign In"}
+                {isLoading ? <><Loader2 size={16} /> {t("signingIn")}</> : t("signIn")}
               </button>
             </div>
           )}
@@ -425,15 +427,15 @@ export default function LoginPage() {
               onClick={() => { setMode(mode === "phone" ? "email" : "phone"); setError(null); setPhoneStep("enterPhone"); }}
               className="mx-auto flex cursor-pointer items-center gap-1.5 border-none bg-none font-sans text-fluid-sm font-semibold text-brand"
             >
-              {mode === "phone" ? <><Mail size={14} /> Sign in with email instead</> : <><Phone size={14} /> Sign in with phone instead</>}
+              {mode === "phone" ? <><Mail size={14} /> {t("signInWithEmailInstead")}</> : <><Phone size={14} /> {t("signInWithPhoneInstead")}</>}
             </button>
           </div>
 
           {/* Sign up link */}
           <p className="mt-4 text-center text-fluid-sm text-ink-soft">
-            Don&apos;t have an account?{" "}
+            {t("noAccount")}{" "}
             <Link href={ROUTES.signup} className="font-semibold text-brand">
-              Sign up free
+              {t("signUpFree")}
             </Link>
           </p>
         </div>

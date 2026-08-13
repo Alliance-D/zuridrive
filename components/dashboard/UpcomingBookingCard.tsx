@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { CalendarDays, MapPin, ChevronRight, Clock } from "lucide-react";
@@ -53,6 +54,7 @@ export default function UpcomingBookingCard({
   pickupLocation,
   totalAmount,
 }: UpcomingBookingCardProps) {
+  const t = useTranslations("dashboard");
   const { days, hours, isToday } = useCountdownDays(startDate);
 
   const countdownText = isToday
@@ -92,7 +94,7 @@ export default function UpcomingBookingCard({
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         {/* Upcoming label */}
         <span className="text-[10px] font-bold uppercase tracking-widest text-brand">
-          Upcoming Booking
+          {t("upcomingBooking")}
         </span>
 
         <h3 className="truncate text-sm font-semibold text-ink">

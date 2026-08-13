@@ -9,29 +9,30 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from 'next-intl'
 import { useRouter } from "next/navigation";
 import { Star, Loader2, AlertCircle } from "lucide-react";
 
 const CATEGORIES = [
   {
     id: "cleanlinessRating",
-    label: "Cleanliness",
-    hint: "How clean was the car when you collected it?",
+    labelKey: "cleanliness",
+    hintKey: "cleanlinessHint",
   },
   {
     id: "comfortRating",
-    label: "Comfort",
-    hint: "How comfortable was the drive?",
+    labelKey: "comfort",
+    hintKey: "comfortHint",
   },
   {
     id: "valueRating",
-    label: "Value for money",
-    hint: "Was it worth what you paid?",
+    labelKey: "value",
+    hintKey: "valueHint",
   },
   {
     id: "communicationRating",
-    label: "Communication",
-    hint: "How easy was the owner to deal with?",
+    labelKey: "communication",
+    hintKey: "communicationHint",
   },
 ] as const;
 
@@ -44,6 +45,8 @@ export default function ReviewForm({
   bookingId: string;
   carName: string;
 }) {
+  const t = useTranslations('review')
+  const tc = useTranslations('common')
   const router = useRouter();
   const [ratings, setRatings] = useState<Partial<Record<CategoryId, number>>>({});
   const [comment, setComment] = useState("");
@@ -76,13 +79,13 @@ export default function ReviewForm({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "We couldn't save your review.");
+        setError(data.error ?? t("couldNotSave"));
         return;
       }
       router.push(`/dashboard/bookings/${bookingId}`);
       router.refresh();
     } catch {
-      setError("Network problem. Please check your connection and retry.");
+      setError(tc("networkError"));
     } finally {
       setBusy(false);
     }
@@ -104,7 +107,7 @@ export default function ReviewForm({
             <div key={c.id}>
               <div className="flex items-baseline justify-between gap-2">
                 <label className="text-sm font-medium text-ink">
-                  {c.label}
+                  {t(c.labelKey)}
                 </label>
                 {ratings[c.id] && (
                   <span className="text-xs text-ink-soft">
@@ -112,7 +115,7 @@ export default function ReviewForm({
                   </span>
                 )}
               </div>
-              <p className="mb-1.5 text-[11px] text-ink-faint">{c.hint}</p>
+              <p className="mb-1.5 text-[11px] text-ink-faint">{t(c.hintKey)}</p>
               <StarPicker
                 value={ratings[c.id] ?? 0}
                 onChange={(v) => setRatings((r) => ({ ...r, [c.id]: v }))}
@@ -123,7 +126,7 @@ export default function ReviewForm({
 
         {overall !== null && (
           <div className="mt-4 flex items-center gap-2 rounded-xl bg-bone px-3 py-2">
-            <span className="text-xs text-ink-soft">Overall</span>
+            <span className="text-xs text-ink-soft">{t("overall")}</span>
             <span className="text-lg font-bold text-brand">
               {overall.toFixed(2)}
             </span>
@@ -136,7 +139,7 @@ export default function ReviewForm({
 
       <div className="rounded-2xl bg-white p-5 shadow-sm">
         <label className="mb-1 block text-sm font-medium text-ink">
-          Anything else? (optional)
+          {t("anythingElse")}
         </label>
         <p className="mb-2 text-[11px] text-ink-faint">
           What would you tell a friend about this car and owner?
@@ -146,7 +149,7 @@ export default function ReviewForm({
           onChange={(e) => setComment(e.target.value)}
           rows={4}
           maxLength={2000}
-          placeholder="The car was spotless and the owner met me right on time…"
+          placeholder={t("commentPlaceholder")}
           className="w-full rounded-lg border border-sand-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
         <p className="mt-1 text-right text-[11px] text-ink-faint">
@@ -168,11 +171,11 @@ export default function ReviewForm({
           className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
         >
           {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-          {busy ? "Posting…" : "Post review"}
+          {busy ? t("posting") : t("postReview")}
         </button>
         {!allRated && (
           <p className="text-xs text-ink-faint">
-            Rate all four categories to continue.
+            {t("rateAllFour")}
           </p>
         )}
       </div>

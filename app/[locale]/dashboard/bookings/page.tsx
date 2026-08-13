@@ -8,6 +8,7 @@
  */
 
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
@@ -32,6 +33,7 @@ type BookingStatus =
   | "DISPUTED";
 
 interface PageProps {
+  params: { locale: string };
   searchParams: { status?: string; page?: string };
 }
 
@@ -222,7 +224,11 @@ async function BookingsContent({
 
 // ─── Page export ──────────────────────────────────────────────────────────────
 
-export default async function BookingsPage({ searchParams }: PageProps) {
+export default async function BookingsPage({ params, searchParams }: PageProps) {
+  const t = await getTranslations({
+    locale: params.locale,
+    namespace: "dashboard",
+  });
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect(await loginPath("/dashboard/bookings"));
 
@@ -238,7 +244,7 @@ export default async function BookingsPage({ searchParams }: PageProps) {
     <Suspense
       fallback={
         <DashboardLayout>
-          <BookingsListSkeleton />
+          <BookingsListSkeleton label={t("loadingBookings")} />
         </DashboardLayout>
       }
     >
