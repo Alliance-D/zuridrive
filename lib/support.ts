@@ -101,18 +101,20 @@ export function hoursAgainstTarget(
   return (reference.getTime() - dueAt.getTime()) / (1000 * 60 * 60);
 }
 
-export const CATEGORY_LABELS: Record<string, string> = {
-  PAYOUT: "Payouts & money owed",
-  BOOKING: "A specific booking",
-  LISTING: "My car listing",
-  SUBSCRIPTION: "Plan & billing",
-  ACCOUNT: "Account & verification",
-  OTHER: "Something else",
-};
-
-export const STATUS_LABELS: Record<string, string> = {
-  OPEN: "Waiting on us",
-  AWAITING_USER: "Waiting on you",
-  RESOLVED: "Resolved",
-  CLOSED: "Closed",
-};
+/**
+ * The categories a ticket can be filed under, in the order they are offered.
+ *
+ * This used to be a map of category to English label, which the ticket form
+ * read for both the option values and their text. The text now lives under
+ * `enum.ticketCategory` in the message files, so keeping the English here as
+ * well would leave two sources of truth with nothing keeping them in step.
+ * Status labels were the same and are now `enum.ticketStatus`.
+ */
+export const SUPPORT_CATEGORIES = [
+  "PAYOUT",
+  "BOOKING",
+  "LISTING",
+  "SUBSCRIPTION",
+  "ACCOUNT",
+  "OTHER",
+] as const;

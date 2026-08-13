@@ -10,6 +10,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { loginPath } from "@/lib/navigation";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
@@ -18,9 +19,21 @@ import { prisma } from "@/lib/db";
 import { routes } from "@/lib/routes";
 import { Check, CircleDot, Lock, ArrowRight } from "lucide-react";
 
-export const metadata = { title: "Set up your owner account — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("setUpAccount")} — ZuriDrive` };
+}
 
-export default async function OwnerOnboardingPage() {
+export default async function OwnerOnboardingPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect(await loginPath("/owner/onboarding"));
 
@@ -45,32 +58,29 @@ export default async function OwnerOnboardingPage() {
   const profile = user.carOwnerProfile;
 
   // Derive each step from the data rather than trusting a stored counter.
+  // Keys rather than text — the translator is applied at render.
   const steps = [
     {
       n: 1,
-      title: "Your profile",
-      description: "Your name and contact details, so renters know who they're dealing with.",
+      key: "stepProfile",
       href: routes.ownerProfile,
       done: Boolean(user.name && user.phone),
     },
     {
       n: 2,
-      title: "Payout details",
-      description: "Where we send your earnings — MoMo number or bank account.",
+      key: "stepPayout",
       href: routes.ownerProfile,
       done: Boolean(profile?.momoNumber || profile?.bankAccountNumber),
     },
     {
       n: 3,
-      title: "Choose a plan",
-      description: "Pick the subscription tier that matches your fleet size.",
+      key: "stepPlan",
       href: routes.ownerSubscription,
       done: (profile?._count.subscriptions ?? 0) > 0,
     },
     {
       n: 4,
-      title: "List your first car",
-      description: "Photos, pricing and availability. Takes about five minutes.",
+      key: "stepCar",
       href: routes.ownerFleetNew,
       done: (profile?._count.cars ?? 0) > 0,
     },
@@ -85,21 +95,19 @@ export default async function OwnerOnboardingPage() {
     <div className="mx-auto max-w-2xl space-y-5">
       <div>
         <h1 className="text-xl font-bold text-ink">
-          {allDone ? "You're all set" : "Finish setting up"}
+          {allDone ? t("allSet") : t("finishSettingUp")}
         </h1>
         <p className="mt-1 text-sm text-ink-soft">
-          {allDone
-            ? "Your account is complete. Your listings can go live once an admin approves them."
-            : "Complete these four steps to start renting out your cars."}
+          {allDone ? t("allSetBody") : t("finishSettingUpBody")}
         </p>
       </div>
 
       {/* Progress */}
       <div className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="font-semibold text-ink">Progress</span>
+          <span className="font-semibold text-ink">{t("progress")}</span>
           <span className="text-ink-soft">
-            {completedCount} of {steps.length}
+            {t("progressCount", { done: completedCount, total: steps.length })}
           </span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-sand">
@@ -144,10 +152,10 @@ export default async function OwnerOnboardingPage() {
 
                   <div className="min-w-0 flex-1">
                     <h2 className="text-sm font-semibold text-ink">
-                      {step.title}
+                      {t(`${step.key}Title`)}
                     </h2>
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {step.description}
+                      {t(`${step.key}Body`)}
                     </p>
 
                     {(step.done || isCurrent) && (
@@ -159,7 +167,7 @@ export default async function OwnerOnboardingPage() {
                             : "border border-sand-dark text-ink-muted hover:border-brand hover:text-brand"
                         }`}
                       >
-                        {step.done ? "Review" : "Continue"}
+                        {step.done ? t("review") : t("continue")}
                         <ArrowRight className="h-3 w-3" />
                       </Link>
                     )}
@@ -176,7 +184,7 @@ export default async function OwnerOnboardingPage() {
           href={routes.ownerDashboard}
           className="flex items-center justify-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark"
         >
-          Go to your dashboard
+          {t("goToDashboard")}
           <ArrowRight className="h-4 w-4" />
         </Link>
       )}

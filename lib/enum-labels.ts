@@ -35,7 +35,13 @@ export type EnumKind =
   | "depositStatus"
   | "chargeType"
   | "chargeStatus"
-  | "subscriptionStatus";
+  | "subscriptionStatus"
+  | "rentalType"
+  | "tripScope"
+  | "disputeTypeLong"
+  | "resolutionOutcome"
+  | "fuelPolicyLong"
+  | "depositMovement";
 
 /**
  * Server-side label lookup.

@@ -17,30 +17,27 @@ import { formatRWF } from "@/lib/currency";
 import { PageHeader, Card, Badge } from "@/components/admin/ui";
 import { PhotoComparisonView } from "@/components/photos/PhotoComparisonView";
 import ResolveDisputeForm from "@/components/admin/ResolveDisputeForm";
+import { getTranslations } from "next-intl/server";
+import { formatDate, formatDateTime } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { ChevronLeft, Scale, User, Building2, Lock } from "lucide-react";
 
-export const metadata = { title: "Dispute — ZuriDrive Admin" };
-
-const TYPE_LABEL: Record<string, string> = {
-  DAMAGE: "Damage claim",
-  FUEL: "Fuel dispute",
-  LATE_RETURN: "Late return",
-  NO_SHOW: "No show",
-  OTHER: "Other",
-};
-
-const OUTCOME_LABEL: Record<string, string> = {
-  RESOLVED_FOR_CLIENT: "Resolved for the client",
-  RESOLVED_FOR_OWNER: "Resolved for the owner",
-  SPLIT: "Deposit split",
-  DISMISSED: "Dismissed",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("disputeDetail")} — ZuriDrive Admin` };
+}
 
 export default async function DisputeDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: { id: string; locale: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  const label = await getEnumLabeller(params.locale);
   await requireAdminModule("BOOKING_MANAGER");
   // Viewing is Booking Manager; deciding needs Deposit Manager.
   const canResolve = await hasAdminModule("DEPOSIT_MANAGER");
@@ -104,11 +101,14 @@ export default async function DisputeDetailPage({
           className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-ink"
         >
           <ChevronLeft className="h-3 w-3" />
-          Back to disputes
+          {t("backToDisputes")}
         </Link>
         <PageHeader
-          title={TYPE_LABEL[dispute.type] ?? dispute.type}
-          subtitle={`${b.reference} · opened ${dispute.createdAt.toLocaleDateString("en-RW")}`}
+          title={label("disputeTypeLong", dispute.type)}
+          subtitle={t("disputeSubtitle", {
+            reference: b.reference,
+            date: formatDate(dispute.createdAt, params.locale),
+          })}
           action={
             <Badge
               tone={
@@ -119,14 +119,14 @@ export default async function DisputeDetailPage({
                     : "danger"
               }
             >
-              {dispute.status.toLowerCase().replace(/_/g, " ")}
+              {label("disputeStatus", dispute.status)}
             </Badge>
           }
         />
       </div>
 
       {/* The claim */}
-      <Card title="The claim">
+      <Card title={t("theClaim")}>
         <div className="mb-2 flex items-center gap-2">
           {raisedByClient ? (
             <User className="h-4 w-4 text-ink-soft" />
@@ -134,10 +134,13 @@ export default async function DisputeDetailPage({
             <Building2 className="h-4 w-4 text-ink-soft" />
           )}
           <span className="text-xs font-semibold text-ink">
-            Raised by the {raisedByClient ? "client" : "owner"} —{" "}
             {raisedByClient
-              ? (b.client.name ?? "Client")
-              : (b.car.owner.user.name ?? "Owner")}
+              ? t("raisedByClient", {
+                  name: b.client.name ?? t("clientFallback"),
+                })
+              : t("raisedByOwner", {
+                  name: b.car.owner.user.name ?? t("ownerFallback"),
+                })}
           </span>
         </div>
         <p className="whitespace-pre-wrap rounded-xl bg-bone p-3 text-sm text-ink-muted">
@@ -147,33 +150,40 @@ export default async function DisputeDetailPage({
 
       {/* Context */}
       <div className="grid gap-3 lg:grid-cols-2">
-        <Card title="Trip">
+        <Card title={t("trip")}>
           <dl className="space-y-1.5 text-xs">
-            <Row label="Car">
+            <Row label={t("rowCar")}>
               {b.car.year} {b.car.make} {b.car.model} · {b.car.licensePlate}
             </Row>
-            <Row label="Dates">
-              {b.startDate.toLocaleDateString("en-RW")} →{" "}
-              {b.endDate.toLocaleDateString("en-RW")} ({b.totalDays}d)
+            <Row label={t("rowDates")}>
+              {t("datesRange", {
+                from: formatDate(b.startDate, params.locale),
+                to: formatDate(b.endDate, params.locale),
+                days: b.totalDays,
+              })}
             </Row>
-            <Row label="Client">
+            <Row label={t("colClient")}>
               {b.client.name ?? "—"} · {b.client.phone}
             </Row>
-            <Row label="Owner">
+            <Row label={t("colOwner")}>
               {b.car.owner.user.name ?? "—"} · {b.car.owner.user.phone}
             </Row>
-            <Row label="Fuel policy">
-              {b.car.fuelPolicy?.type.replace(/_/g, " ").toLowerCase() ?? "—"}
+            <Row label={t("rowFuelPolicy")}>
+              {b.car.fuelPolicy
+                ? label("fuelPolicyLong", b.car.fuelPolicy.type)
+                : "—"}
               {b.car.fuelPolicy?.refuelingFee
-                ? ` · refuel fee ${formatRWF(b.car.fuelPolicy.refuelingFee)}`
+                ? ` · ${t("refuelFee", {
+                    amount: formatRWF(b.car.fuelPolicy.refuelingFee),
+                  })}`
                 : ""}
             </Row>
           </dl>
         </Card>
 
-        <Card title="Money at stake">
+        <Card title={t("moneyAtStake")}>
           <dl className="space-y-1.5 text-xs">
-            <Row label="Deposit">
+            <Row label={t("rowDeposit")}>
               <span className="font-bold text-ink">
                 {formatRWF(deposit?.amount ?? 0)}
               </span>
@@ -188,28 +198,31 @@ export default async function DisputeDetailPage({
                           : "success"
                     }
                   >
-                    {deposit.status.toLowerCase().replace(/_/g, " ")}
+                    {label("depositStatus", deposit.status)}
                   </Badge>
                 </span>
               )}
             </Row>
-            <Row label="Rental subtotal">{formatRWF(b.subtotal)}</Row>
-            <Row label="Owner earnings">{formatRWF(b.ownerEarnings)}</Row>
+            <Row label={t("rowRentalSubtotal")}>{formatRWF(b.subtotal)}</Row>
+            <Row label={t("rowOwnerEarnings")}>{formatRWF(b.ownerEarnings)}</Row>
           </dl>
 
           {deposit && deposit.movements.length > 0 && (
             <div className="mt-3 border-t border-sand pt-3">
               <p className="mb-1.5 text-[11px] font-semibold text-ink-muted">
-                Deposit history
+                {t("depositHistory")}
               </p>
               <ul className="space-y-1">
                 {deposit.movements.map((m) => (
                   <li key={m.id} className="text-[11px] text-ink-soft">
                     <span className="font-medium text-ink">
-                      {m.fromStatus.toLowerCase()} → {m.toStatus.toLowerCase()}
+                      {t("movementLine", {
+                        from: label("depositMovement", m.fromStatus),
+                        to: label("depositMovement", m.toStatus),
+                      })}
                     </span>{" "}
                     · {formatRWF(m.amount)} ·{" "}
-                    {m.createdAt.toLocaleDateString("en-RW")}
+                    {formatDate(m.createdAt, params.locale)}
                     <br />
                     <span className="text-ink-faint">{m.reason}</span>
                   </li>
@@ -221,11 +234,10 @@ export default async function DisputeDetailPage({
       </div>
 
       {/* Evidence */}
-      <Card title={`Condition photos (${photos.length})`}>
+      <Card title={t("conditionPhotos", { count: photos.length })}>
         {photos.length === 0 ? (
           <p className="rounded-xl bg-bone px-4 py-6 text-sm text-ink-soft">
-            No condition photos were uploaded for this trip, so there is no
-            photographic evidence either way.
+            {t("noConditionPhotos")}
           </p>
         ) : (
           <PhotoComparisonView photos={photos} title="" />
@@ -234,36 +246,40 @@ export default async function DisputeDetailPage({
 
       {/* Resolution */}
       {dispute.resolution ? (
-        <Card title="Resolution">
+        <Card title={t("resolution")}>
           <div className="space-y-2">
             <Badge tone="success">
-              {OUTCOME_LABEL[dispute.resolution.outcome] ??
-                dispute.resolution.outcome}
+              {label("resolutionOutcome", dispute.resolution.outcome)}
             </Badge>
             <p className="whitespace-pre-wrap rounded-xl bg-bone p-3 text-sm text-ink-muted">
               {dispute.resolution.notes}
             </p>
             <dl className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <dt className="text-ink-faint">Returned to client</dt>
+                <dt className="text-ink-faint">{t("returnedToClient")}</dt>
                 <dd className="font-semibold text-ink">
                   {formatRWF(dispute.resolution.clientRefundAmount)}
                 </dd>
               </div>
               <div>
-                <dt className="text-ink-faint">Awarded to owner</dt>
+                <dt className="text-ink-faint">{t("awardedToOwner")}</dt>
                 <dd className="font-semibold text-ink">
                   {formatRWF(dispute.resolution.ownerAwardAmount)}
                 </dd>
               </div>
             </dl>
             <p className="text-[11px] text-ink-faint">
-              Resolved {dispute.resolution.resolvedAt.toLocaleString("en-RW")}
+              {t("resolvedOn", {
+                date: formatDateTime(
+                  dispute.resolution.resolvedAt,
+                  params.locale,
+                ),
+              })}
             </p>
           </div>
         </Card>
       ) : canResolve ? (
-        <Card title="Resolve this dispute">
+        <Card title={t("resolveThisDispute")}>
           <ResolveDisputeForm
             disputeId={dispute.id}
             depositAmount={deposit?.amount ?? 0}
@@ -271,13 +287,11 @@ export default async function DisputeDetailPage({
           />
         </Card>
       ) : (
-        <Card title="Resolve this dispute">
+        <Card title={t("resolveThisDispute")}>
           <div className="flex items-start gap-2 rounded-xl bg-bone p-3">
             <Lock className="mt-px h-4 w-4 shrink-0 text-ink-faint" />
             <p className="text-xs text-ink-soft">
-              Resolving a dispute moves a client&apos;s deposit, so it needs
-              Deposit Manager access. You can review the evidence here and hand
-              it to someone who has it.
+              {t("needsDepositManager")}
             </p>
           </div>
         </Card>

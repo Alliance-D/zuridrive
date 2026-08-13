@@ -8,23 +8,36 @@
 
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { loginPath } from "@/lib/navigation";
+import { formatDate, formatDateTime } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { CATEGORY_LABELS, STATUS_LABELS } from "@/lib/support";
 import TicketThread from "@/components/support/TicketThread";
 import ReplyBox from "@/components/support/ReplyBox";
 import { ArrowLeft, Zap, CheckCircle2 } from "lucide-react";
 
-export const metadata = { title: "Support ticket — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("supportTicket")} — ZuriDrive` };
+}
 
 export default async function OwnerTicketPage({
   params,
 }: {
-  params: { id: string };
+  params: { id: string; locale: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  const label = await getEnumLabeller(params.locale);
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect(`/login?next=/owner/support/${params.id}`);
+  if (!session?.user?.id)
+    redirect(await loginPath(`/owner/support/${params.id}`));
 
   const ticket = await prisma.supportTicket.findFirst({
     where: { id: params.id, userId: session.user.id },
@@ -46,7 +59,7 @@ export default async function OwnerTicketPage({
         className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        All tickets
+        {t("allTickets")}
       </Link>
 
       <div className="rounded-2xl bg-white p-4 shadow-sm">
@@ -56,8 +69,11 @@ export default async function OwnerTicketPage({
               {ticket.subject}
             </h1>
             <p className="mt-0.5 text-[11px] text-ink-faint">
-              {ticket.reference} · {CATEGORY_LABELS[ticket.category]} · opened{" "}
-              {ticket.createdAt.toLocaleDateString("en-RW")}
+              {ticket.reference} ·{" "}
+              {label("ticketCategory", ticket.category)} ·{" "}
+              {t("openedOn", {
+                date: formatDate(ticket.createdAt, params.locale),
+              })}
               {ticket.booking && (
                 <>
                   {" "}
@@ -77,7 +93,7 @@ export default async function OwnerTicketPage({
             {ticket.isPriority && (
               <span className="flex items-center gap-1 rounded-full bg-warning-bg px-2 py-0.5 text-[10px] font-semibold text-warning">
                 <Zap className="h-3 w-3" />
-                Priority
+                {t("priorityBadge")}
               </span>
             )}
             <span
@@ -89,23 +105,23 @@ export default async function OwnerTicketPage({
                     : "bg-bone text-ink-soft"
               }`}
             >
-              {STATUS_LABELS[ticket.status]}
+              {label("ticketStatus", ticket.status)}
             </span>
           </div>
         </div>
 
         {ticket.status === "OPEN" && !ticket.firstRespondedAt && (
           <p className="mt-2 text-xs text-ink-soft">
-            We aim to reply by{" "}
-            {ticket.firstResponseDueAt.toLocaleString("en-RW")}.
+            {t("replyBy", {
+              date: formatDateTime(ticket.firstResponseDueAt, params.locale),
+            })}
           </p>
         )}
 
         {ticket.status === "RESOLVED" && (
           <p className="mt-2 flex items-center gap-1.5 text-xs text-success">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            Marked resolved. Reply below if it isn&apos;t sorted — that reopens
-            it with the history intact.
+            {t("markedResolved")}
           </p>
         )}
       </div>
@@ -114,10 +130,10 @@ export default async function OwnerTicketPage({
 
       {ticket.status === "CLOSED" ? (
         <p className="rounded-2xl bg-bone px-4 py-6 text-center text-sm text-ink-soft">
-          This ticket is closed. Open a new one if you need us again.
+          {t("ticketClosed")}
         </p>
       ) : (
-        <ReplyBox ticketId={ticket.id} placeholder="Add to this ticket…" />
+        <ReplyBox ticketId={ticket.id} placeholder={t("addToTicket")} />
       )}
     </div>
   );

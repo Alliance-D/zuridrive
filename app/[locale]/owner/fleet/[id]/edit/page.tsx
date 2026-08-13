@@ -6,6 +6,8 @@
  */
 
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import LocationManager from "@/components/owner/LocationManager";
 import PricingEditor from "@/components/owner/PricingEditor";
 import PhotoManager from "@/components/owner/PhotoManager";
@@ -17,13 +19,22 @@ import { routes } from "@/lib/routes";
 import CarEditForm from "@/components/owner/CarEditForm";
 import { ChevronLeft, AlertTriangle } from "lucide-react";
 
-export const metadata = { title: "Edit car — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("editCar")} — ZuriDrive` };
+}
 
 export default async function EditCarPage({
   params,
 }: {
-  params: { id: string };
+  params: { id: string; locale: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  const label = await getEnumLabeller(params.locale);
   const { profile } = await requireOwnerProfile();
 
   const car = await prisma.car.findUnique({
@@ -48,20 +59,13 @@ export default async function EditCarPage({
           className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-ink"
         >
           <ChevronLeft className="h-3 w-3" />
-          Back to fleet
+          {t("backToFleet")}
         </Link>
         <h1 className="text-xl font-bold text-ink">
           {car.year} {car.make} {car.model}
         </h1>
         <p className="text-sm text-ink-soft">
-          {car.licensePlate} ·{" "}
-          {car.status === "LIVE"
-            ? "Live"
-            : car.status === "PENDING_APPROVAL"
-              ? "Awaiting approval"
-              : car.status === "SUSPENDED"
-                ? "Suspended"
-                : "Draft"}
+          {car.licensePlate} · {label("carStatus", car.status)}
         </p>
       </div>
 
@@ -70,7 +74,7 @@ export default async function EditCarPage({
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
           <div>
             <p className="text-sm font-semibold text-danger">
-              This listing is suspended
+              {t("listingSuspended")}
             </p>
             <p className="mt-0.5 text-xs text-danger">
               {car.rejectionReason}

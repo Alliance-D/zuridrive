@@ -11,10 +11,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CATEGORY_LABELS } from "@/lib/support";
+import { SUPPORT_CATEGORIES } from "@/lib/support";
 import { Loader2, AlertCircle, Upload, X, CheckCircle2, Zap } from "lucide-react";
 
-const CATEGORIES = Object.keys(CATEGORY_LABELS);
+const CATEGORIES = SUPPORT_CATEGORIES;
 
 export default function NewTicketForm({
   isPriority,

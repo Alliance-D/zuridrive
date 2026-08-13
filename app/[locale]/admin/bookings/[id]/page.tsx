@@ -9,7 +9,10 @@
  */
 
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { formatDate, formatDateTime } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { prisma } from "@/lib/db";
 import { requireAdminModule, hasAdminModule } from "@/lib/auth";
 import { formatRWF } from "@/lib/currency";
@@ -19,7 +22,14 @@ import { getAdminActionLog } from "@/lib/admin-logger";
 import type { BookingStatus } from "@prisma/client";
 import { ChevronLeft, Scale } from "lucide-react";
 
-export const metadata = { title: "Booking — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("bookingDetail")} — ZuriDrive Admin` };
+}
 
 const STATUS_TONE: Record<
   BookingStatus,
@@ -45,8 +55,10 @@ const CANCELLABLE: BookingStatus[] = [
 export default async function AdminBookingDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: { id: string; locale: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  const label = await getEnumLabeller(params.locale);
   await requireAdminModule("BOOKING_MANAGER");
   const canSeeFinance = await hasAdminModule("FINANCE_MANAGER");
 
@@ -87,14 +99,14 @@ export default async function AdminBookingDetailPage({
           className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-ink"
         >
           <ChevronLeft className="h-3 w-3" />
-          Back
+          {t("back")}
         </Link>
         <PageHeader
           title={booking.reference}
           subtitle={`${booking.car.year} ${booking.car.make} ${booking.car.model} · ${booking.car.licensePlate}`}
           action={
             <Badge tone={STATUS_TONE[booking.status]}>
-              {booking.status.toLowerCase().replace(/_/g, " ")}
+              {label("bookingStatus", booking.status)}
             </Badge>
           }
         />
@@ -109,8 +121,8 @@ export default async function AdminBookingDetailPage({
           <div className="flex-1">
             <p className="text-sm font-bold text-danger">
               {booking.dispute.resolution
-                ? "Dispute resolved"
-                : "Open dispute on this booking"}
+                ? t("disputeResolved")
+                : t("openDisputeOnBooking")}
             </p>
             <p className="text-xs text-danger">
               {booking.dispute.description.slice(0, 120)}
@@ -120,37 +132,44 @@ export default async function AdminBookingDetailPage({
       )}
 
       <div className="grid gap-3 lg:grid-cols-2">
-        <Card title="Trip">
+        <Card title={t("trip")}>
           <dl className="space-y-1.5 text-xs">
-            <Row label="Dates">
-              {booking.startDate.toLocaleDateString("en-RW")} →{" "}
-              {booking.endDate.toLocaleDateString("en-RW")} ({booking.totalDays}d)
+            <Row label={t("rowDates")}>
+              {t("datesRange", {
+                from: formatDate(booking.startDate, params.locale),
+                to: formatDate(booking.endDate, params.locale),
+                days: booking.totalDays,
+              })}
             </Row>
-            <Row label="Rental type">
-              {booking.rentalType.replace("PER_", "").toLowerCase()}
+            <Row label={t("rowRentalType")}>
+              {label("rentalType", booking.rentalType)}
               {booking.tripScope
-                ? ` · ${booking.tripScope.replace("_", " ").toLowerCase()}`
+                ? ` · ${label("tripScope", booking.tripScope)}`
                 : ""}
             </Row>
-            <Row label="Driver">{booking.driverRequested ? "Yes" : "No"}</Row>
-            <Row label="Pickup">
+            <Row label={t("rowDriver")}>
+              {booking.driverRequested ? t("yes") : t("no")}
+            </Row>
+            <Row label={t("rowPickup")}>
               {booking.location?.platformLocation?.name ??
                 booking.location?.ownerLocation?.name ??
                 booking.location?.customDescription ??
                 "—"}
             </Row>
-            <Row label="Photos">{booking.conditionPhotos.length} uploaded</Row>
+            <Row label={t("rowPhotos")}>
+              {t("photosUploaded", { count: booking.conditionPhotos.length })}
+            </Row>
           </dl>
         </Card>
 
-        <Card title="Parties">
+        <Card title={t("parties")}>
           <dl className="space-y-1.5 text-xs">
-            <Row label="Client">
+            <Row label={t("colClient")}>
               {booking.client.name ?? "—"}
               <br />
               <span className="text-ink-faint">{booking.client.phone}</span>
             </Row>
-            <Row label="Owner">
+            <Row label={t("colOwner")}>
               {booking.car.owner.user.name ?? "—"}
               <br />
               <span className="text-ink-faint">
@@ -158,8 +177,8 @@ export default async function AdminBookingDetailPage({
               </span>
             </Row>
             {booking.isGuestBooking && (
-              <Row label="Guest booking">
-                Yes — {booking.guestName ?? ""}
+              <Row label={t("rowGuestBooking")}>
+                {t("guestYes", { name: booking.guestName ?? "" })}
               </Row>
             )}
           </dl>
@@ -168,27 +187,27 @@ export default async function AdminBookingDetailPage({
 
       {canSeeFinance && (
         <div className="grid gap-3 lg:grid-cols-2">
-          <Card title="Money">
+          <Card title={t("money")}>
             <dl className="space-y-1.5 text-xs">
-              <Row label="Base">{formatRWF(booking.baseAmount)}</Row>
+              <Row label={t("rowBase")}>{formatRWF(booking.baseAmount)}</Row>
               {booking.driverTotal > 0 && (
-                <Row label="Driver">{formatRWF(booking.driverTotal)}</Row>
+                <Row label={t("rowDriver")}>{formatRWF(booking.driverTotal)}</Row>
               )}
               {booking.deliveryFee > 0 && (
-                <Row label="Delivery">{formatRWF(booking.deliveryFee)}</Row>
+                <Row label={t("rowDelivery")}>{formatRWF(booking.deliveryFee)}</Row>
               )}
-              <Row label="Subtotal">
+              <Row label={t("rowSubtotal")}>
                 <span className="font-semibold">{formatRWF(booking.subtotal)}</span>
               </Row>
-              <Row label={`Commission (${booking.commissionRate}%)`}>
+              <Row label={t("commissionPercent", { rate: booking.commissionRate })}>
                 −{formatRWF(booking.commissionAmount)}
               </Row>
-              <Row label="Owner earnings">
+              <Row label={t("rowOwnerEarnings")}>
                 <span className="font-semibold text-brand">
                   {formatRWF(booking.ownerEarnings)}
                 </span>
               </Row>
-              <Row label="Deposit">
+              <Row label={t("rowDeposit")}>
                 {formatRWF(booking.depositAmount)}
                 {booking.deposit && (
                   <span className="ml-2">
@@ -201,7 +220,7 @@ export default async function AdminBookingDetailPage({
                             : "success"
                       }
                     >
-                      {booking.deposit.status.toLowerCase().replace(/_/g, " ")}
+                      {label("depositStatus", booking.deposit.status)}
                     </Badge>
                   </span>
                 )}
@@ -209,9 +228,9 @@ export default async function AdminBookingDetailPage({
             </dl>
           </Card>
 
-          <Card title="Payments">
+          <Card title={t("payments")}>
             {booking.payments.length === 0 ? (
-              <p className="text-xs text-ink-faint">No payment records.</p>
+              <p className="text-xs text-ink-faint">{t("noPaymentRecords")}</p>
             ) : (
               <ul className="space-y-2">
                 {booking.payments.map((p) => (
@@ -234,13 +253,17 @@ export default async function AdminBookingDetailPage({
                                 : "warn"
                         }
                       >
-                        {p.isVoided ? "voided" : p.status.toLowerCase()}
+                        {p.isVoided
+                          ? t("voided")
+                          : label("paymentStatus", p.status)}
                       </Badge>
                     </div>
                     <p className="mt-0.5 text-[11px] text-ink-soft">
-                      {p.method === "MTN_MOMO" ? "MoMo" : "Bank transfer"} ·
-                      rental {formatRWF(p.rentalAmount)} + deposit{" "}
-                      {formatRWF(p.depositAmount)}
+                      {p.method === "MTN_MOMO" ? "MoMo" : t("bankTransfer")} ·{" "}
+                      {t("paymentBreakdown", {
+                        rental: formatRWF(p.rentalAmount),
+                        deposit: formatRWF(p.depositAmount),
+                      })}
                     </p>
                     {p.voidReason && (
                       <p className="mt-0.5 text-[11px] text-danger">
@@ -255,7 +278,7 @@ export default async function AdminBookingDetailPage({
         </div>
       )}
 
-      <Card title="Admin intervention">
+      <Card title={t("adminIntervention")}>
         <InterveneActions
           bookingId={booking.id}
           canCancel={CANCELLABLE.includes(booking.status)}
@@ -266,7 +289,7 @@ export default async function AdminBookingDetailPage({
       </Card>
 
       {auditLog.length > 0 && (
-        <Card title="Admin actions on this booking">
+        <Card title={t("adminActionsOnBooking")}>
           <ul className="space-y-2">
             {auditLog.map((a) => (
               <li key={a.id} className="text-xs">
@@ -275,8 +298,8 @@ export default async function AdminBookingDetailPage({
                 </span>
                 <br />
                 <span className="text-[11px] text-ink-faint">
-                  {a.actor.name ?? a.actor.email ?? "Admin"} ·{" "}
-                  {a.createdAt.toLocaleString("en-RW")}
+                  {a.actor.name ?? a.actor.email ?? t("adminFallback")} ·{" "}
+                  {formatDateTime(a.createdAt, params.locale)}
                   {a.reason && ` · ${a.reason}`}
                 </span>
               </li>
