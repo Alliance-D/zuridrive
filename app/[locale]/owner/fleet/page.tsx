@@ -7,6 +7,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -17,17 +18,20 @@ import { getOwnerAllowance } from "@/lib/subscriptions/limits";
 import type { CarStatus } from "@prisma/client";
 import { Car, Plus, Star, Pencil, AlertTriangle } from "lucide-react";
 
-const STATUS_STYLES: Record<CarStatus, { label: string; className: string }> = {
-  LIVE: { label: "Live", className: "bg-success-bg text-success" },
+// Keys, not text: this is evaluated once at import, where no translator
+// exists. The label is resolved at render instead.
+const STATUS_STYLES: Record<CarStatus, { labelKey: string; className: string }> = {
+  LIVE: { labelKey: "live", className: "bg-success-bg text-success" },
   PENDING_APPROVAL: {
-    label: "Pending review",
+    labelKey: "pendingReview",
     className: "bg-warning-tint text-warning-dark",
   },
-  DRAFT: { label: "Draft", className: "bg-sand text-ink-soft" },
-  SUSPENDED: { label: "Suspended", className: "bg-danger-bg text-danger" },
+  DRAFT: { labelKey: "draft", className: "bg-sand text-ink-soft" },
+  SUSPENDED: { labelKey: "suspended", className: "bg-danger-bg text-danger" },
 };
 
-export default async function OwnerFleetPage() {
+export default async function OwnerFleetPage({ params }: { params: { locale: string } }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
@@ -54,10 +58,10 @@ export default async function OwnerFleetPage() {
     <div className="space-y-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-ink">My fleet</h1>
+          <h1 className="text-xl font-bold text-ink">{t("myFleet")}</h1>
           <p className="text-sm text-ink-soft">
             {cars.length === 0
-              ? "No cars listed yet."
+              ? t("noCarsYet")
               : `${cars.length} car${cars.length === 1 ? "" : "s"} listed.`}
           </p>
         </div>
@@ -161,7 +165,7 @@ export default async function OwnerFleetPage() {
                   <span
                     className={`absolute left-3 top-3 rounded-full px-2 py-0.5 text-[11px] font-semibold ${status.className}`}
                   >
-                    {status.label}
+                    {t(status.labelKey)}
                   </span>
                 </div>
 
@@ -185,15 +189,15 @@ export default async function OwnerFleetPage() {
 
                   <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <dt className="text-ink-faint">Daily rate</dt>
+                      <dt className="text-ink-faint">{t("dailyRate")}</dt>
                       <dd className="font-semibold text-ink">
                         {car.pricing
                           ? formatRWF(car.pricing.perDayInCity)
-                          : "Not set"}
+                          : t("notSet")}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-ink-faint">Bookings</dt>
+                      <dt className="text-ink-faint">{t("bookings")}</dt>
                       <dd className="font-semibold text-ink">
                         {car._count.bookings}
                       </dd>

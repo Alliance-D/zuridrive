@@ -12,6 +12,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -73,7 +74,8 @@ function StatCard({
   );
 }
 
-export default async function OwnerDashboardPage() {
+export default async function OwnerDashboardPage({ params }: { params: { locale: string } }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
@@ -148,9 +150,9 @@ export default async function OwnerDashboardPage() {
     <div className="space-y-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-ink">Overview</h1>
+          <h1 className="text-xl font-bold text-ink">{t("overview")}</h1>
           <p className="text-sm text-ink-soft">
-            Your fleet, bookings and earnings at a glance.
+            {t("overviewSub")}
           </p>
         </div>
         <Link
@@ -167,19 +169,19 @@ export default async function OwnerDashboardPage() {
         <StatCard
           icon={Wallet}
           value={formatRWF(monthEarnings._sum.netOwnerAmount ?? 0)}
-          label="Earned this month"
+          label={t("earnedThisMonth")}
           accent
         />
         <StatCard
           icon={TrendingUp}
           value={formatRWF(lifetimeEarnings._sum.netOwnerAmount ?? 0)}
-          label="Lifetime earnings"
+          label={t("lifetimeEarnings")}
           hint={`${completedCount} completed trip${completedCount === 1 ? "" : "s"}`}
         />
         <StatCard
           icon={Car}
           value={liveCars}
-          label="Cars live"
+          label={t("carsLive")}
           hint={
             pendingCars || draftCars
               ? `${pendingCars} pending · ${draftCars} draft`
@@ -189,14 +191,14 @@ export default async function OwnerDashboardPage() {
         <StatCard
           icon={CalendarClock}
           value={activeTrips.length}
-          label="Active trips"
+          label={t("activeTrips")}
         />
       </div>
 
       {/* ── Action required ───────────────────────────────────────────── */}
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-ink">Waiting on you</h2>
+          <h2 className="text-sm font-semibold text-ink">{t("waitingOnYou")}</h2>
           {awaitingConfirmation.length > 0 && (
             <span className="rounded-full bg-warning-tint px-2 py-0.5 text-xs font-semibold text-warning-dark">
               {awaitingConfirmation.length} to confirm
@@ -208,7 +210,7 @@ export default async function OwnerDashboardPage() {
           <div className="flex items-center gap-3 rounded-xl bg-bone px-4 py-6">
             <Inbox className="h-5 w-5 shrink-0 text-ink-faint" />
             <p className="text-sm text-ink-soft">
-              Nothing needs your attention. New booking requests appear here.
+              {t("nothingWaiting")}
             </p>
           </div>
         ) : (
