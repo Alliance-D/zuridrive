@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { MapPin, Calendar, Car, Search } from "lucide-react";
 
 type RentalType = "day" | "week" | "month";
@@ -23,6 +24,8 @@ const FIELD_ICON =
   "pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50";
 
 export default function HeroSearch() {
+  const t = useTranslations("home");
+  const locale = useLocale();
   const router = useRouter();
   const [location, setLocation] = useState("");
   const [rentalType, setRentalType] = useState<RentalType>("day");
@@ -35,7 +38,7 @@ export default function HeroSearch() {
     if (rentalType) params.set("type", rentalType);
     if (startDate) params.set("from", startDate);
     if (endDate) params.set("to", endDate);
-    router.push(`/cars?${params.toString()}`);
+    router.push(`/${locale}/cars?${params.toString()}`);
   };
 
   return (
@@ -52,7 +55,7 @@ export default function HeroSearch() {
                 : "bg-white/10 text-white/75"
             }`}
           >
-            Per {type.charAt(0).toUpperCase() + type.slice(1)}
+            {t(`per${type.charAt(0).toUpperCase()}${type.slice(1)}`)}
           </button>
         ))}
       </div>
@@ -67,7 +70,7 @@ export default function HeroSearch() {
           />
           <input
             type="text"
-            placeholder="Pickup location"
+            placeholder={t("pickupLocation")}
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             className={FIELD}
@@ -114,7 +117,7 @@ export default function HeroSearch() {
           className="btn btn-accent whitespace-nowrap px-6 py-3"
         >
           <Search size={16} />
-          <span className="hide-mobile">Search</span>
+          <span className="hide-mobile">{t("search")}</span>
         </button>
       </div>
     </div>

@@ -6,8 +6,10 @@
  * booking confirmation.
  */
 
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireAdminModule } from "@/lib/auth";
+import { formatDateTime } from "@/lib/dates";
 import {
   PageHeader,
   StatCard,
@@ -21,7 +23,14 @@ import {
 import BroadcastForm from "@/components/admin/BroadcastForm";
 import type { Prisma, UserRole } from "@prisma/client";
 
-export const metadata = { title: "Notifications — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("notifications")} — ZuriDrive Admin` };
+}
 
 function audienceWhere(audience: string): Prisma.UserWhereInput {
   const base: Prisma.UserWhereInput = { isSuspended: false };
@@ -41,7 +50,12 @@ function audienceWhere(audience: string): Prisma.UserWhereInput {
   }
 }
 
-export default async function AdminNotificationsPage() {
+export default async function AdminNotificationsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
   await requireAdminModule("COMMUNICATIONS");
 
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -67,28 +81,32 @@ export default async function AdminNotificationsPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Notifications"
-        subtitle="Send announcements and check what's actually been delivered."
+        title={t("notifications")}
+        subtitle={t("notificationsSub")}
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Reachable users" value={all} tone="dark" />
+        <StatCard label={t("reachableUsers")} value={all} tone="dark" />
         <StatCard
-          label="SMS sent (30d)"
+          label={t("smsSent30d")}
           value={smsTotal}
-          hint={smsFailed > 0 ? `${smsFailed} failed` : "all delivered"}
+          hint={
+            smsFailed > 0
+              ? t("smsFailedCount", { count: smsFailed })
+              : t("allDelivered")
+          }
         />
         <StatCard
-          label="Failed SMS (30d)"
+          label={t("smsFailed30d")}
           value={smsFailed}
           tone={smsFailed > 0 ? "danger" : "default"}
         />
-        <StatCard label="In-app (30d)" value={inAppTotal} />
+        <StatCard label={t("inApp30d")} value={inAppTotal} />
       </div>
 
       <div>
         <h2 className="mb-3 text-sm font-semibold text-ink">
-          Send a broadcast
+          {t("sendBroadcast")}
         </h2>
         <BroadcastForm
           audienceSizes={{
@@ -100,32 +118,29 @@ export default async function AdminNotificationsPage() {
         />
       </div>
 
-      <Card title={`SMS delivery log (${smsLogs.length} most recent)`}>
+      <Card title={t("smsLog", { count: smsLogs.length })}>
         {smsLogs.length === 0 ? (
           <EmptyRow>
-            No SMS sent yet. Every message the platform sends is recorded here.
+            {t("noSmsYet")}
           </EmptyRow>
         ) : (
           <TableWrap>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-sand">
-                  <Th>When</Th>
-                  <Th>To</Th>
-                  <Th>Type</Th>
-                  <Th>Status</Th>
-                  <Th>Message</Th>
-                  <Th align="right">Cost</Th>
+                  <Th>{t("colWhen")}</Th>
+                  <Th>{t("colTo")}</Th>
+                  <Th>{t("colType")}</Th>
+                  <Th>{t("colStatus")}</Th>
+                  <Th>{t("colMessage")}</Th>
+                  <Th align="right">{t("colCost")}</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand">
                 {smsLogs.map((log) => (
                   <tr key={log.id}>
                     <Td muted>
-                      {log.createdAt.toLocaleString("en-RW", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
+                      {formatDateTime(log.createdAt, params.locale)}
                     </Td>
                     <Td muted>
                       {log.user?.name ?? "—"}
@@ -141,7 +156,7 @@ export default async function AdminNotificationsPage() {
                       <Badge
                         tone={log.status === "Success" ? "success" : "danger"}
                       >
-                        {log.status ?? "unknown"}
+                        {log.status ?? t("unknown")}
                       </Badge>
                     </Td>
                     <Td muted>

@@ -6,6 +6,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { Star, MapPin, Users, Fuel, Zap } from "lucide-react";
 import { formatRWF } from "@/lib/currency";
 import { ROUTES } from "@/lib/routes";
@@ -22,12 +24,17 @@ type CarWithDetails = Car & {
   _count: { bookings: number };
 };
 
+// The locale is threaded down rather than resolved here: these are server
+// components, so there is no hook context, and getTranslations() without an
+// explicit locale renders English inside a translated page.
 interface CarCardProps {
   car: CarWithDetails;
+  locale: string;
 }
 
 interface CarCardGridProps {
   cars: CarWithDetails[];
+  locale: string;
   columns?: 2 | 3 | 4; // Grid columns on desktop
   showSkeleton?: boolean;
 }
@@ -36,7 +43,9 @@ interface CarCardGridProps {
 // CAR CARD
 // --------------------------------------------------------------------------
 
-export function CarCard({ car }: CarCardProps) {
+export async function CarCard({ car, locale }: CarCardProps) {
+  const t = await getTranslations({ locale, namespace: "cars" });
+  const label = await getEnumLabeller(locale);
   const coverPhoto = car.photos[0];
   const pricing = car.pricing;
 
@@ -86,12 +95,12 @@ export function CarCard({ car }: CarCardProps) {
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
           {car.isFeatured && (
             <span className="badge badge-gold text-[10px]">
-              ★ Featured
+              ★ {t("featured")}
             </span>
           )}
           {car.pricing?.driverEnabled && (
             <span className="badge badge-blue text-[10px]">
-              + Driver
+              {t("withDriver")}
             </span>
           )}
         </div>
@@ -106,7 +115,8 @@ export function CarCard({ car }: CarCardProps) {
               {car.year} {car.make} {car.model}
             </h3>
             <p className="mt-0.5 font-mono text-fluid-xs tracking-[0.04em] text-ink-soft">
-              {car.category} · {car.transmission}
+              {label("category", car.category)} ·{" "}
+              {label("transmission", car.transmission)}
             </p>
           </div>
 
@@ -126,10 +136,13 @@ export function CarCard({ car }: CarCardProps) {
 
         {/* Quick specs row */}
         <div className="mb-4 flex gap-4">
-          <SpecChip icon={<Users size={12} />} label={`${car.seatingCapacity} seats`} />
+          <SpecChip
+            icon={<Users size={12} />}
+            label={t("seats", { count: car.seatingCapacity })}
+          />
           <SpecChip
             icon={car.fuelType === "ELECTRIC" ? <Zap size={12} /> : <Fuel size={12} />}
-            label={car.fuelType.charAt(0) + car.fuelType.slice(1).toLowerCase()}
+            label={label("fuelType", car.fuelType)}
           />
         </div>
 
@@ -142,18 +155,18 @@ export function CarCard({ car }: CarCardProps) {
                   {formatRWF(startingPrice)}
                 </span>
                 <span className="ml-1 font-mono text-fluid-xs text-ink-soft">
-                  /day
+                  {t("perDay")}
                 </span>
               </>
             ) : (
               <span className="text-fluid-sm text-ink-soft">
-                Contact for pricing
+                {t("contactForPricing")}
               </span>
             )}
           </div>
 
           <span className="flex items-center gap-1 text-fluid-sm font-semibold text-brand">
-            View →
+            {t("view")} →
           </span>
         </div>
       </div>
@@ -178,11 +191,13 @@ function SpecChip({ icon, label }: { icon: React.ReactNode; label: string }) {
 // CAR CARD GRID
 // --------------------------------------------------------------------------
 
-export default function CarCardGrid({
+export default async function CarCardGrid({
   cars,
+  locale,
   columns = 4,
   showSkeleton = false,
 }: CarCardGridProps) {
+  const t = await getTranslations({ locale, namespace: "cars" });
   // Skeleton loading — shows placeholder cards while data loads
   if (showSkeleton) {
     return (
@@ -206,10 +221,8 @@ export default function CarCardGrid({
           <circle cx="52" cy="64" r="5" fill="var(--color-surface-2)" stroke="var(--color-border)" strokeWidth="2" />
           <path d="M36 28h8M40 24v8" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
         </svg>
-        <h3 className="empty-state-title">No cars available</h3>
-        <p className="empty-state-body">
-          Try adjusting your search filters or check back soon as owners add new listings.
-        </p>
+        <h3 className="empty-state-title">{t("noneAvailable")}</h3>
+        <p className="empty-state-body">{t("noneAvailableBody")}</p>
       </div>
     );
   }
@@ -217,7 +230,7 @@ export default function CarCardGrid({
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
       {cars.map((car) => (
-        <CarCard key={car.id} car={car} />
+        <CarCard key={car.id} car={car} locale={locale} />
       ))}
     </div>
   );

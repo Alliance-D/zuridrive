@@ -26,7 +26,11 @@ export type EnumKind =
   | "payoutStatus"
   | "ticketCategory"
   | "ticketStatus"
-  | "analyticsLevel";
+  | "analyticsLevel"
+  | "carStatus"
+  | "disputeStatus"
+  | "disputeType"
+  | "userRole";
 
 /**
  * Server-side label lookup.

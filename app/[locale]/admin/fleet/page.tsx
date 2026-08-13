@@ -6,7 +6,9 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
 import { formatRWF } from "@/lib/currency";
 import {
@@ -21,7 +23,14 @@ import ModerationActions from "@/components/admin/ModerationActions";
 import type { CarStatus, Prisma } from "@prisma/client";
 import { Car, Star, Search } from "lucide-react";
 
-export const metadata = { title: "Fleet — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("fleet")} — ZuriDrive Admin` };
+}
 
 const TONE: Record<CarStatus, "success" | "warn" | "neutral" | "danger"> = {
   LIVE: "success",
@@ -31,10 +40,14 @@ const TONE: Record<CarStatus, "success" | "warn" | "neutral" | "danger"> = {
 };
 
 export default async function AdminFleetPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { status?: string; q?: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  const label = await getEnumLabeller(params.locale);
   await requireAdminModule("FLEET_MANAGER");
 
   const status = searchParams.status ?? "PENDING_APPROVAL";
@@ -79,34 +92,34 @@ export default async function AdminFleetPage({
   return (
     <div>
       <PageHeader
-        title="Fleet"
-        subtitle="Review, approve and moderate car listings."
+        title={t("fleet")}
+        subtitle={t("fleetSub")}
       />
 
       <SubNav
         active={`/admin/fleet?status=${status}`}
         items={[
           {
-            label: "Awaiting review",
+            label: t("awaitingReview"),
             href: "/admin/fleet?status=PENDING_APPROVAL",
             count: countFor("PENDING_APPROVAL"),
           },
-          { label: "Live", href: "/admin/fleet?status=LIVE" },
-          { label: "Draft", href: "/admin/fleet?status=DRAFT" },
-          { label: "Suspended", href: "/admin/fleet?status=SUSPENDED" },
-          { label: "All", href: "/admin/fleet?status=ALL" },
+          { label: t("live"), href: "/admin/fleet?status=LIVE" },
+          { label: t("draft"), href: "/admin/fleet?status=DRAFT" },
+          { label: t("suspended"), href: "/admin/fleet?status=SUSPENDED" },
+          { label: t("all"), href: "/admin/fleet?status=ALL" },
         ]}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Awaiting review"
+          label={t("awaitingReview")}
           value={countFor("PENDING_APPROVAL")}
           tone={countFor("PENDING_APPROVAL") > 0 ? "warn" : "default"}
         />
-        <StatCard label="Live" value={countFor("LIVE")} tone="dark" />
-        <StatCard label="Suspended" value={countFor("SUSPENDED")} />
-        <StatCard label="Draft" value={countFor("DRAFT")} />
+        <StatCard label={t("live")} value={countFor("LIVE")} tone="dark" />
+        <StatCard label={t("suspended")} value={countFor("SUSPENDED")} />
+        <StatCard label={t("draft")} value={countFor("DRAFT")} />
       </div>
 
       {/* Search */}
@@ -117,20 +130,20 @@ export default async function AdminFleetPage({
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search make, model, plate or owner…"
+            placeholder={t("searchCars")}
             className="w-full rounded-lg border border-sand-dark bg-white py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
         </div>
       </form>
 
-      <Card title={`Cars (${cars.length})`}>
+      <Card title={t("carsCount", { count: cars.length })}>
         {cars.length === 0 ? (
           <EmptyRow>
             {q
-              ? `Nothing matches “${q}”.`
+              ? t("nothingMatches", { q })
               : status === "PENDING_APPROVAL"
-                ? "No listings waiting for review."
-                : "No cars in this state."}
+                ? t("noListingsWaiting")
+                : t("noCarsInState")}
           </EmptyRow>
         ) : (
           <ul className="divide-y divide-sand">
@@ -161,29 +174,30 @@ export default async function AdminFleetPage({
                         {car.year} {car.make} {car.model}
                       </Link>
                       <Badge tone={TONE[car.status]}>
-                        {car.status.toLowerCase().replace(/_/g, " ")}
+                        {label("carStatus", car.status)}
                       </Badge>
                       {car.isFeatured && (
                         <span className="flex items-center gap-0.5 rounded-full bg-warning-tint px-2 py-0.5 text-[10px] font-semibold text-warning-dark">
                           <Star className="h-2.5 w-2.5 fill-current" />
-                          featured
+                          {t("featured")}
                         </span>
                       )}
                     </div>
 
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {car.licensePlate} · {car.category.toLowerCase()} ·{" "}
-                      {car.seatingCapacity} seats ·{" "}
+                      {car.licensePlate} · {label("category", car.category)} ·{" "}
+                      {t("seatCount", { count: car.seatingCapacity })} ·{" "}
                       {car.pricing
-                        ? `${formatRWF(car.pricing.perDayInCity)}/day`
-                        : "no pricing"}
+                        ? t("perDay", {
+                            amount: formatRWF(car.pricing.perDayInCity),
+                          })
+                        : t("noPricing")}
                     </p>
                     <p className="text-[11px] text-ink-faint">
-                      {car.owner.user.name ?? "Owner"} · {car.owner.user.phone} ·{" "}
-                      {car._count.bookings} booking
-                      {car._count.bookings === 1 ? "" : "s"} ·{" "}
-                      {car._count.reviews} review
-                      {car._count.reviews === 1 ? "" : "s"}
+                      {car.owner.user.name ?? t("ownerFallback")} ·{" "}
+                      {car.owner.user.phone} ·{" "}
+                      {t("bookingCount", { count: car._count.bookings })} ·{" "}
+                      {t("reviewCount", { count: car._count.reviews })}
                     </p>
 
                     {car.rejectionReason && (
@@ -194,8 +208,7 @@ export default async function AdminFleetPage({
 
                     {!car.pricing && car.status === "PENDING_APPROVAL" && (
                       <p className="mt-1.5 rounded-lg bg-warning-tint px-2.5 py-1.5 text-[11px] text-warning-dark">
-                        This car has no pricing — approving it would make it
-                        unbookable.
+                        {t("noPricingWarning")}
                       </p>
                     )}
                   </div>
@@ -203,7 +216,7 @@ export default async function AdminFleetPage({
                   <div className="w-full lg:w-auto">
                     <ModerationActions
                       endpoint={`/api/admin/cars/${car.id}`}
-                      actions={actionsFor(car.status, car.isFeatured)}
+                      actions={actionsFor(car.status, car.isFeatured, t)}
                     />
                   </div>
                 </div>
@@ -216,16 +229,22 @@ export default async function AdminFleetPage({
   );
 }
 
-function actionsFor(status: CarStatus, isFeatured: boolean) {
+// The translator is passed in: this is a module-level function, so it has no
+// hook context and no request locale of its own.
+function actionsFor(
+  status: CarStatus,
+  isFeatured: boolean,
+  t: (key: string) => string,
+) {
   if (status === "PENDING_APPROVAL") {
     return [
-      { id: "approve", label: "Approve", tone: "primary" as const },
+      { id: "approve", label: t("approve"), tone: "primary" as const },
       {
         id: "reject",
-        label: "Reject",
+        label: t("reject"),
         tone: "danger" as const,
         needsReason: true,
-        reasonPlaceholder: "What does the owner need to change?",
+        reasonPlaceholder: t("rejectReason"),
       },
     ];
   }
@@ -233,22 +252,23 @@ function actionsFor(status: CarStatus, isFeatured: boolean) {
   if (status === "LIVE") {
     return [
       isFeatured
-        ? { id: "unfeature", label: "Unfeature" }
-        : { id: "feature", label: "Feature" },
+        ? { id: "unfeature", label: t("unfeature") }
+        : { id: "feature", label: t("feature") },
       {
         id: "suspend",
-        label: "Suspend",
+        label: t("suspend"),
         tone: "danger" as const,
         needsReason: true,
-        reasonPlaceholder: "Why is this listing being suspended?",
-        warning:
-          "The owner is texted immediately. Cars with active bookings can't be suspended.",
+        reasonPlaceholder: t("suspendCarReason"),
+        warning: t("suspendCarWarning"),
       },
     ];
   }
 
   if (status === "SUSPENDED") {
-    return [{ id: "reinstate", label: "Reinstate", tone: "primary" as const }];
+    return [
+      { id: "reinstate", label: t("reinstate"), tone: "primary" as const },
+    ];
   }
 
   // DRAFT — the owner is still editing; nothing to moderate.

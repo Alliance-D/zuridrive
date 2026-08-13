@@ -6,7 +6,10 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
 import {
   PageHeader,
@@ -20,13 +23,24 @@ import ModerationActions from "@/components/admin/ModerationActions";
 import type { Prisma, UserRole } from "@prisma/client";
 import { Search, BadgeCheck, Car, CalendarDays } from "lucide-react";
 
-export const metadata = { title: "Users — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("users")} — ZuriDrive Admin` };
+}
 
 export default async function AdminUsersPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { role?: string; q?: string; status?: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  const label = await getEnumLabeller(params.locale);
   await requireAdminModule("USER_MANAGER");
 
   const role = searchParams.role ?? "ALL";
@@ -80,18 +94,18 @@ export default async function AdminUsersPage({
   return (
     <div>
       <PageHeader
-        title="Users"
-        subtitle="Clients and car owners. Admin accounts live on the Team page."
+        title={t("users")}
+        subtitle={t("usersSub")}
       />
 
       <SubNav
         active={`/admin/users?role=${role}`}
         items={[
-          { label: "All", href: "/admin/users?role=ALL" },
-          { label: "Clients", href: "/admin/users?role=CLIENT" },
-          { label: "Owners", href: "/admin/users?role=OWNER" },
+          { label: t("all"), href: "/admin/users?role=ALL" },
+          { label: t("clients"), href: "/admin/users?role=CLIENT" },
+          { label: t("owners"), href: "/admin/users?role=OWNER" },
           {
-            label: "Suspended",
+            label: t("suspended"),
             href: "/admin/users?role=ALL&status=SUSPENDED",
             count: suspendedCount,
           },
@@ -99,14 +113,14 @@ export default async function AdminUsersPage({
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Clients" value={clientCount} tone="dark" />
-        <StatCard label="Owners" value={ownerCount} />
+        <StatCard label={t("clients")} value={clientCount} tone="dark" />
+        <StatCard label={t("owners")} value={ownerCount} />
         <StatCard
-          label="Suspended"
+          label={t("suspended")}
           value={suspendedCount}
           tone={suspendedCount > 0 ? "warn" : "default"}
         />
-        <StatCard label="Showing" value={users.length} />
+        <StatCard label={t("showing")} value={users.length} />
       </div>
 
       <form className="mb-4" action="/admin/users">
@@ -117,16 +131,16 @@ export default async function AdminUsersPage({
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search name, phone or email…"
+            placeholder={t("searchUsers")}
             className="w-full rounded-lg border border-sand-dark bg-white py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
         </div>
       </form>
 
-      <Card title={`Users (${users.length})`}>
+      <Card title={t("usersCount", { count: users.length })}>
         {users.length === 0 ? (
           <EmptyRow>
-            {q ? `Nothing matches “${q}”.` : "No users in this view."}
+            {q ? t("nothingMatches", { q }) : t("noUsersInView")}
           </EmptyRow>
         ) : (
           <ul className="divide-y divide-sand">
@@ -136,16 +150,16 @@ export default async function AdminUsersPage({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-semibold text-ink">
-                        {u.name ?? "Unnamed"}
+                        {u.name ?? t("unnamed")}
                       </span>
                       <Badge tone={u.role === "OWNER" ? "info" : "neutral"}>
-                        {u.role.toLowerCase()}
+                        {label("userRole", u.role)}
                       </Badge>
-                      {u.isSuspended && <Badge tone="danger">suspended</Badge>}
+                      {u.isSuspended && <Badge tone="danger">{t("suspended")}</Badge>}
                       {u.phoneVerifiedAt && (
                         <span className="flex items-center gap-0.5 text-[10px] font-semibold text-success">
                           <BadgeCheck className="h-3 w-3" />
-                          phone verified
+                          {t("phoneVerified")}
                         </span>
                       )}
                     </div>
@@ -158,18 +172,22 @@ export default async function AdminUsersPage({
                     <p className="mt-0.5 flex flex-wrap items-center gap-3 text-[11px] text-ink-faint">
                       <span className="flex items-center gap-1">
                         <CalendarDays className="h-2.5 w-2.5" />
-                        {u._count.bookingsAsClient} booking
-                        {u._count.bookingsAsClient === 1 ? "" : "s"}
+                        {t("bookingCount", {
+                          count: u._count.bookingsAsClient,
+                        })}
                       </span>
                       {u.carOwnerProfile && (
                         <span className="flex items-center gap-1">
                           <Car className="h-2.5 w-2.5" />
-                          {u.carOwnerProfile._count.cars} car
-                          {u.carOwnerProfile._count.cars === 1 ? "" : "s"}
+                          {t("carCount", {
+                            count: u.carOwnerProfile._count.cars,
+                          })}
                         </span>
                       )}
                       <span>
-                        joined {u.createdAt.toLocaleDateString("en-RW")}
+                        {t("joinedOn", {
+                          date: formatDate(u.createdAt, params.locale),
+                        })}
                       </span>
                     </p>
                   </div>
@@ -179,23 +197,22 @@ export default async function AdminUsersPage({
                       endpoint={`/api/admin/users/${u.id}`}
                       actions={[
                         u.isSuspended
-                          ? { id: "unsuspend", label: "Reinstate", tone: "primary" as const }
+                          ? { id: "unsuspend", label: t("reinstate"), tone: "primary" as const }
                           : {
                               id: "suspend",
-                              label: "Suspend",
+                              label: t("suspend"),
                               tone: "warn" as const,
                               needsReason: true,
-                              reasonPlaceholder: "Why is this account being suspended?",
-                              warning: "The user is texted immediately.",
+                              reasonPlaceholder: t("suspendReason"),
+                              warning: t("suspendWarning"),
                             },
                         {
                           id: "delete",
-                          label: "Delete",
+                          label: t("delete"),
                           tone: "danger" as const,
                           needsReason: true,
-                          reasonPlaceholder: "Reason for closing this account",
-                          warning:
-                            "Personal details are erased but the account row is kept, so bookings and payments stay intact. Accounts with unfinished bookings can't be deleted.",
+                          reasonPlaceholder: t("deleteReason"),
+                          warning: t("deleteWarning"),
                         },
                       ]}
                     />

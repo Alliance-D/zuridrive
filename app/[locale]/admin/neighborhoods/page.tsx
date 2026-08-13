@@ -2,6 +2,7 @@
  * /admin/neighborhoods — the vocabulary owners pick from for pickup points.
  */
 
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireAdminModule } from "@/lib/auth";
 import { PageHeader, Card } from "@/components/admin/ui";
@@ -9,9 +10,21 @@ import NeighborhoodManager, {
   type NeighborhoodItem,
 } from "@/components/admin/NeighborhoodManager";
 
-export const metadata = { title: "Neighbourhoods — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("neighbourhoods")} — ZuriDrive Admin` };
+}
 
-export default async function AdminNeighborhoodsPage() {
+export default async function AdminNeighborhoodsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
   await requireAdminModule("CONTENT_MODERATOR");
 
   const rows = await prisma.neighborhood.findMany({
@@ -30,8 +43,8 @@ export default async function AdminNeighborhoodsPage() {
   return (
     <div>
       <PageHeader
-        title="Neighbourhoods"
-        subtitle="Owners choose from this list when adding a pickup point."
+        title={t("neighbourhoods")}
+        subtitle={t("neighbourhoodsSub")}
       />
       <Card>
         <NeighborhoodManager items={items} />

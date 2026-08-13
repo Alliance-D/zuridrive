@@ -83,7 +83,12 @@ page.on("console", (m) => {
 
 // ---- sign in -------------------------------------------------------------
 if (cfg.phone) {
-  await page.goto(`${BASE}/${locale}/login`, { waitUntil: "networkidle" });
+  // Dev-mode Next compiles on demand, and a cold /login can take minutes after
+  // a wide change. The default 30s timeout turns that into a spurious failure.
+  await page.goto(`${BASE}/${locale}/login`, {
+    waitUntil: "networkidle",
+    timeout: 180000,
+  });
   await page.fill('input[type="tel"]', cfg.phone);
   await page.fill('input[type="password"]', PASSWORD);
   // The submit button, not the nav link or the mode toggle - three elements

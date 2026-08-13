@@ -14,6 +14,7 @@
 import Link from "next/link";
 import { CAR_CARD_INCLUDE } from "@/lib/car-card";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import HeroSearch from "@/components/hero-search";
@@ -111,7 +112,12 @@ async function getStats() {
   }
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "home" });
   // Banner first — the main grid excludes whatever it takes, so no car
   // appears twice on the page.
   const bannerCars = await getBannerCars();
@@ -151,16 +157,16 @@ export default async function HomePage() {
           {/* Stats strip — top-left */}
           <div className="mb-[clamp(1.5rem,3vw,2.5rem)] flex animate-[fadeIn_0.8s_ease_0.2s_both] gap-[clamp(1rem,4vw,3rem)]">
             {[
-              { value: `${stats.carCount}+`, label: "Cars available" },
-              { value: `${stats.bookingCount}+`, label: "Trips completed" },
-              { value: `${stats.ownerCount}+`, label: "Trusted owners" },
+              { value: `${stats.carCount}+`, labelKey: "statCars" },
+              { value: `${stats.bookingCount}+`, labelKey: "statTrips" },
+              { value: `${stats.ownerCount}+`, labelKey: "statOwners" },
             ].map((stat) => (
-              <div key={stat.label}>
+              <div key={stat.labelKey}>
                 <div className="font-display text-fluid-2xl font-semibold leading-[1.1] tracking-[-0.02em] text-white">
                   {stat.value}
                 </div>
                 <div className="mt-[0.15rem] font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/60">
-                  {stat.label}
+                  {t(stat.labelKey)}
                 </div>
               </div>
             ))}
@@ -168,10 +174,8 @@ export default async function HomePage() {
 
           {/* Main headline */}
           <h1 className="mb-[clamp(1.5rem,3vw,2.5rem)] max-w-[14ch] animate-[slideUp_0.7s_ease_0.1s_both] font-display text-fluid-hero font-light leading-[0.92] tracking-[-0.04em] text-white [text-wrap:balance]">
-            Rwanda&apos;s roads,{" "}
-            <em className="italic text-accent">
-              your way.
-            </em>
+            {t("heroLine1")}{" "}
+            <em className="italic text-accent">{t("heroLine2")}</em>
           </h1>
 
           {/* Search widget — the main action */}
@@ -190,17 +194,17 @@ export default async function HomePage() {
             <div className="mb-[clamp(2rem,4vw,3.5rem)] flex flex-wrap items-end justify-between gap-4">
               <div>
                 <span className="label mb-2 block text-brand">
-                  ◆ Available now
+                  ◆ {t("availableNow")}
                 </span>
                 <h2 className="font-display text-fluid-3xl font-normal leading-[1.1] tracking-[-0.03em] text-ink">
-                  Cars you&apos;ll actually want to drive
+                  {t("carsHeading")}
                 </h2>
               </div>
               <Link
                 href={ROUTES.cars}
                 className="flex items-center gap-1.5 whitespace-nowrap border-b-[1.5px] border-brand pb-0.5 text-fluid-sm font-semibold tracking-[0.01em] text-brand no-underline"
               >
-                View all cars <ArrowRight size={14} />
+                {t("viewAllCars")} <ArrowRight size={14} />
               </Link>
             </div>
           </ScrollReveal>
@@ -213,15 +217,15 @@ export default async function HomePage() {
                 <div className="mb-4 flex items-center gap-2">
                   <Star size={14} className="text-accent" />
                   <span className="label text-ink-soft">
-                    Spotlight — featured by our Premium owners
+                    {t("spotlight")}
                   </span>
                 </div>
-                <CarCardGrid cars={bannerCars} />
+                <CarCardGrid cars={bannerCars} locale={params.locale} />
               </div>
             </ScrollReveal>
           )}
 
-          <CarCardGrid cars={cars} />
+          <CarCardGrid cars={cars} locale={params.locale} />
         </div>
       </section>
 
@@ -238,10 +242,10 @@ export default async function HomePage() {
           <ScrollReveal>
             <div className="mb-[clamp(2.5rem,5vw,4.5rem)] text-center">
               <span className="label mb-3 block text-accent">
-                ◆ Simple process
+                ◆ {t("simpleProcess")}
               </span>
               <h2 className="font-display text-fluid-3xl font-normal leading-[1.1] tracking-[-0.03em] text-white">
-                From search to keys in minutes
+                {t("searchToKeys")}
               </h2>
             </div>
           </ScrollReveal>
@@ -249,24 +253,9 @@ export default async function HomePage() {
           {/* Steps — horizontal on desktop, vertical on mobile */}
           <div className="relative grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[clamp(1.5rem,3vw,2.5rem)]">
             {[
-              {
-                step: "01",
-                title: "Search & Filter",
-                body: "Browse by location, dates, car type, and budget. Every car is verified by our team.",
-                delay: 0,
-              },
-              {
-                step: "02",
-                title: "Book & Pay Securely",
-                body: "Pay via MTN Mobile Money or bank transfer. Booking confirmed only after payment clears.",
-                delay: 100,
-              },
-              {
-                step: "03",
-                title: "Pick Up & Drive",
-                body: "Meet your owner, do a quick walk-around, upload condition photos, and you're off.",
-                delay: 200,
-              },
+              { step: "01", key: "step1", delay: 0 },
+              { step: "02", key: "step2", delay: 100 },
+              { step: "03", key: "step3", delay: 200 },
             ].map((item) => (
               <ScrollReveal key={item.step} delay={item.delay}>
                 {/* Hover styling lives in globals.css — this is a server
@@ -276,10 +265,10 @@ export default async function HomePage() {
                     {item.step}
                   </div>
                   <h3 className="mb-3 font-display text-fluid-xl font-normal tracking-[-0.02em] text-white">
-                    {item.title}
+                    {t(`${item.key}Title`)}
                   </h3>
                   <p className="text-fluid-base leading-[1.65] text-white/65">
-                    {item.body}
+                    {t(`${item.key}Body`)}
                   </p>
                 </div>
               </ScrollReveal>
@@ -289,7 +278,7 @@ export default async function HomePage() {
           <ScrollReveal delay={300}>
             <div className="mt-[clamp(2rem,4vw,3.5rem)] text-center">
               <Link href={ROUTES.howItWorks} className="btn btn-ghost btn-lg">
-                Full guide <ChevronRight size={16} />
+                {t("fullGuide")} <ChevronRight size={16} />
               </Link>
             </div>
           </ScrollReveal>
@@ -305,10 +294,10 @@ export default async function HomePage() {
           <ScrollReveal>
             <div className="mb-[clamp(2.5rem,5vw,4rem)] max-w-[36ch]">
               <span className="label mb-3 block text-brand">
-                ◆ Why ZuriDrive
+                ◆ {t("whyZuriDrive")}
               </span>
               <h2 className="font-display text-fluid-3xl font-normal leading-[1.1] tracking-[-0.03em] text-ink">
-                Built for Rwanda. Trusted by thousands.
+                {t("builtForRwanda")}
               </h2>
             </div>
           </ScrollReveal>
@@ -316,54 +305,24 @@ export default async function HomePage() {
           {/* Props — asymmetric 2-column grid */}
           <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-6">
             {[
-              {
-                icon: <Shield size={22} />,
-                title: "Verified Cars & Owners",
-                body: "Every car and owner is reviewed before going live. You rent with confidence, every time.",
-                delay: 0,
-              },
-              {
-                icon: <Clock size={22} />,
-                title: "Confirmed in Minutes",
-                body: "Owners respond within 2 hours or the platform auto-confirms. No waiting, no uncertainty.",
-                delay: 80,
-              },
-              {
-                icon: <MapPin size={22} />,
-                title: "Flexible Pickup",
-                body: "Airport, hotel, your neighborhood — choose from trusted pickup points or set your own location.",
-                delay: 160,
-              },
-              {
-                icon: <Star size={22} />,
-                title: "Transparent Reviews",
-                body: "Real ratings across 4 categories from verified renters only. No fake reviews, ever.",
-                delay: 240,
-              },
-              {
-                icon: <TrendingUp size={22} />,
-                title: "Secure Payments",
-                body: "MTN Mobile Money and bank transfer. Your deposit is held separately and returned after a safe trip.",
-                delay: 320,
-              },
-              {
-                icon: <Users size={22} />,
-                title: "Built on Trust",
-                body: "Condition photos, fuel policies, and dispute resolution — every trip is fully documented.",
-                delay: 400,
-              },
+              { icon: <Shield size={22} />, key: "prop1", delay: 0 },
+              { icon: <Clock size={22} />, key: "prop2", delay: 80 },
+              { icon: <MapPin size={22} />, key: "prop3", delay: 160 },
+              { icon: <Star size={22} />, key: "prop4", delay: 240 },
+              { icon: <TrendingUp size={22} />, key: "prop5", delay: 320 },
+              { icon: <Users size={22} />, key: "prop6", delay: 400 },
             ].map((prop) => (
-              <ScrollReveal key={prop.title} delay={prop.delay}>
+              <ScrollReveal key={prop.key} delay={prop.delay}>
                 {/* Hover styling lives in globals.css — see note above. */}
                 <div className="prop-card rounded-3xl p-6">
                   <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-sand text-brand">
                     {prop.icon}
                   </div>
                   <h3 className="mb-2 font-sans text-fluid-base font-bold tracking-[-0.01em] text-ink">
-                    {prop.title}
+                    {t(`${prop.key}Title`)}
                   </h3>
                   <p className="text-fluid-sm leading-[1.65] text-ink-soft">
-                    {prop.body}
+                    {t(`${prop.key}Body`)}
                   </p>
                 </div>
               </ScrollReveal>
@@ -383,16 +342,13 @@ export default async function HomePage() {
               {/* Left — text content */}
               <div className="relative z-[1] p-[clamp(2.5rem,5vw,4.5rem)]">
                 <span className="label mb-4 block text-accent">
-                  ◆ For car owners
+                  ◆ {t("forCarOwners")}
                 </span>
                 <h2 className="mb-5 max-w-[20ch] font-display text-fluid-3xl font-normal leading-[1.1] tracking-[-0.03em] text-white [text-wrap:balance]">
-                  Your car earns while you sleep.
+                  {t("earnsWhileYouSleep")}
                 </h2>
                 <p className="mb-8 max-w-[48ch] text-fluid-base leading-[1.7] text-white/[0.72]">
-                  List your car on ZuriDrive and connect with renters across Rwanda.
-                  You control availability, pricing, and pickup locations. We collect
-                  the payment, hold the damage deposit, and keep a photo record of every
-                  trip. You keep 80% of every booking.
+                  {t("ownerPitch")}
                 </p>
 
                 {/* Earnings highlight */}
@@ -402,7 +358,7 @@ export default async function HomePage() {
                       {formatRWF(450000)}
                     </div>
                     <div className="mt-1 font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/55">
-                      Avg. monthly earnings
+                      {t("avgMonthlyEarnings")}
                     </div>
                   </div>
                   <div className="w-px self-stretch bg-white/15" />
@@ -411,17 +367,17 @@ export default async function HomePage() {
                       80%
                     </div>
                     <div className="mt-1 font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/55">
-                      You keep of every booking
+                      {t("youKeep")}
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-3">
                   <Link href={ROUTES.signupOwner} className="btn btn-accent btn-lg">
-                    Start earning today
+                    {t("startEarning")}
                   </Link>
                   <Link href={ROUTES.becomeAnOwner} className="btn btn-ghost btn-lg">
-                    Learn more
+                    {t("learnMore")}
                   </Link>
                 </div>
               </div>

@@ -8,10 +8,12 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import AddPlatformLocation from "@/components/admin/AddPlatformLocation";
 import { prisma } from "@/lib/db";
 import { requireAdminModule } from "@/lib/auth";
 import { formatRWF } from "@/lib/currency";
+import { formatDate } from "@/lib/dates";
 import {
   PageHeader,
   StatCard,
@@ -23,13 +25,23 @@ import {
 import ModerationActions from "@/components/admin/ModerationActions";
 import { MapPin, Building2, Check, Clock } from "lucide-react";
 
-export const metadata = { title: "Locations — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("pickupLocations")} — ZuriDrive Admin` };
+}
 
 export default async function AdminLocationsPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { filter?: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
   await requireAdminModule("CONTENT_MODERATOR");
 
   const filter = searchParams.filter ?? "PENDING";
@@ -65,45 +77,45 @@ export default async function AdminLocationsPage({
   return (
     <div>
       <PageHeader
-        title="Pickup locations"
-        subtitle="Approve the custom pickup points owners add to their cars."
+        title={t("pickupLocations")}
+        subtitle={t("locationsSub")}
       />
 
       <SubNav
         active={`/admin/locations?filter=${filter}`}
         items={[
           {
-            label: "Awaiting review",
+            label: t("awaitingReview"),
             href: "/admin/locations?filter=PENDING",
             count: pendingCount,
           },
-          { label: "Approved", href: "/admin/locations?filter=APPROVED" },
-          { label: "All", href: "/admin/locations?filter=ALL" },
+          { label: t("approved"), href: "/admin/locations?filter=APPROVED" },
+          { label: t("all"), href: "/admin/locations?filter=ALL" },
         ]}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatCard
-          label="Awaiting review"
+          label={t("awaitingReview")}
           value={pendingCount}
           tone={pendingCount > 0 ? "warn" : "default"}
-          hint="Not selectable by clients until approved"
+          hint={t("notSelectableHint")}
         />
-        <StatCard label="Approved" value={approvedCount} tone="dark" />
+        <StatCard label={t("approved")} value={approvedCount} tone="dark" />
         <StatCard
-          label="ZuriDrive locations"
+          label={t("zuriDriveLocations")}
           value={platformLocations.length}
-          hint="Available on every car"
+          hint={t("availableEveryCar")}
         />
       </div>
 
       <div className="mb-4">
-        <Card title="Owner pickup points">
+        <Card title={t("ownerPickupPoints")}>
           {locations.length === 0 ? (
             <EmptyRow>
               {filter === "PENDING"
-                ? "Nothing waiting for review."
-                : "No locations in this view."}
+                ? t("nothingWaitingReview")
+                : t("noLocationsInView")}
             </EmptyRow>
           ) : (
             <ul className="divide-y divide-sand">
@@ -120,11 +132,13 @@ export default async function AdminLocationsPage({
                           <span className="inline-flex items-center gap-1">
                             {l.isApproved ? (
                               <>
-                                <Check className="h-2.5 w-2.5" /> approved
+                                <Check className="h-2.5 w-2.5" />{" "}
+                                {t("approvedBadge")}
                               </>
                             ) : (
                               <>
-                                <Clock className="h-2.5 w-2.5" /> in review
+                                <Clock className="h-2.5 w-2.5" />{" "}
+                                {t("inReviewBadge")}
                               </>
                             )}
                           </span>
@@ -144,12 +158,15 @@ export default async function AdminLocationsPage({
                         >
                           {l.car.year} {l.car.make} {l.car.model}
                         </Link>{" "}
-                        · {l.car.owner.user.name ?? "Owner"} ·{" "}
-                        {l.neighborhood?.name ?? "no neighbourhood"}
+                        · {l.car.owner.user.name ?? t("ownerFallback")} ·{" "}
+                        {l.neighborhood?.name ?? t("noNeighbourhood")}
                         {l.deliveryFee
-                          ? ` · ${formatRWF(l.deliveryFee)} delivery`
+                          ? ` · ${t("deliveryFeeSuffix", { amount: formatRWF(l.deliveryFee) })}`
                           : ""}{" "}
-                        · added {l.createdAt.toLocaleDateString("en-RW")}
+                        ·{" "}
+                        {t("addedOn", {
+                          date: formatDate(l.createdAt, params.locale),
+                        })}
                       </p>
                     </div>
 
@@ -161,30 +178,26 @@ export default async function AdminLocationsPage({
                             ? [
                                 {
                                   id: "reject",
-                                  label: "Withdraw",
+                                  label: t("withdraw"),
                                   tone: "danger" as const,
                                   needsReason: true,
-                                  reasonPlaceholder:
-                                    "Why is this being withdrawn?",
-                                  warning:
-                                    "Clients will no longer be able to choose this pickup point.",
+                                  reasonPlaceholder: t("withdrawReason"),
+                                  warning: t("withdrawWarning"),
                                 },
                               ]
                             : [
                                 {
                                   id: "approve",
-                                  label: "Approve",
+                                  label: t("approve"),
                                   tone: "primary" as const,
                                 },
                                 {
                                   id: "reject",
-                                  label: "Reject",
+                                  label: t("reject"),
                                   tone: "danger" as const,
                                   needsReason: true,
-                                  reasonPlaceholder:
-                                    "What's wrong with this location?",
-                                  warning:
-                                    "The owner is told why, and the location is removed.",
+                                  reasonPlaceholder: t("rejectLocationReason"),
+                                  warning: t("rejectLocationWarning"),
                                 },
                               ]
                         }
@@ -198,10 +211,10 @@ export default async function AdminLocationsPage({
         </Card>
       </div>
 
-      <Card title="ZuriDrive locations">
+      <Card title={t("zuriDriveLocations")}>
         <p className="mb-3 flex items-center gap-1.5 text-xs text-ink-soft">
           <Building2 className="h-3.5 w-3.5" />
-          Available on every listing automatically.
+          {t("availableEveryListing")}
         </p>
 
         <div className="mb-3">

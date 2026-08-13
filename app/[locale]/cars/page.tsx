@@ -170,8 +170,8 @@ export default async function CarsPage({ params, searchParams }: CarsPageProps) 
           {/* Active filter chips */}
           <ActiveFilterChips filters={filters} />
 
-          <Suspense fallback={<CarCardGrid cars={[]} showSkeleton columns={3} />}>
-            <CarCardGrid cars={cars} columns={3} />
+          <Suspense fallback={<CarCardGrid cars={[]} locale={params.locale} showSkeleton columns={3} />}>
+            <CarCardGrid cars={cars} locale={params.locale} columns={3} />
           </Suspense>
 
           {/* Pagination */}

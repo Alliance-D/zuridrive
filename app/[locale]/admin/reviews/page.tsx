@@ -7,7 +7,9 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { formatDate } from "@/lib/dates";
 import { requireAdminModule } from "@/lib/auth";
 import {
   PageHeader,
@@ -21,7 +23,14 @@ import ModerationActions from "@/components/admin/ModerationActions";
 import type { Prisma } from "@prisma/client";
 import { Star, Search, EyeOff } from "lucide-react";
 
-export const metadata = { title: "Reviews — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("reviews")} — ZuriDrive Admin` };
+}
 
 function Stars({ value }: { value: number }) {
   return (
@@ -41,10 +50,13 @@ function Stars({ value }: { value: number }) {
 }
 
 export default async function AdminReviewsPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { filter?: string; q?: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
   await requireAdminModule("CONTENT_MODERATOR");
 
   const filter = searchParams.filter ?? "ALL";
@@ -100,21 +112,21 @@ export default async function AdminReviewsPage({
   return (
     <div>
       <PageHeader
-        title="Reviews"
-        subtitle="Hide reviews that break the rules — not ones that are simply negative. Hiding is reversible; nothing is deleted."
+        title={t("reviews")}
+        subtitle={t("reviewsSub")}
       />
 
       <SubNav
         active={`/admin/reviews?filter=${filter}`}
         items={[
-          { label: "Published", href: "/admin/reviews?filter=ALL" },
+          { label: t("published"), href: "/admin/reviews?filter=ALL" },
           {
-            label: "Low ratings",
+            label: t("lowRatings"),
             href: "/admin/reviews?filter=LOW",
             count: lowCount,
           },
           {
-            label: "Hidden",
+            label: t("hidden"),
             href: "/admin/reviews?filter=HIDDEN",
             count: hiddenCount,
           },
@@ -122,17 +134,17 @@ export default async function AdminReviewsPage({
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Published" value={visibleCount} tone="dark" />
+        <StatCard label={t("published")} value={visibleCount} tone="dark" />
         <StatCard
-          label="Average rating"
+          label={t("averageRating")}
           value={avg._avg.overallRating?.toFixed(2) ?? "—"}
         />
         <StatCard
-          label="Low ratings (≤2)"
+          label={t("lowRatingsStat")}
           value={lowCount}
           tone={lowCount > 0 ? "warn" : "default"}
         />
-        <StatCard label="Hidden" value={hiddenCount} />
+        <StatCard label={t("hidden")} value={hiddenCount} />
       </div>
 
       <form className="mb-4" action="/admin/reviews">
@@ -142,7 +154,7 @@ export default async function AdminReviewsPage({
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search review text, reviewer or car…"
+            placeholder={t("searchReviews")}
             className="w-full rounded-lg border border-sand-dark bg-white py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
         </div>
@@ -150,17 +162,15 @@ export default async function AdminReviewsPage({
 
       <div className="mb-4 rounded-2xl bg-bone p-3">
         <p className="text-xs text-ink-soft">
-          <strong className="text-ink">Moderation rule:</strong> hide a
-          review only for abuse, personal information, spam or something plainly
-          untrue. A harsh but honest review stays up — hiding those makes every
-          rating on the platform worthless.
+          <strong className="text-ink">{t("moderationRule")}</strong>{" "}
+          {t("moderationRuleBody")}
         </p>
       </div>
 
-      <Card title={`Reviews (${reviews.length})`}>
+      <Card title={t("reviewsCount", { count: reviews.length })}>
         {reviews.length === 0 ? (
           <EmptyRow>
-            {q ? `Nothing matches “${q}”.` : "No reviews in this view."}
+            {q ? t("nothingMatches", { q }) : t("noReviewsInView")}
           </EmptyRow>
         ) : (
           <ul className="divide-y divide-sand">
@@ -177,31 +187,33 @@ export default async function AdminReviewsPage({
                         <Badge tone="danger">
                           <span className="inline-flex items-center gap-1">
                             <EyeOff className="h-2.5 w-2.5" />
-                            hidden
+                            {t("hiddenBadge")}
                           </span>
                         </Badge>
                       )}
                       {r.isVisible && r.overallRating <= 2 && (
-                        <Badge tone="warn">low rating</Badge>
+                        <Badge tone="warn">{t("lowRatingBadge")}</Badge>
                       )}
                     </div>
 
                     <p className="mt-1 text-xs text-ink-soft">
-                      {r.client.name ?? "Client"} on{" "}
+                      {t("reviewBy", {
+                        client: r.client.name ?? t("clientFallback"),
+                      })}{" "}
                       <Link
                         href={`/cars/${r.car.id}`}
                         className="hover:text-brand"
                       >
                         {r.car.year} {r.car.make} {r.car.model}
                       </Link>{" "}
-                      · owner {r.car.owner.user.name ?? "—"} ·{" "}
+                      · {t("ownerPrefix")} {r.car.owner.user.name ?? "—"} ·{" "}
                       <Link
                         href={`/admin/bookings/${r.booking.id}`}
                         className="hover:text-brand"
                       >
                         {r.booking.reference}
                       </Link>{" "}
-                      · {r.createdAt.toLocaleDateString("en-RW")}
+                      · {formatDate(r.createdAt, params.locale)}
                     </p>
 
                     {r.comment && (
@@ -211,16 +223,24 @@ export default async function AdminReviewsPage({
                     )}
 
                     <dl className="mt-2 flex flex-wrap gap-3 text-[11px] text-ink-faint">
-                      <span>Clean {r.cleanlinessRating}</span>
-                      <span>Comfort {r.comfortRating}</span>
-                      <span>Value {r.valueRating}</span>
-                      <span>Comms {r.communicationRating}</span>
+                      <span>
+                        {t("ratingClean", { value: r.cleanlinessRating })}
+                      </span>
+                      <span>
+                        {t("ratingComfort", { value: r.comfortRating })}
+                      </span>
+                      <span>{t("ratingValue", { value: r.valueRating })}</span>
+                      <span>
+                        {t("ratingComms", { value: r.communicationRating })}
+                      </span>
                     </dl>
 
                     {r.reply && (
                       <div className="mt-2 rounded-lg border-l-2 border-brand bg-white pl-2.5">
                         <p className="text-[11px] font-semibold text-ink">
-                          {r.reply.author.name ?? "Owner"} replied
+                          {t("repliedBy", {
+                            name: r.reply.author.name ?? t("ownerFallback"),
+                          })}
                         </p>
                         <p className="text-xs text-ink-muted">
                           {r.reply.content}
@@ -230,7 +250,7 @@ export default async function AdminReviewsPage({
 
                     {!r.isVisible && r.removedReason && (
                       <p className="mt-2 rounded-lg bg-danger-bg px-2.5 py-1.5 text-[11px] text-danger">
-                        Hidden: {r.removedReason}
+                        {t("hiddenReason", { reason: r.removedReason })}
                       </p>
                     )}
                   </div>
@@ -243,19 +263,17 @@ export default async function AdminReviewsPage({
                           ? [
                               {
                                 id: "remove",
-                                label: "Hide",
+                                label: t("hide"),
                                 tone: "danger" as const,
                                 needsReason: true,
-                                reasonPlaceholder:
-                                  "Which rule does this break?",
-                                warning:
-                                  "The reviewer is told why. Hiding is reversible — but don't hide a review just for being negative.",
+                                reasonPlaceholder: t("hideReason"),
+                                warning: t("hideWarning"),
                               },
                             ]
                           : [
                               {
                                 id: "restore",
-                                label: "Restore",
+                                label: t("restore"),
                                 tone: "primary" as const,
                               },
                             ]

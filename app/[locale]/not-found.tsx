@@ -70,7 +70,7 @@ export default async function NotFound() {
               <h2 className="mb-6 text-center font-sans text-fluid-lg font-bold tracking-[-0.01em] text-ink">
                 {t("availableNow")}
               </h2>
-              <CarCardGrid cars={cars} />
+              <CarCardGrid cars={cars} locale={locale} />
             </section>
           )}
         </div>

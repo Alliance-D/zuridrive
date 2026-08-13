@@ -5,19 +5,31 @@
  * record of every privileged action anyone has taken.
  */
 
+import { getTranslations } from "next-intl/server";
 import { requireSuperAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { formatDateTime } from "@/lib/dates";
 import { PageHeader, Card, StatCard, EmptyRow } from "@/components/admin/ui";
 import TeamManager, { type TeamMember } from "@/components/admin/TeamManager";
 import { ShieldCheck } from "lucide-react";
 
-export const metadata = { title: "Team — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("team")} — ZuriDrive Admin` };
+}
 
 export default async function AdminTeamPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { page?: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
   await requireSuperAdmin();
 
   const page = Math.max(1, Number(searchParams.page ?? 1));
@@ -53,7 +65,7 @@ export default async function AdminTeamPage({
 
   const members: TeamMember[] = subAdmins.map((u) => ({
     id: u.id,
-    name: u.name ?? u.email ?? "Admin",
+    name: u.name ?? u.email ?? t("adminFallback"),
     email: u.email,
     phone: u.phone,
     isSuspended: u.isSuspended,
@@ -66,49 +78,48 @@ export default async function AdminTeamPage({
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Team"
-        subtitle="Who has admin access, and everything they've done."
+        title={t("team")}
+        subtitle={t("teamSub")}
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Super admins" value={superAdmins.length} tone="dark" />
-        <StatCard label="Sub-admins" value={members.length} />
+        <StatCard label={t("superAdmins")} value={superAdmins.length} tone="dark" />
+        <StatCard label={t("subAdmins")} value={members.length} />
         <StatCard
-          label="Suspended"
+          label={t("suspended")}
           value={members.filter((m) => m.isSuspended).length}
           tone={members.some((m) => m.isSuspended) ? "warn" : "default"}
         />
-        <StatCard label="Actions logged" value={activityTotal} />
+        <StatCard label={t("actionsLogged")} value={activityTotal} />
       </div>
 
       {/* Super admins — listed for visibility, not editable here */}
-      <Card title="Super admins">
+      <Card title={t("superAdmins")}>
         <ul className="space-y-1.5">
           {superAdmins.map((s) => (
             <li key={s.id} className="flex items-center gap-2 text-sm">
               <ShieldCheck className="h-4 w-4 shrink-0 text-accent" />
               <span className="font-medium text-ink">
-                {s.name ?? s.email ?? "Super Admin"}
+                {s.name ?? s.email ?? t("superAdminFallback")}
               </span>
               <span className="text-xs text-ink-faint">{s.phone}</span>
             </li>
           ))}
         </ul>
         <p className="mt-2 text-[11px] text-ink-faint">
-          Super admins have every permission and can&apos;t be edited from this
-          screen — that has to happen in the database, deliberately.
+          {t("superAdminsNote")}
         </p>
       </Card>
 
       <div>
-        <h2 className="mb-3 text-sm font-semibold text-ink">Sub-admins</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink">{t("subAdmins")}</h2>
         <TeamManager members={members} />
       </div>
 
       {/* Activity log */}
-      <Card title={`Activity log (${activityTotal})`}>
+      <Card title={t("activityLog", { count: activityTotal })}>
         {activity.length === 0 ? (
-          <EmptyRow>No admin actions recorded yet.</EmptyRow>
+          <EmptyRow>{t("noActionsYet")}</EmptyRow>
         ) : (
           <>
             <ul className="divide-y divide-sand">
@@ -120,22 +131,19 @@ export default async function AdminTeamPage({
                         {a.description}
                       </p>
                       <p className="mt-0.5 text-[11px] text-ink-faint">
-                        {a.actor.name ?? a.actor.email ?? "Admin"}
-                        {a.actor.role === "SUPER_ADMIN" && " (super)"} ·{" "}
+                        {a.actor.name ?? a.actor.email ?? t("adminFallback")}
+                        {a.actor.role === "SUPER_ADMIN" && t("superSuffix")} ·{" "}
                         {a.actionType.toLowerCase().replace(/_/g, " ")}
                         {a.targetModel && ` · ${a.targetModel}`}
                       </p>
                       {a.reason && (
                         <p className="mt-0.5 text-[11px] text-ink-soft">
-                          Reason: {a.reason}
+                          {t("reasonLabel", { reason: a.reason })}
                         </p>
                       )}
                     </div>
                     <span className="shrink-0 text-[11px] text-ink-faint">
-                      {a.createdAt.toLocaleString("en-RW", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
+                      {formatDateTime(a.createdAt, params.locale)}
                     </span>
                   </div>
                 </li>
@@ -149,18 +157,18 @@ export default async function AdminTeamPage({
                     href={`/admin/team?page=${page - 1}`}
                     className="text-xs font-semibold text-brand hover:underline"
                   >
-                    Previous
+                    {t("previous")}
                   </a>
                 )}
                 <span className="text-xs text-ink-soft">
-                  Page {page} of {totalPages}
+                  {t("pageOf", { page, total: totalPages })}
                 </span>
                 {page < totalPages && (
                   <a
                     href={`/admin/team?page=${page + 1}`}
                     className="text-xs font-semibold text-brand hover:underline"
                   >
-                    Next
+                    {t("next")}
                   </a>
                 )}
               </div>

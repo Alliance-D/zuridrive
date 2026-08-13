@@ -6,7 +6,10 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule, hasAdminModule } from "@/lib/auth";
 import { formatRWF } from "@/lib/currency";
 import {
@@ -23,7 +26,14 @@ import {
 import type { BookingStatus, Prisma } from "@prisma/client";
 import { Search, Scale } from "lucide-react";
 
-export const metadata = { title: "Bookings — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("bookings")} — ZuriDrive Admin` };
+}
 
 const TONE: Record<
   BookingStatus,
@@ -40,10 +50,14 @@ const TONE: Record<
 };
 
 export default async function AdminBookingsPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { status?: string; q?: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  const label = await getEnumLabeller(params.locale);
   await requireAdminModule("BOOKING_MANAGER");
   const canSeeMoney = await hasAdminModule("FINANCE_MANAGER");
 
@@ -102,39 +116,39 @@ export default async function AdminBookingsPage({
   return (
     <div>
       <PageHeader
-        title="Bookings"
-        subtitle="Every booking on the platform."
+        title={t("bookings")}
+        subtitle={t("bookingsSub")}
       />
 
       <SubNav
         active={`/admin/bookings?status=${status}`}
         items={[
-          { label: "All", href: "/admin/bookings?status=ALL" },
+          { label: t("all"), href: "/admin/bookings?status=ALL" },
           {
-            label: "Awaiting owner",
+            label: t("awaitingOwner"),
             href: "/admin/bookings?status=AWAITING_OWNER_CONFIRMATION",
             count: countFor("AWAITING_OWNER_CONFIRMATION"),
           },
-          { label: "Active", href: "/admin/bookings?status=ACTIVE" },
+          { label: t("active"), href: "/admin/bookings?status=ACTIVE" },
           {
-            label: "Disputed",
+            label: t("disputed"),
             href: "/admin/bookings?status=DISPUTED",
             count: countFor("DISPUTED"),
           },
-          { label: "Completed", href: "/admin/bookings?status=COMPLETED" },
-          { label: "Cancelled", href: "/admin/bookings?status=CANCELLED" },
+          { label: t("completed"), href: "/admin/bookings?status=COMPLETED" },
+          { label: t("cancelled"), href: "/admin/bookings?status=CANCELLED" },
         ]}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Total bookings" value={totalAll} tone="dark" />
-        <StatCard label="Active trips" value={activeCount} />
+        <StatCard label={t("totalBookings")} value={totalAll} tone="dark" />
+        <StatCard label={t("activeTrips")} value={activeCount} />
         <StatCard
-          label="Disputed"
+          label={t("disputed")}
           value={disputedCount}
           tone={disputedCount > 0 ? "danger" : "default"}
         />
-        <StatCard label="Matching filter" value={total} />
+        <StatCard label={t("matchingFilter")} value={total} />
       </div>
 
       <form className="mb-4" action="/admin/bookings">
@@ -144,32 +158,36 @@ export default async function AdminBookingsPage({
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search reference, client, owner or plate…"
+            placeholder={t("searchBookings")}
             className="w-full rounded-lg border border-sand-dark bg-white py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
         </div>
       </form>
 
       <Card
-        title={`Showing ${bookings.length}${total > bookings.length ? ` of ${total}` : ""}`}
+        title={
+          total > bookings.length
+            ? t("showingOf", { shown: bookings.length, total })
+            : t("showingCount", { shown: bookings.length })
+        }
       >
         {bookings.length === 0 ? (
           <EmptyRow>
-            {q ? `Nothing matches “${q}”.` : "No bookings in this view."}
+            {q ? t("nothingMatches", { q }) : t("noBookingsInView")}
           </EmptyRow>
         ) : (
           <TableWrap>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-sand">
-                  <Th>Reference</Th>
-                  <Th>Status</Th>
-                  <Th>Car</Th>
-                  <Th>Client</Th>
-                  <Th>Owner</Th>
-                  <Th>Dates</Th>
-                  {canSeeMoney && <Th align="right">Subtotal</Th>}
-                  {canSeeMoney && <Th align="right">Deposit</Th>}
+                  <Th>{t("colReference")}</Th>
+                  <Th>{t("colStatus")}</Th>
+                  <Th>{t("colCar")}</Th>
+                  <Th>{t("colClient")}</Th>
+                  <Th>{t("colOwner")}</Th>
+                  <Th>{t("colDates")}</Th>
+                  {canSeeMoney && <Th align="right">{t("colSubtotal")}</Th>}
+                  {canSeeMoney && <Th align="right">{t("colDeposit")}</Th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand">
@@ -188,7 +206,7 @@ export default async function AdminBookingsPage({
                     </Td>
                     <Td>
                       <Badge tone={TONE[b.status]}>
-                        {b.status.toLowerCase().replace(/_/g, " ")}
+                        {label("bookingStatus", b.status)}
                       </Badge>
                     </Td>
                     <Td muted>
@@ -201,7 +219,7 @@ export default async function AdminBookingsPage({
                     <Td muted>{b.client.name ?? b.client.phone}</Td>
                     <Td muted>{b.car.owner.user.name ?? "—"}</Td>
                     <Td muted>
-                      {b.startDate.toLocaleDateString("en-RW")}
+                      {formatDate(b.startDate, params.locale)}
                       <br />
                       <span className="text-[10px] text-ink-faint">
                         {b.totalDays}d

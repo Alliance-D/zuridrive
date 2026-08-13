@@ -6,7 +6,9 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
 import { formatRWF } from "@/lib/currency";
 import {
@@ -19,25 +21,28 @@ import {
 } from "@/components/admin/ui";
 import { Scale, ArrowRight, Clock } from "lucide-react";
 
-export const metadata = { title: "Disputes — ZuriDrive Admin" };
-
-const TYPE_LABEL: Record<string, string> = {
-  DAMAGE: "Damage",
-  FUEL: "Fuel",
-  LATE_RETURN: "Late return",
-  NO_SHOW: "No show",
-  OTHER: "Other",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("disputes")} — ZuriDrive Admin` };
+}
 
 function daysOpen(from: Date) {
   return Math.floor((Date.now() - from.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export default async function AdminDisputesPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { status?: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  const label = await getEnumLabeller(params.locale);
   await requireAdminModule("BOOKING_MANAGER");
 
   const filter = searchParams.status ?? "OPEN";
@@ -93,46 +98,50 @@ export default async function AdminDisputesPage({
   return (
     <div>
       <PageHeader
-        title="Disputes"
-        subtitle="Every open dispute freezes a client's deposit. Resolve them quickly."
+        title={t("disputes")}
+        subtitle={t("disputesSub")}
       />
 
       <SubNav
         active={`/admin/disputes?status=${filter}`}
         items={[
-          { label: "Open", href: "/admin/disputes?status=OPEN", count: openCount },
-          { label: "Resolved", href: "/admin/disputes?status=RESOLVED" },
-          { label: "Dismissed", href: "/admin/disputes?status=DISMISSED" },
-          { label: "All", href: "/admin/disputes?status=ALL" },
+          {
+            label: t("open"),
+            href: "/admin/disputes?status=OPEN",
+            count: openCount,
+          },
+          { label: t("resolved"), href: "/admin/disputes?status=RESOLVED" },
+          { label: t("dismissed"), href: "/admin/disputes?status=DISMISSED" },
+          { label: t("all"), href: "/admin/disputes?status=ALL" },
         ]}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Open disputes"
+          label={t("openDisputes")}
           value={openCount}
           tone={openCount > 0 ? "danger" : "default"}
         />
         <StatCard
-          label="Deposits frozen"
+          label={t("depositsFrozen")}
           value={formatRWF(frozen._sum.amount ?? 0)}
-          hint="Client money awaiting a decision"
+          hint={t("depositsFrozenHint")}
           tone={frozen._sum.amount ? "warn" : "default"}
         />
         <StatCard
-          label="Oldest open"
+          label={t("oldestOpen")}
           value={oldest > 0 ? `${oldest}d` : "—"}
           tone={oldest > 7 ? "danger" : "default"}
         />
-        <StatCard label="Resolved" value={countFor("RESOLVED")} />
+        <StatCard label={t("resolved")} value={countFor("RESOLVED")} />
       </div>
 
-      <Card title={`Disputes (${disputes.length})`}>
+      <Card title={t("disputesCount", { count: disputes.length })}>
         {disputes.length === 0 ? (
           <EmptyRow>
             {filter === "OPEN"
-              ? "No open disputes. Nothing is waiting on a decision."
-              : "Nothing matches this filter."}
+              ? t("noOpenDisputes")
+              : t("nothingMatchesFilter")}
           </EmptyRow>
         ) : (
           <ul className="divide-y divide-sand">
@@ -160,7 +169,7 @@ export default async function AdminDisputesPage({
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm font-semibold text-ink">
-                          {TYPE_LABEL[d.type] ?? d.type}
+                          {label("disputeType", d.type)}
                         </span>
                         <Badge
                           tone={
@@ -171,12 +180,12 @@ export default async function AdminDisputesPage({
                                 : "danger"
                           }
                         >
-                          {d.status.toLowerCase().replace(/_/g, " ")}
+                          {label("disputeStatus", d.status)}
                         </Badge>
                         {unresolved && age > 3 && (
                           <span className="flex items-center gap-1 text-[10px] font-semibold text-danger-strong">
                             <Clock className="h-2.5 w-2.5" />
-                            {age}d open
+                            {t("daysOpen", { count: age })}
                           </span>
                         )}
                       </div>
@@ -187,8 +196,11 @@ export default async function AdminDisputesPage({
                       <p className="text-[11px] text-ink-faint">
                         {d.booking.reference} · {d.booking.car.make}{" "}
                         {d.booking.car.model} ·{" "}
-                        {d.booking.client.name ?? "Client"} vs{" "}
-                        {d.booking.car.owner.user.name ?? "Owner"}
+                        {t("versus", {
+                          client: d.booking.client.name ?? t("clientFallback"),
+                          owner:
+                            d.booking.car.owner.user.name ?? t("ownerFallback"),
+                        })}
                       </p>
                     </div>
 
@@ -196,7 +208,9 @@ export default async function AdminDisputesPage({
                       <p className="text-sm font-bold text-ink">
                         {formatRWF(d.booking.deposit?.amount ?? 0)}
                       </p>
-                      <p className="text-[10px] text-ink-faint">deposit</p>
+                      <p className="text-[10px] text-ink-faint">
+                        {t("depositLabel")}
+                      </p>
                     </div>
 
                     <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-ink-faint" />

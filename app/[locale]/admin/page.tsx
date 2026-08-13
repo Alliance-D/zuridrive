@@ -7,14 +7,27 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { formatRWF } from "@/lib/currency";
 import { PageHeader, StatCard, Card, EmptyRow } from "@/components/admin/ui";
 import { ArrowRight, AlertTriangle } from "lucide-react";
 
-export const metadata = { title: "Admin — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("admin")} — ZuriDrive` };
+}
 
-export default async function AdminOverviewPage() {
+export default async function AdminOverviewPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -62,19 +75,20 @@ export default async function AdminOverviewPage() {
     }),
   ]);
 
+  // Keys, not text — resolved at render below.
   const queues = [
     {
-      label: "Bank transfers to confirm",
+      labelKey: "queueBankTransfers",
       count: pendingBankPayments,
       href: "/admin/finance/payments",
     },
     {
-      label: "Payout requests",
+      labelKey: "queuePayouts",
       count: pendingPayouts,
       href: "/admin/finance/payouts",
     },
-    { label: "Cars awaiting approval", count: pendingCars, href: "/admin/fleet" },
-    { label: "Open disputes", count: openDisputes, href: "/admin/disputes" },
+    { labelKey: "queueCarsApproval", count: pendingCars, href: "/admin/fleet" },
+    { labelKey: "queueDisputes", count: openDisputes, href: "/admin/disputes" },
   ];
 
   const totalQueued = queues.reduce((s, q) => s + q.count, 0);
@@ -82,36 +96,40 @@ export default async function AdminOverviewPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Overview"
-        subtitle="Platform health and anything waiting on the team."
+        title={t("overview")}
+        subtitle={t("overviewSub")}
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Commission this month"
+          label={t("commissionThisMonth")}
           value={formatRWF(monthRevenue._sum.commissionAmount ?? 0)}
           tone="dark"
         />
         <StatCard
-          label="Deposits held"
+          label={t("depositsHeld")}
           value={formatRWF(depositsHeld._sum.amount ?? 0)}
-          hint="Client money — not platform revenue"
+          hint={t("depositsHeldHint")}
         />
         <StatCard
-          label="Users"
+          label={t("usersStat")}
           value={userCount}
-          hint={`+${newUsersThisWeek} this week`}
+          hint={t("newThisWeek", { count: newUsersThisWeek })}
         />
         <StatCard
-          label="Cars live"
+          label={t("carsLive")}
           value={liveCars}
-          hint={pendingCars > 0 ? `${pendingCars} awaiting approval` : undefined}
+          hint={
+            pendingCars > 0
+              ? t("awaitingApprovalHint", { count: pendingCars })
+              : undefined
+          }
         />
       </div>
 
-      <Card title="Needs attention">
+      <Card title={t("needsAttention")}>
         {totalQueued === 0 ? (
-          <EmptyRow>Nothing is waiting. All queues are clear.</EmptyRow>
+          <EmptyRow>{t("allQueuesClear")}</EmptyRow>
         ) : (
           <ul className="divide-y divide-sand">
             {queues
@@ -124,7 +142,7 @@ export default async function AdminOverviewPage() {
                   >
                     <AlertTriangle className="h-4 w-4 shrink-0 text-accent" />
                     <span className="flex-1 text-sm text-ink">
-                      {q.label}
+                      {t(q.labelKey)}
                     </span>
                     <span className="rounded-full bg-warning-tint px-2 py-0.5 text-xs font-bold text-warning-dark">
                       {q.count}
@@ -138,9 +156,9 @@ export default async function AdminOverviewPage() {
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <StatCard label="Active trips" value={activeBookings} />
+        <StatCard label={t("activeTrips")} value={activeBookings} />
         <StatCard
-          label="Open disputes"
+          label={t("openDisputes")}
           value={openDisputes}
           tone={openDisputes > 0 ? "danger" : "default"}
         />

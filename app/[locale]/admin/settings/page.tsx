@@ -5,8 +5,10 @@
  * enforces the same rule independently.
  */
 
+import { getTranslations } from "next-intl/server";
 import { requireSuperAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { formatDateTime } from "@/lib/dates";
 import {
   ensurePlatformSettings,
   SETTING_LIMITS,
@@ -15,9 +17,21 @@ import { PageHeader, Card } from "@/components/admin/ui";
 import SettingsForm from "@/components/admin/SettingsForm";
 import { ShieldAlert } from "lucide-react";
 
-export const metadata = { title: "Settings — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${t("settings")} — ZuriDrive Admin` };
+}
 
-export default async function AdminSettingsPage() {
+export default async function AdminSettingsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "admin" });
   await requireSuperAdmin();
 
   const settings = await ensurePlatformSettings();
@@ -42,17 +56,16 @@ export default async function AdminSettingsPage() {
   return (
     <div>
       <PageHeader
-        title="Platform settings"
-        subtitle="Configuration that affects the whole platform."
+        title={t("platformSettings")}
+        subtitle={t("settingsSub")}
       />
 
       <div className="mb-4 flex items-start gap-2 rounded-2xl bg-ink p-4 text-white">
         <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
         <div className="text-xs">
-          <p className="font-semibold">Super Admin only</p>
+          <p className="font-semibold">{t("superAdminOnly")}</p>
           <p className="mt-0.5 text-white/70">
-            No sub-admin role grants access here, including Finance Manager.
-            Every change is recorded with the old and new value.
+            {t("superAdminOnlyNote")}
           </p>
         </div>
       </div>
@@ -73,21 +86,27 @@ export default async function AdminSettingsPage() {
       />
 
       <p className="mt-3 text-[11px] text-ink-faint">
-        Last changed {settings.updatedAt.toLocaleString("en-RW")}
-        {updatedBy ? ` by ${updatedBy.name ?? updatedBy.email}` : ""}.
+        {updatedBy
+          ? t("lastChangedBy", {
+              date: formatDateTime(settings.updatedAt, params.locale),
+              who: updatedBy.name ?? updatedBy.email ?? t("adminFallback"),
+            })
+          : t("lastChanged", {
+              date: formatDateTime(settings.updatedAt, params.locale),
+            })}
       </p>
 
       {history.length > 0 && (
         <div className="mt-4">
-          <Card title="Recent changes">
+          <Card title={t("recentChanges")}>
             <ul className="space-y-2">
               {history.map((h) => (
                 <li key={h.id} className="text-xs">
                   <span className="text-ink">{h.description}</span>
                   <br />
                   <span className="text-[11px] text-ink-faint">
-                    {h.actor.name ?? h.actor.email ?? "Admin"} ·{" "}
-                    {h.createdAt.toLocaleString("en-RW")}
+                    {h.actor.name ?? h.actor.email ?? t("adminFallback")} ·{" "}
+                    {formatDateTime(h.createdAt, params.locale)}
                   </span>
                 </li>
               ))}
