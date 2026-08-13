@@ -8,6 +8,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { formatRWF } from "@/lib/currency";
 import { Loader2, AlertCircle, XCircle } from "lucide-react";
@@ -22,6 +23,8 @@ export default function CancelBookingButton({
   refundableDeposit: number;
   viewerRole: "CLIENT" | "OWNER";
 }) {
+  const t = useTranslations("trip");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -39,13 +42,13 @@ export default function CancelBookingButton({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "We couldn't cancel this booking.");
+        setError(data.error ?? t("cancelError"));
         return;
       }
       setOpen(false);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -58,7 +61,7 @@ export default function CancelBookingButton({
         className="flex items-center gap-1.5 rounded-lg border border-danger-soft px-3 py-2 text-xs font-semibold text-danger-strong hover:bg-danger-tint"
       >
         <XCircle className="h-3.5 w-3.5" />
-        Cancel booking
+        {t("cancelBooking")}
       </button>
     );
   }
@@ -66,16 +69,16 @@ export default function CancelBookingButton({
   return (
     <div className="rounded-xl border border-danger-soft bg-danger-tint p-3">
       <p className="text-sm font-semibold text-danger">
-        Cancel this booking?
+        {t("cancelThisBooking")}
       </p>
       <p className="mt-0.5 text-xs text-danger">
         {refundableDeposit > 0
-          ? `Your deposit of ${formatRWF(refundableDeposit)} will be returned within 1-3 business days, and any payment is voided.`
-          : "No money has been collected, so there is nothing to refund."}{" "}
+          ? t("cancelRefundLine", { amount: formatRWF(refundableDeposit) })
+          : t("cancelNoRefund")}{" "}
         {viewerRole === "OWNER"
-          ? "The client will be told."
-          : "The owner will be told."}{" "}
-        This can&apos;t be undone.
+          ? t("clientWillBeTold")
+          : t("ownerWillBeTold")}{" "}
+        {t("cantBeUndone")}
       </p>
 
       <textarea
@@ -84,9 +87,7 @@ export default function CancelBookingButton({
         rows={2}
         autoFocus
         placeholder={
-          viewerRole === "OWNER"
-            ? "Why can't you take this booking?"
-            : "Why are you cancelling?"
+          viewerRole === "OWNER" ? t("whyCantTake") : t("whyCancelling")
         }
         className="mt-2 w-full rounded-lg border border-danger-soft bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-danger-strong/20"
       />
@@ -105,7 +106,7 @@ export default function CancelBookingButton({
           className="flex items-center gap-1.5 rounded-lg bg-danger-strong px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
         >
           {busy && <Loader2 className="h-3 w-3 animate-spin" />}
-          {busy ? "Cancelling…" : "Yes, cancel it"}
+          {busy ? t("cancelling") : t("yesCancelIt")}
         </button>
         <button
           onClick={() => {
@@ -115,7 +116,7 @@ export default function CancelBookingButton({
           disabled={busy}
           className="rounded-lg px-3 py-1.5 text-xs font-semibold text-ink-soft"
         >
-          Keep booking
+          {t("keepBooking")}
         </button>
       </div>
     </div>

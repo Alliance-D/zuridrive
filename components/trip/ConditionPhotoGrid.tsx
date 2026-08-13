@@ -10,6 +10,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { Clock, Camera, Lock, ZoomIn } from 'lucide-react'
@@ -29,6 +30,7 @@ interface ConditionPhotoGridProps {
 }
 
 export function ConditionPhotoGrid({ photos, deleteAt }: ConditionPhotoGridProps) {
+  const t = useTranslations('trip')
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
 
   const prePhotos = photos.filter((p) => p.phase === 'PRE_TRIP')
@@ -47,14 +49,14 @@ export function ConditionPhotoGrid({ photos, deleteAt }: ConditionPhotoGridProps
       <div className="px-5 py-4 border-b border-stone-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Camera size={15} className="text-stone-400" />
-          <p className="text-sm font-semibold text-stone-700">Condition Photos</p>
+          <p className="text-sm font-semibold text-stone-700">{t('conditionPhotos')}</p>
         </div>
 
         {/* Deletion status */}
         {isLocked ? (
           <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
             <Lock size={11} />
-            Locked (dispute)
+            {t('lockedDispute')}
           </div>
         ) : daysUntilDeletion !== null ? (
           <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${
@@ -63,7 +65,9 @@ export function ConditionPhotoGrid({ photos, deleteAt }: ConditionPhotoGridProps
               : 'text-stone-500 bg-stone-50 border-stone-200'
           }`}>
             <Clock size={11} />
-            Deletes in {daysUntilDeletion === 0 ? 'today' : `${daysUntilDeletion}d`}
+            {daysUntilDeletion === 0
+              ? t('deletesToday')
+              : t('deletesInDays', { count: daysUntilDeletion })}
           </div>
         ) : null}
       </div>
@@ -73,7 +77,7 @@ export function ConditionPhotoGrid({ photos, deleteAt }: ConditionPhotoGridProps
         {prePhotos.length > 0 && (
           <div>
             <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
-              Before Trip ({prePhotos.length})
+              {t('beforeTrip', { count: prePhotos.length })}
             </p>
             <PhotoGrid photos={prePhotos} onZoom={setLightboxUrl} />
           </div>
@@ -83,7 +87,7 @@ export function ConditionPhotoGrid({ photos, deleteAt }: ConditionPhotoGridProps
         {postPhotos.length > 0 && (
           <div>
             <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
-              After Trip ({postPhotos.length})
+              {t('afterTrip', { count: postPhotos.length })}
             </p>
             <PhotoGrid photos={postPhotos} onZoom={setLightboxUrl} />
           </div>
@@ -95,7 +99,7 @@ export function ConditionPhotoGrid({ photos, deleteAt }: ConditionPhotoGridProps
             <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <Camera size={20} className="text-stone-300" />
             </div>
-            <p className="text-sm text-stone-400">No condition photos uploaded yet</p>
+            <p className="text-sm text-stone-400">{t('noConditionPhotos')}</p>
           </div>
         )}
 
@@ -103,8 +107,10 @@ export function ConditionPhotoGrid({ photos, deleteAt }: ConditionPhotoGridProps
         {isDeletingSoon && (
           <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
             <p className="text-xs text-red-700 font-medium">
-              ⚠️ These photos will be deleted {daysUntilDeletion === 0 ? 'today' : 'tomorrow'}.
-              Download them now if you need them for your records.
+              ⚠️{' '}
+              {daysUntilDeletion === 0
+                ? t('deletionWarningToday')
+                : t('deletionWarningTomorrow')}
             </p>
           </div>
         )}
@@ -125,7 +131,7 @@ export function ConditionPhotoGrid({ photos, deleteAt }: ConditionPhotoGridProps
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               src={lightboxUrl}
-              alt="Condition photo"
+              alt={t('conditionPhotoAlt')}
               className="max-w-full max-h-full rounded-xl object-contain"
               onClick={(e) => e.stopPropagation()}
             />

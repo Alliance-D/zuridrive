@@ -7,14 +7,16 @@
  * Completed steps are filled green, current step is gold, future steps are grey.
  */
 
+import { useTranslations } from 'next-intl'
 import { Check } from 'lucide-react'
 
+// labelKey, not label — this is module scope, where no translator exists.
 const TIMELINE_STEPS = [
-  { id: 'PENDING_PAYMENT',            label: 'Payment' },
-  { id: 'AWAITING_OWNER_CONFIRMATION', label: 'Confirmation' },
-  { id: 'CONFIRMED',                  label: 'Confirmed' },
-  { id: 'ACTIVE',                     label: 'Active' },
-  { id: 'COMPLETED',                  label: 'Complete' },
+  { id: 'PENDING_PAYMENT',             labelKey: 'stepPayment' },
+  { id: 'AWAITING_OWNER_CONFIRMATION', labelKey: 'stepConfirmation' },
+  { id: 'CONFIRMED',                   labelKey: 'stepConfirmed' },
+  { id: 'ACTIVE',                      labelKey: 'stepActive' },
+  { id: 'COMPLETED',                   labelKey: 'stepComplete' },
 ]
 
 // Order for determining which steps are "completed"
@@ -34,6 +36,7 @@ interface BookingStatusTimelineProps {
 }
 
 export function BookingStatusTimeline({ status }: BookingStatusTimelineProps) {
+  const t = useTranslations('trip')
   const currentOrder = STATUS_ORDER[status] ?? 0
   const isCancelled = status === 'CANCELLED'
   const isDisputed = status === 'DISPUTED'
@@ -44,7 +47,7 @@ export function BookingStatusTimeline({ status }: BookingStatusTimelineProps) {
         <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
           <span className="text-red-500 text-sm">✕</span>
         </div>
-        <p className="text-sm font-medium text-red-600">Booking Cancelled</p>
+        <p className="text-sm font-medium text-red-600">{t('bookingCancelled')}</p>
       </div>
     )
   }
@@ -89,7 +92,7 @@ export function BookingStatusTimeline({ status }: BookingStatusTimelineProps) {
                   ${isFuture ? 'text-stone-400' : ''}
                 `}
               >
-                {showDisputeIndicator ? 'Disputed' : step.label}
+                {showDisputeIndicator ? t('statusDisputed') : t(step.labelKey)}
               </span>
             </div>
 

@@ -8,6 +8,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { formatRWF } from "@/lib/currency";
 import { Loader2, AlertCircle, Upload, X, Scale, CheckCircle2 } from "lucide-react";
@@ -21,6 +22,8 @@ export default function DisputeCancellationFee({
   feeCharged: number;
   alreadyDisputed: boolean;
 }) {
+  const t = useTranslations("trip");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -56,13 +59,13 @@ export default function DisputeCancellationFee({
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         const data = await res.json();
         if (!res.ok) {
-          setError(data.error ?? "Upload failed.");
+          setError(data.error ?? t("disputeUploadFailed"));
           break;
         }
         setProofUrls((u) => [...u, data.url]);
       }
     } catch {
-      setError("Upload failed. Please retry.");
+      setError(t("disputeUploadRetry"));
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -80,13 +83,13 @@ export default function DisputeCancellationFee({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "We couldn't submit your dispute.");
+        setError(data.error ?? t("disputeSubmitError"));
         return;
       }
       setOpen(false);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -95,12 +98,10 @@ export default function DisputeCancellationFee({
   return (
     <div className="rounded-xl bg-warning-bg p-3">
       <p className="text-sm font-semibold text-warning">
-        A {formatRWF(feeCharged)} late-cancellation fee was kept
+        {t("lateCancelFeeKept", { amount: formatRWF(feeCharged) })}
       </p>
       <p className="mt-0.5 text-xs text-warning">
-        This applies when a booking is cancelled close to pickup. If you think
-        that&apos;s unfair — the owner cancelled on you, the car was
-        unavailable, an emergency — you can ask us to review it.
+        {t("lateCancelExplain")}
       </p>
 
       {!open ? (
@@ -109,7 +110,7 @@ export default function DisputeCancellationFee({
           className="mt-2 flex items-center gap-1.5 rounded-lg border border-warning-strong px-3 py-1.5 text-xs font-semibold text-warning hover:bg-accent-wash"
         >
           <Scale className="h-3.5 w-3.5" />
-          Dispute this fee
+          {t("disputeThisFee")}
         </button>
       ) : (
         <div className="mt-3 space-y-2">
@@ -118,7 +119,7 @@ export default function DisputeCancellationFee({
             onChange={(e) => setReason(e.target.value)}
             rows={4}
             autoFocus
-            placeholder="What happened? Be specific — dates, times, and anything the owner told you."
+            placeholder={t("disputePlaceholder")}
             className="w-full rounded-lg border border-sand-dark bg-white px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
 
@@ -130,12 +131,12 @@ export default function DisputeCancellationFee({
                   className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] text-ink-muted"
                 >
                   <CheckCircle2 className="h-3 w-3 text-success" />
-                  Proof {i + 1}
+                  {t("proofN", { n: i + 1 })}
                   <button
                     onClick={() =>
                       setProofUrls((list) => list.filter((x) => x !== u))
                     }
-                    aria-label="Remove"
+                    aria-label={t("remove")}
                     className="text-ink-faint hover:text-danger-strong"
                   >
                     <X className="h-2.5 w-2.5" />
@@ -152,10 +153,10 @@ export default function DisputeCancellationFee({
               <Upload className="h-3.5 w-3.5" />
             )}
             {uploading
-              ? "Uploading…"
+              ? tc("uploading")
               : proofUrls.length > 0
-                ? "Add more proof"
-                : "Attach proof (screenshots, messages, photos)"}
+                ? t("addMoreProof")
+                : t("attachProof")}
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -180,7 +181,7 @@ export default function DisputeCancellationFee({
               className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
             >
               {busy && <Loader2 className="h-3 w-3 animate-spin" />}
-              {busy ? "Submitting…" : "Submit dispute"}
+              {busy ? tc("submitting") : t("submitDispute")}
             </button>
             <button
               onClick={() => {
@@ -190,12 +191,12 @@ export default function DisputeCancellationFee({
               disabled={busy}
               className="text-xs font-semibold text-warning"
             >
-              Cancel
+              {tc("cancel")}
             </button>
             <span className="ml-auto text-[10px] text-ink-faint">
               {reason.trim().length < 20
-                ? `${reason.trim().length}/20 characters`
-                : "Ready to submit"}
+                ? t("charCount20", { count: reason.trim().length })
+                : t("readyToSubmit")}
             </span>
           </div>
         </div>

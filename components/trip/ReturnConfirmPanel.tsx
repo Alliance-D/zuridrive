@@ -13,6 +13,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, AlertTriangle, Clock, ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -25,12 +26,13 @@ interface ReturnConfirmPanelProps {
   ownerConfirmed: boolean
 }
 
+// Keys, not text — module scope has no translator.
 const DISPUTE_CATEGORIES = [
-  { id: 'DAMAGE',        label: 'Vehicle Damage' },
-  { id: 'FUEL_LEVEL',    label: 'Fuel Level Issue' },
-  { id: 'MISSING_ITEMS', label: 'Missing Items' },
-  { id: 'LATE_RETURN',   label: 'Late Return' },
-  { id: 'OTHER',         label: 'Other Issue' },
+  { id: 'DAMAGE',        labelKey: 'disputeDamage' },
+  { id: 'FUEL_LEVEL',    labelKey: 'disputeFuel' },
+  { id: 'MISSING_ITEMS', labelKey: 'disputeMissingItems' },
+  { id: 'LATE_RETURN',   labelKey: 'disputeLateReturn' },
+  { id: 'OTHER',         labelKey: 'disputeOther' },
 ]
 
 export function ReturnConfirmPanel({
@@ -40,6 +42,8 @@ export function ReturnConfirmPanel({
   clientConfirmed,
   ownerConfirmed,
 }: ReturnConfirmPanelProps) {
+  const t = useTranslations('trip')
+  const tc = useTranslations('common')
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [showDisputeForm, setShowDisputeForm] = useState(false)
@@ -51,7 +55,8 @@ export function ReturnConfirmPanel({
   // Determine current viewer's confirmation status
   const viewerConfirmed = viewerRole === 'CLIENT' ? clientConfirmed : ownerConfirmed
   const otherConfirmed = viewerRole === 'CLIENT' ? ownerConfirmed : clientConfirmed
-  const otherRole = viewerRole === 'CLIENT' ? 'owner' : 'client'
+  const otherRole =
+    viewerRole === 'CLIENT' ? t('roleOwner') : t('roleClient')
 
   async function handleConfirmReturn() {
     setLoading(true)
@@ -69,7 +74,7 @@ export function ReturnConfirmPanel({
         setSuccessMessage('Trip completed! Your deposit has been released.')
         setTimeout(() => router.refresh(), 2000)
       } else {
-        setSuccessMessage(`Return confirmed. Waiting for the ${otherRole} to confirm.`)
+        setSuccessMessage(t('returnConfirmedWaiting', { role: otherRole }))
         router.refresh()
       }
     } catch (err: any) {
@@ -104,10 +109,10 @@ export function ReturnConfirmPanel({
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
 
-      setSuccessMessage('Your report has been submitted. Our team will review within 24 hours.')
+      setSuccessMessage(t('reportSubmitted'))
       setTimeout(() => router.refresh(), 2500)
     } catch (err: any) {
-      setError(err.message ?? 'Could not submit report. Please try again.')
+      setError(err.message ?? t('reportError'))
     } finally {
       setLoading(false)
     }
@@ -116,8 +121,10 @@ export function ReturnConfirmPanel({
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
       <div className="bg-brand px-5 py-4">
-        <p className="text-white font-semibold">Trip Actions</p>
-        <p className="text-green-200 text-xs mt-0.5">Booking {bookingRef}</p>
+        <p className="text-white font-semibold">{t('tripActions')}</p>
+        <p className="text-green-200 text-xs mt-0.5">
+          {t('bookingRefShort', { reference: bookingRef })}
+        </p>
       </div>
 
       <div className="p-5 space-y-4">
@@ -145,10 +152,11 @@ export function ReturnConfirmPanel({
             >
               <Clock size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-amber-800">Waiting for {otherRole}</p>
+                <p className="text-sm font-semibold text-amber-800">
+                  {t('waitingForRole', { role: otherRole })}
+                </p>
                 <p className="text-xs text-amber-700 mt-0.5">
-                  You&apos;ve confirmed the return. The {otherRole} has been notified.
-                  If they don&apos;t confirm within 48 hours, the booking will auto-complete.
+                  {t('waitingForRoleBody', { role: otherRole })}
                 </p>
               </div>
             </motion.div>
@@ -165,10 +173,10 @@ export function ReturnConfirmPanel({
               <CheckCircle2 size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-blue-800">
-                  The {otherRole} has confirmed the return
+                  {t('roleConfirmedReturn', { role: otherRole })}
                 </p>
                 <p className="text-xs text-blue-700 mt-0.5">
-                  Please confirm to complete the trip and release the deposit.
+                  {t('pleaseConfirmToComplete')}
                 </p>
               </div>
             </motion.div>
@@ -185,7 +193,9 @@ export function ReturnConfirmPanel({
             >
               <CheckCircle2 size={22} />
               <span className="text-sm font-semibold leading-tight text-center">
-                {viewerRole === 'CLIENT' ? 'I Returned the Car' : 'Car Has Been Returned'}
+                {viewerRole === 'CLIENT'
+                  ? t('iReturnedTheCar')
+                  : t('carHasBeenReturned')}
               </span>
             </button>
 
@@ -195,7 +205,9 @@ export function ReturnConfirmPanel({
               className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors disabled:opacity-60"
             >
               <AlertTriangle size={22} />
-              <span className="text-sm font-semibold leading-tight text-center">Report a Problem</span>
+              <span className="text-sm font-semibold leading-tight text-center">
+                {t('reportProblem')}
+              </span>
             </button>
           </div>
         )}
@@ -211,18 +223,18 @@ export function ReturnConfirmPanel({
               className="space-y-4 overflow-hidden"
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-red-700">Report a Problem</p>
+                <p className="text-sm font-semibold text-red-700">{t('reportProblem')}</p>
                 <button
                   onClick={() => { setShowDisputeForm(false); setError(null) }}
                   className="text-xs text-stone-400 hover:text-stone-600"
                 >
-                  Cancel
+                  {tc('cancel')}
                 </button>
               </div>
 
               {/* Category selector */}
               <div>
-                <p className="text-sm font-medium text-stone-700 mb-2">What type of issue?</p>
+                <p className="text-sm font-medium text-stone-700 mb-2">{t('whatTypeOfIssue')}</p>
                 <div className="grid grid-cols-1 gap-2">
                   {DISPUTE_CATEGORIES.map((cat) => (
                     <button
@@ -236,7 +248,7 @@ export function ReturnConfirmPanel({
                         }
                       `}
                     >
-                      {cat.label}
+                      {t(cat.labelKey)}
                     </button>
                   ))}
                 </div>
@@ -245,16 +257,18 @@ export function ReturnConfirmPanel({
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1.5">
-                  Describe the issue
+                  {t('describeTheIssue')}
                 </label>
                 <textarea
                   value={disputeDescription}
                   onChange={(e) => setDisputeDescription(e.target.value)}
-                  placeholder="Please provide as much detail as possible. Include what happened, when, and any evidence you have."
+                  placeholder={t('issueDetailPlaceholder')}
                   rows={4}
                   className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm text-stone-900 resize-none focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"
                 />
-                <p className="text-xs text-stone-400 mt-1">{disputeDescription.length}/2000 characters</p>
+                <p className="text-xs text-stone-400 mt-1">
+                  {t('charCount', { count: disputeDescription.length })}
+                </p>
               </div>
 
               {error && (
@@ -268,11 +282,11 @@ export function ReturnConfirmPanel({
                 disabled={loading}
                 className="w-full py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors disabled:opacity-60"
               >
-                {loading ? 'Submitting...' : 'Submit Report'}
+                {loading ? t('submitting') : t('submitReport')}
               </button>
 
               <p className="text-xs text-stone-400 text-center">
-                Your deposit will be held pending admin review. Both parties will be contacted.
+                {t('depositHeldPending')}
               </p>
             </motion.div>
           )}

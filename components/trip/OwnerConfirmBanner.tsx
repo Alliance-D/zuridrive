@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, XCircle, Clock, ChevronDown } from 'lucide-react'
@@ -31,6 +32,9 @@ export function OwnerConfirmBanner({
   endDate,
   totalAmount,
 }: OwnerConfirmBannerProps) {
+  const t = useTranslations('trip')
+  const tc = useTranslations('common')
+  const locale = useLocale()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [showRejectForm, setShowRejectForm] = useState(false)
@@ -106,7 +110,7 @@ export function OwnerConfirmBanner({
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <p className="font-bold text-stone-900">
-              New Booking Request — {bookingRef}
+              {t('newBookingRequest', { reference: bookingRef })}
             </p>
             <p className="text-sm text-stone-600">
               {clientName} · {formatDate(startDate)} → {formatDate(endDate)} · {formatRWF(totalAmount)}
@@ -126,7 +130,7 @@ export function OwnerConfirmBanner({
         </div>
 
         <p className="text-xs text-stone-500">
-          If you don&apos;t respond within 2 hours, this booking will be auto-confirmed.
+          {t('autoConfirmNote')}
         </p>
 
         {/* Action buttons */}
@@ -138,7 +142,7 @@ export function OwnerConfirmBanner({
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-brand text-white font-semibold hover:bg-brand-deep transition-colors disabled:opacity-60 text-sm"
             >
               <CheckCircle2 size={16} />
-              Accept Booking
+              {t('acceptBooking')}
             </button>
             <button
               onClick={() => setShowRejectForm(true)}
@@ -146,7 +150,7 @@ export function OwnerConfirmBanner({
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-red-200 text-red-600 font-semibold hover:bg-red-50 transition-colors disabled:opacity-60 text-sm"
             >
               <XCircle size={16} />
-              Decline
+              {t('decline')}
             </button>
           </div>
         )}
@@ -162,12 +166,12 @@ export function OwnerConfirmBanner({
             >
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1.5">
-                  Reason for declining (optional but helpful)
+                  {t('reasonForDeclining')}
                 </label>
                 <textarea
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
-                  placeholder="e.g. Car not available on those dates, maintenance scheduled..."
+                  placeholder={t('declinePlaceholder')}
                   rows={2}
                   className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-900 resize-none focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400"
                 />
@@ -178,13 +182,13 @@ export function OwnerConfirmBanner({
                   disabled={loading}
                   className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors disabled:opacity-60 text-sm"
                 >
-                  {loading ? 'Declining...' : 'Confirm Decline'}
+                  {loading ? t('declining') : t('confirmDecline')}
                 </button>
                 <button
                   onClick={() => { setShowRejectForm(false); setError(null) }}
                   className="px-4 py-2.5 rounded-xl border border-stone-300 text-stone-600 text-sm hover:border-stone-400 transition-colors"
                 >
-                  Cancel
+                  {tc('cancel')}
                 </button>
               </div>
             </motion.div>

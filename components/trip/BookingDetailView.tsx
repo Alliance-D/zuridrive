@@ -17,6 +17,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { motion, AnimatePresence } from 'framer-motion'
@@ -83,18 +84,22 @@ interface BookingDetailViewProps {
 }
 
 // Status display config
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ElementType }> = {
-  PENDING_PAYMENT:           { label: 'Pending Payment',         color: 'text-amber-700',  bg: 'bg-amber-50 border-amber-200',  icon: Clock },
-  PAYMENT_CONFIRMED:         { label: 'Payment Confirmed',       color: 'text-blue-700',   bg: 'bg-blue-50 border-blue-200',    icon: CheckCircle2 },
-  AWAITING_OWNER_CONFIRMATION:{ label: 'Awaiting Owner',         color: 'text-purple-700', bg: 'bg-purple-50 border-purple-200',icon: Clock },
-  CONFIRMED:                 { label: 'Confirmed',               color: 'text-green-700',  bg: 'bg-green-50 border-green-200',  icon: CheckCircle2 },
-  ACTIVE:                    { label: 'Trip Active',           color: 'text-brand',  bg: 'bg-emerald-50 border-emerald-300', icon: Car },
-  COMPLETED:                 { label: 'Completed',               color: 'text-stone-700',  bg: 'bg-stone-50 border-stone-200',  icon: CheckCircle2 },
-  CANCELLED:                 { label: 'Cancelled',               color: 'text-red-700',    bg: 'bg-red-50 border-red-200',      icon: AlertTriangle },
-  DISPUTED:                  { label: 'Under Review',            color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200',icon: AlertTriangle },
+// labelKey, not label — module scope has no translator.
+const STATUS_CONFIG: Record<string, { labelKey: string; color: string; bg: string; icon: React.ElementType }> = {
+  PENDING_PAYMENT:            { labelKey: 'statusPendingPayment',   color: 'text-amber-700',  bg: 'bg-amber-50 border-amber-200',  icon: Clock },
+  PAYMENT_CONFIRMED:          { labelKey: 'statusPaymentConfirmed', color: 'text-blue-700',   bg: 'bg-blue-50 border-blue-200',    icon: CheckCircle2 },
+  AWAITING_OWNER_CONFIRMATION:{ labelKey: 'statusAwaitingOwner',    color: 'text-purple-700', bg: 'bg-purple-50 border-purple-200',icon: Clock },
+  CONFIRMED:                  { labelKey: 'statusConfirmed',        color: 'text-green-700',  bg: 'bg-green-50 border-green-200',  icon: CheckCircle2 },
+  ACTIVE:                     { labelKey: 'statusActive',           color: 'text-brand',      bg: 'bg-emerald-50 border-emerald-300', icon: Car },
+  COMPLETED:                  { labelKey: 'statusCompleted',        color: 'text-stone-700',  bg: 'bg-stone-50 border-stone-200',  icon: CheckCircle2 },
+  CANCELLED:                  { labelKey: 'statusCancelled',        color: 'text-red-700',    bg: 'bg-red-50 border-red-200',      icon: AlertTriangle },
+  DISPUTED:                   { labelKey: 'statusDisputed',         color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200',icon: AlertTriangle },
 }
 
 export function BookingDetailView({ booking }: BookingDetailViewProps) {
+  const t = useTranslations('trip')
+  const te = useTranslations('enum')
+  const locale = useLocale()
   const [showPricing, setShowPricing] = useState(false)
   const statusConfig = STATUS_CONFIG[booking.status] ?? STATUS_CONFIG.CONFIRMED
   const StatusIcon = statusConfig.icon
@@ -102,7 +107,7 @@ export function BookingDetailView({ booking }: BookingDetailViewProps) {
   const startDate = new Date(booking.startDate)
   const endDate = new Date(booking.endDate)
   const formatDate = (d: Date) =>
-    d.toLocaleDateString('en-RW', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })
+    d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })
 
   const isActive = booking.status === 'ACTIVE'
   const isCompleted = booking.status === 'COMPLETED'
@@ -120,8 +125,12 @@ export function BookingDetailView({ booking }: BookingDetailViewProps) {
         >
           <StatusIcon size={20} className={statusConfig.color} />
           <div className="flex-1">
-            <p className={`font-semibold ${statusConfig.color}`}>{statusConfig.label}</p>
-            <p className="text-xs text-stone-500 mt-0.5">Booking Ref: {booking.reference}</p>
+            <p className={`font-semibold ${statusConfig.color}`}>
+              {t(statusConfig.labelKey)}
+            </p>
+            <p className="text-xs text-stone-500 mt-0.5">
+              {t('bookingRef', { reference: booking.reference })}
+            </p>
           </div>
         </motion.div>
 
@@ -159,8 +168,8 @@ export function BookingDetailView({ booking }: BookingDetailViewProps) {
               </p>
               <p className="text-sm text-stone-500">
                 {booking.viewerRole === 'CLIENT'
-                  ? `Owner: ${booking.car.ownerName}`
-                  : `Client: ${booking.client.name}`}
+                  ? t('ownerLabel', { name: booking.car.ownerName })
+                  : t('clientLabel', { name: booking.client.name })}
               </p>
               {/* Contact button */}
               <a
@@ -168,27 +177,27 @@ export function BookingDetailView({ booking }: BookingDetailViewProps) {
                 className="inline-flex items-center gap-1.5 text-xs text-brand font-medium mt-1 hover:underline"
               >
                 <Phone size={11} />
-                Call {booking.viewerRole === 'CLIENT' ? 'owner' : 'client'}
+                {booking.viewerRole === 'CLIENT' ? t('callOwner') : t('callClient')}
               </a>
             </div>
           </div>
 
           {/* Trip details */}
           <div className="p-5 space-y-3">
-            <TripRow icon={CalendarDays} label="Pickup" value={formatDate(startDate)} />
-            <TripRow icon={CalendarDays} label="Return" value={formatDate(endDate)} />
+            <TripRow icon={CalendarDays} label={t('rowPickup')} value={formatDate(startDate)} />
+            <TripRow icon={CalendarDays} label={t('rowReturn')} value={formatDate(endDate)} />
             {booking.pickupLocation && (
-              <TripRow icon={MapPin} label="Location" value={booking.pickupLocation} />
+              <TripRow icon={MapPin} label={t('rowLocation')} value={booking.pickupLocation} />
             )}
             {booking.car.fuelPolicyType && (
               <TripRow
                 icon={Fuel}
-                label="Fuel policy"
-                value={FUEL_POLICY_LABELS[booking.car.fuelPolicyType] ?? booking.car.fuelPolicyType}
+                label={t('rowFuelPolicy')}
+                value={te(`fuelPolicyLong.${booking.car.fuelPolicyType}` as never)}
               />
             )}
             {booking.withDriver && (
-              <TripRow icon={Car} label="Driver" value="Professional driver included" />
+              <TripRow icon={Car} label={t('rowDriver')} value={t('driverIncluded')} />
             )}
           </div>
 
@@ -198,7 +207,7 @@ export function BookingDetailView({ booking }: BookingDetailViewProps) {
               onClick={() => setShowPricing((v) => !v)}
               className="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors"
             >
-              <span>Payment Breakdown</span>
+              <span>{t('paymentBreakdown')}</span>
               {showPricing ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
             <AnimatePresence>
@@ -211,23 +220,23 @@ export function BookingDetailView({ booking }: BookingDetailViewProps) {
                   className="overflow-hidden"
                 >
                   <div className="px-5 pb-5 space-y-1.5">
-                    <PriceRow label="Base rental" value={formatRWF(booking.baseAmount)} />
+                    <PriceRow label={t('baseRental')} value={formatRWF(booking.baseAmount)} />
                     {booking.driverSurchargeTotal > 0 && (
-                      <PriceRow label="Driver surcharge" value={formatRWF(booking.driverSurchargeTotal)} />
+                      <PriceRow label={t('driverSurcharge')} value={formatRWF(booking.driverSurchargeTotal)} />
                     )}
                     {booking.deliveryFee > 0 && (
-                      <PriceRow label="Delivery" value={formatRWF(booking.deliveryFee)} />
+                      <PriceRow label={t('delivery')} value={formatRWF(booking.deliveryFee)} />
                     )}
-                    <PriceRow label="Subtotal" value={formatRWF(booking.subtotal)} bold />
+                    <PriceRow label={t('subtotal')} value={formatRWF(booking.subtotal)} bold />
                     {booking.deposit && (
                       <PriceRow
-                        label="Deposit (refundable)"
+                        label={t('depositRefundable')}
                         value={formatRWF(booking.deposit.amount)}
                         muted
                       />
                     )}
                     <div className="border-t border-stone-100 pt-1.5">
-                      <PriceRow label="Total charged" value={formatRWF(booking.totalChargedNow)} bold large />
+                      <PriceRow label={t('totalCharged')} value={formatRWF(booking.totalChargedNow)} bold large />
                     </div>
                   </div>
                 </motion.div>
@@ -300,16 +309,16 @@ export function BookingDetailView({ booking }: BookingDetailViewProps) {
             <div className="flex items-start gap-3">
               <Star size={20} className="text-accent flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-semibold text-sm mb-1">How was your trip?</p>
+                <p className="font-semibold text-sm mb-1">{t('howWasTrip')}</p>
                 <p className="text-green-200 text-xs mb-3">
-                  Your review helps other renters make better decisions.
+                  {t('reviewHelps')}
                 </p>
                 <Link
                   href={`/dashboard/bookings/${booking.id}/review`}
                   className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors"
                 >
                   <Star size={12} />
-                  Leave a Review
+                  {t('leaveReview')}
                 </Link>
               </div>
             </div>
@@ -354,9 +363,3 @@ function PriceRow({
   )
 }
 
-const FUEL_POLICY_LABELS: Record<string, string> = {
-  FULL_TO_FULL: 'Full to Full',
-  SAME_LEVEL: 'Same Level',
-  FREE_TANK: 'Free Tank',
-  OWNER_HANDLES: 'Owner Handles',
-}
