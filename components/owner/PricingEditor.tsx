@@ -13,6 +13,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { formatRWF } from "@/lib/currency";
 import { Loader2, Wallet, Check, AlertCircle } from "lucide-react";
@@ -29,12 +30,13 @@ export interface PricingValues {
   depositAmount: number | null;
 }
 
-const FIELDS: { key: keyof PricingValues; label: string; hint?: string }[] = [
-  { key: "perDayInCity", label: "Per day — in city" },
-  { key: "perDayOutsideCity", label: "Per day — outside city" },
-  { key: "perWeekInCity", label: "Per week — in city" },
-  { key: "perWeekOutsideCity", label: "Per week — outside city" },
-  { key: "perMonth", label: "Per month", hint: "Flat rate, anywhere in Rwanda" },
+// Keys, not text — module scope has no translator.
+const FIELDS: { key: keyof PricingValues; labelKey: string; hintKey?: string }[] = [
+  { key: "perDayInCity", labelKey: "perDayInCity" },
+  { key: "perDayOutsideCity", labelKey: "perDayOutside" },
+  { key: "perWeekInCity", labelKey: "perWeekInCity" },
+  { key: "perWeekOutsideCity", labelKey: "perWeekOutside" },
+  { key: "perMonth", labelKey: "perMonth", hintKey: "flatRateAnywhere" },
 ];
 
 export default function PricingEditor({
@@ -44,6 +46,8 @@ export default function PricingEditor({
   carId: string;
   initial: PricingValues | null;
 }) {
+  const t = useTranslations("carForm");
+  const tc = useTranslations("common");
   const router = useRouter();
 
   const [values, setValues] = useState<PricingValues>(
@@ -89,7 +93,7 @@ export default function PricingEditor({
       setSaved(true);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setSaving(false);
     }
@@ -102,7 +106,7 @@ export default function PricingEditor({
     <section className="rounded-2xl bg-white p-4 shadow-sm">
       <div className="mb-1 flex items-center gap-2">
         <Wallet className="h-4 w-4 text-brand" />
-        <h2 className="text-sm font-semibold text-ink">Pricing</h2>
+        <h2 className="text-sm font-semibold text-ink">{t("pricing")}</h2>
       </div>
       <p className="mb-4 text-xs text-ink-soft">
         Changing these affects new bookings only — trips already booked keep the
@@ -116,7 +120,7 @@ export default function PricingEditor({
               htmlFor={`${carId}-${f.key}`}
               className="mb-1 block text-xs font-medium text-ink-muted"
             >
-              {f.label}
+              {t(f.labelKey)}
             </label>
             <input
               id={`${carId}-${f.key}`}
@@ -127,7 +131,9 @@ export default function PricingEditor({
               className={inputCls}
             />
             <p className="mt-0.5 text-[11px] text-ink-faint">
-              {f.hint ?? formatRWF((values[f.key] as number) || 0)}
+              {f.hintKey
+                ? t(f.hintKey)
+                : formatRWF((values[f.key] as number) || 0)}
             </p>
           </div>
         ))}
@@ -145,7 +151,7 @@ export default function PricingEditor({
             }}
             className="accent-brand"
           />
-          Offer this car with a driver
+          {t("offerWithDriver")}
         </label>
 
         {values.driverEnabled && (
@@ -154,7 +160,7 @@ export default function PricingEditor({
               htmlFor={`${carId}-driver`}
               className="mb-1 block text-xs font-medium text-ink-muted"
             >
-              Driver surcharge, per day
+              {t("driverSurchargeDay")}
             </label>
             <input
               id={`${carId}-driver`}
@@ -187,7 +193,7 @@ export default function PricingEditor({
             }}
             className="accent-brand"
           />
-          Ask for a damage deposit
+          {t("askForDeposit")}
         </label>
 
         {values.depositEnabled && (
@@ -196,7 +202,7 @@ export default function PricingEditor({
               htmlFor={`${carId}-deposit`}
               className="mb-1 block text-xs font-medium text-ink-muted"
             >
-              Deposit amount
+              {t("depositAmount")}
             </label>
             <input
               id={`${carId}-deposit`}
@@ -232,9 +238,7 @@ export default function PricingEditor({
         </button>
         {saved && (
           <span className="flex items-center gap-1 text-xs font-medium text-success">
-            <Check className="h-3.5 w-3.5" />
-            Saved
-          </span>
+            <Check className="h-3.5 w-3.5" />{tc("saved")}</span>
         )}
       </div>
     </section>

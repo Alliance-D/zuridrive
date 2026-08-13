@@ -11,6 +11,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { formatRWF } from "@/lib/currency";
 import {
@@ -28,12 +29,13 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+// Keys, not text — module scope has no translator.
 const STEPS = [
-  { n: 1, label: "Basics", icon: Car },
-  { n: 2, label: "Photos", icon: Camera },
-  { n: 3, label: "Pricing", icon: Wallet },
-  { n: 4, label: "Availability", icon: CalendarDays },
-  { n: 5, label: "Fuel & pickup", icon: Fuel },
+  { n: 1, labelKey: "stepBasics", icon: Car },
+  { n: 2, labelKey: "stepPhotos", icon: Camera },
+  { n: 3, labelKey: "stepPricing", icon: Wallet },
+  { n: 4, labelKey: "stepAvailability", icon: CalendarDays },
+  { n: 5, labelKey: "stepFuelPickup", icon: Fuel },
 ];
 
 const MIN_PHOTOS = 3;
@@ -95,6 +97,8 @@ export default function CarListingWizard({
 }: {
   neighborhoods: Neighborhood[];
 }) {
+  const t = useTranslations("carForm");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>(INITIAL);
@@ -118,19 +122,19 @@ export default function CarListingWizard({
     const num = (v: string) => (v.trim() === "" ? NaN : Number(v));
 
     if (n === 1) {
-      if (!form.make.trim()) e.make = "Required";
-      if (!form.model.trim()) e.model = "Required";
+      if (!form.make.trim()) e.make = t("required");
+      if (!form.model.trim()) e.model = t("required");
       const y = num(form.year);
       if (!Number.isFinite(y) || y < 1980 || y > new Date().getFullYear() + 1)
-        e.year = "Enter a valid year";
-      if (!form.color.trim()) e.color = "Required";
-      if (form.licensePlate.trim().length < 3) e.licensePlate = "Required";
+        e.year = t("enterValidYear");
+      if (!form.color.trim()) e.color = t("required");
+      if (form.licensePlate.trim().length < 3) e.licensePlate = t("required");
       const seats = num(form.seatingCapacity);
-      if (!Number.isFinite(seats) || seats < 1) e.seatingCapacity = "Required";
+      if (!Number.isFinite(seats) || seats < 1) e.seatingCapacity = t("required");
     }
 
     if (n === 2 && form.photos.length < MIN_PHOTOS) {
-      e.photos = `Add at least ${MIN_PHOTOS} photos so clients know what to expect.`;
+      e.photos = t("addAtLeastPhotos", { count: MIN_PHOTOS });
     }
 
     if (n === 3) {
@@ -142,21 +146,21 @@ export default function CarListingWizard({
         if (!Number.isFinite(v) || v < 1) e[key] = "Required";
       }
       if (form.driverEnabled && !(num(form.driverSurchargePerDay) >= 0))
-        e.driverSurchargePerDay = "Set a daily surcharge";
+        e.driverSurchargePerDay = t("setDailySurcharge");
       if (form.depositEnabled && !(num(form.depositAmount) > 0))
-        e.depositAmount = "Set a deposit amount";
+        e.depositAmount = t("setDepositAmount");
     }
 
     if (n === 4) {
       const d = num(form.minBookingDays);
-      if (!Number.isFinite(d) || d < 1) e.minBookingDays = "Must be at least 1";
+      if (!Number.isFinite(d) || d < 1) e.minBookingDays = t("mustBeAtLeastOne");
       if (form.deliverAnywhere && !(num(form.deliveryFee) >= 0))
-        e.deliveryFee = "Set a delivery fee";
+        e.deliveryFee = t("setDeliveryFee");
     }
 
     if (n === 5) {
       if (form.fuelPolicyType === "FULL_TO_FULL" && !(num(form.refuelingFee) >= 0))
-        e.refuelingFee = "Set the fee you'd charge to refuel";
+        e.refuelingFee = t("setRefuelFee");
     }
 
     setErrors(e);
@@ -188,7 +192,7 @@ export default function CarListingWizard({
         const data = await res.json();
 
         if (!res.ok) {
-          setErrors((prev) => ({ ...prev, photos: data.error ?? "Upload failed" }));
+          setErrors((prev) => ({ ...prev, photos: data.error ?? t("uploadFailed") }));
           break;
         }
 
@@ -198,7 +202,7 @@ export default function CarListingWizard({
         }));
       }
     } catch {
-      setErrors((prev) => ({ ...prev, photos: "Upload failed. Please try again." }));
+      setErrors((prev) => ({ ...prev, photos: t("uploadFailedRetry") }));
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -265,14 +269,14 @@ export default function CarListingWizard({
       const data = await res.json();
 
       if (!res.ok) {
-        setSubmitError(data.error ?? "Something went wrong. Please try again.");
+        setSubmitError(data.error ?? t("somethingWentWrong"));
         return;
       }
 
       router.push("/owner/fleet?submitted=1");
       router.refresh();
     } catch {
-      setSubmitError("Network problem. Please check your connection and retry.");
+      setSubmitError(tc("networkError"));
     } finally {
       setSubmitting(false);
     }
@@ -305,7 +309,7 @@ export default function CarListingWizard({
                     current ? "font-semibold text-brand" : "text-ink-faint"
                   }`}
                 >
-                  {s.label}
+                  {t(s.labelKey)}
                 </span>
               </div>
               {i < STEPS.length - 1 && (
@@ -323,52 +327,52 @@ export default function CarListingWizard({
         {step === 1 && (
           <div className="space-y-4">
             <StepHeader
-              title="Tell us about your car"
-              subtitle="These details appear on your listing."
+              title={t("tellUsAboutCar")}
+              subtitle={t("detailsAppear")}
             />
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Make" error={errors.make}>
+              <Field label={t("make")} error={errors.make}>
                 <input
                   className={inputCls(errors.make)}
                   value={form.make}
                   onChange={(e) => update("make", e.target.value)}
-                  placeholder="Toyota"
+                  placeholder={t("makePlaceholder")}
                 />
               </Field>
-              <Field label="Model" error={errors.model}>
+              <Field label={t("model")} error={errors.model}>
                 <input
                   className={inputCls(errors.model)}
                   value={form.model}
                   onChange={(e) => update("model", e.target.value)}
-                  placeholder="RAV4"
+                  placeholder={t("modelPlaceholder")}
                 />
               </Field>
-              <Field label="Year" error={errors.year}>
+              <Field label={t("year")} error={errors.year}>
                 <input
                   className={inputCls(errors.year)}
                   value={form.year}
                   onChange={(e) => update("year", e.target.value)}
                   inputMode="numeric"
-                  placeholder="2021"
+                  placeholder={t("yearPlaceholder")}
                 />
               </Field>
-              <Field label="Colour" error={errors.color}>
+              <Field label={t("colour")} error={errors.color}>
                 <input
                   className={inputCls(errors.color)}
                   value={form.color}
                   onChange={(e) => update("color", e.target.value)}
-                  placeholder="Silver"
+                  placeholder={t("colourPlaceholder")}
                 />
               </Field>
-              <Field label="Number plate" error={errors.licensePlate}>
+              <Field label={t("numberPlate")} error={errors.licensePlate}>
                 <input
                   className={inputCls(errors.licensePlate)}
                   value={form.licensePlate}
                   onChange={(e) => update("licensePlate", e.target.value)}
-                  placeholder="RAB 123 A"
+                  placeholder={t("platePlaceholder")}
                 />
               </Field>
-              <Field label="Seats" error={errors.seatingCapacity}>
+              <Field label={t("seats")} error={errors.seatingCapacity}>
                 <input
                   className={inputCls(errors.seatingCapacity)}
                   value={form.seatingCapacity}
@@ -376,7 +380,7 @@ export default function CarListingWizard({
                   inputMode="numeric"
                 />
               </Field>
-              <Field label="Category">
+              <Field label={t("category")}>
                 <select
                   className={inputCls()}
                   value={form.category}
@@ -389,7 +393,7 @@ export default function CarListingWizard({
                   ))}
                 </select>
               </Field>
-              <Field label="Fuel type">
+              <Field label={t("fuelType")}>
                 <select
                   className={inputCls()}
                   value={form.fuelType}
@@ -402,7 +406,7 @@ export default function CarListingWizard({
                   ))}
                 </select>
               </Field>
-              <Field label="Transmission">
+              <Field label={t("transmission")}>
                 <select
                   className={inputCls()}
                   value={form.transmission}
@@ -423,7 +427,7 @@ export default function CarListingWizard({
         {step === 2 && (
           <div className="space-y-4">
             <StepHeader
-              title="Add photos"
+              title={t("addPhotos")}
               subtitle={`At least ${MIN_PHOTOS}. The first one becomes your cover image.`}
             />
 
@@ -438,14 +442,14 @@ export default function CarListingWizard({
                     <img src={p.url} alt="" className="h-full w-full object-cover" />
                     {i === 0 && (
                       <span className="absolute left-1 top-1 rounded bg-brand px-1.5 py-0.5 text-[9px] font-bold text-white">
-                        COVER
+                        {t("cover")}
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={() => removePhoto(i)}
                       className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white hover:bg-black/80"
-                      aria-label="Remove photo"
+                      aria-label={t("removePhoto")}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -484,40 +488,40 @@ export default function CarListingWizard({
         {step === 3 && (
           <div className="space-y-4">
             <StepHeader
-              title="Set your rates"
-              subtitle="All amounts in RWF. ZuriDrive takes 20% of the rental and driver fee — never the deposit."
+              title={t("setYourRates")}
+              subtitle={t("ratesNote")}
             />
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Per day — in city" error={errors.perDayInCity}>
+              <Field label={t("perDayInCity")} error={errors.perDayInCity}>
                 <MoneyInput
                   value={form.perDayInCity}
                   onChange={(v) => update("perDayInCity", v)}
                   error={errors.perDayInCity}
                 />
               </Field>
-              <Field label="Per day — outside city" error={errors.perDayOutsideCity}>
+              <Field label={t("perDayOutside")} error={errors.perDayOutsideCity}>
                 <MoneyInput
                   value={form.perDayOutsideCity}
                   onChange={(v) => update("perDayOutsideCity", v)}
                   error={errors.perDayOutsideCity}
                 />
               </Field>
-              <Field label="Per week — in city" error={errors.perWeekInCity}>
+              <Field label={t("perWeekInCity")} error={errors.perWeekInCity}>
                 <MoneyInput
                   value={form.perWeekInCity}
                   onChange={(v) => update("perWeekInCity", v)}
                   error={errors.perWeekInCity}
                 />
               </Field>
-              <Field label="Per week — outside city" error={errors.perWeekOutsideCity}>
+              <Field label={t("perWeekOutside")} error={errors.perWeekOutsideCity}>
                 <MoneyInput
                   value={form.perWeekOutsideCity}
                   onChange={(v) => update("perWeekOutsideCity", v)}
                   error={errors.perWeekOutsideCity}
                 />
               </Field>
-              <Field label="Per month — flat rate" error={errors.perMonth}>
+              <Field label={t("perMonthFlat")} error={errors.perMonth}>
                 <MoneyInput
                   value={form.perMonth}
                   onChange={(v) => update("perMonth", v)}
@@ -527,13 +531,13 @@ export default function CarListingWizard({
             </div>
 
             <Toggle
-              label="Offer a driver"
-              description="Charged per day on top of the rental."
+              label={t("offerADriver")}
+              description={t("chargedPerDay")}
               checked={form.driverEnabled}
               onChange={(v) => update("driverEnabled", v)}
             />
             {form.driverEnabled && (
-              <Field label="Driver surcharge per day" error={errors.driverSurchargePerDay}>
+              <Field label={t("driverSurchargePerDay")} error={errors.driverSurchargePerDay}>
                 <MoneyInput
                   value={form.driverSurchargePerDay}
                   onChange={(v) => update("driverSurchargePerDay", v)}
@@ -543,13 +547,13 @@ export default function CarListingWizard({
             )}
 
             <Toggle
-              label="Require a damage deposit"
-              description="Held separately and refunded after a clean return."
+              label={t("requireDeposit")}
+              description={t("depositNote")}
               checked={form.depositEnabled}
               onChange={(v) => update("depositEnabled", v)}
             />
             {form.depositEnabled && (
-              <Field label="Deposit amount" error={errors.depositAmount}>
+              <Field label={t("depositAmount")} error={errors.depositAmount}>
                 <MoneyInput
                   value={form.depositAmount}
                   onChange={(v) => update("depositAmount", v)}
@@ -583,12 +587,12 @@ export default function CarListingWizard({
         {step === 4 && (
           <div className="space-y-4">
             <StepHeader
-              title="Availability & delivery"
-              subtitle="You can block specific dates later from your fleet page."
+              title={t("availabilityDelivery")}
+              subtitle={t("blockDatesLater")}
             />
 
             <Field
-              label="Minimum booking length (days)"
+              label={t("minBookingLength")}
               error={errors.minBookingDays}
             >
               <input
@@ -600,13 +604,13 @@ export default function CarListingWizard({
             </Field>
 
             <Toggle
-              label="I deliver anywhere in Kigali"
-              description="Clients can request delivery to any address for a flat fee."
+              label={t("deliverAnywhere")}
+              description={t("deliverAnywhereNote")}
               checked={form.deliverAnywhere}
               onChange={(v) => update("deliverAnywhere", v)}
             />
             {form.deliverAnywhere && (
-              <Field label="Delivery fee" error={errors.deliveryFee}>
+              <Field label={t("deliveryFee")} error={errors.deliveryFee}>
                 <MoneyInput
                   value={form.deliveryFee}
                   onChange={(v) => update("deliveryFee", v)}
@@ -621,34 +625,26 @@ export default function CarListingWizard({
         {step === 5 && (
           <div className="space-y-4">
             <StepHeader
-              title="Fuel policy & pickup"
-              subtitle="Fuel disputes are resolved using the gauge photos taken at pickup and return."
+              title={t("fuelPolicyPickup")}
+              subtitle={t("fuelDisputesNote")}
             />
 
-            <Field label="Fuel policy">
+            <Field label={t("fuelPolicy")}>
               <select
                 className={inputCls()}
                 value={form.fuelPolicyType}
                 onChange={(e) => update("fuelPolicyType", e.target.value)}
               >
-                <option value="FULL_TO_FULL">
-                  Full to full — client returns a full tank
-                </option>
-                <option value="SAME_LEVEL">
-                  Same level — return it as they found it
-                </option>
-                <option value="FREE_TANK">
-                  Free tank — I provide fuel, any level back
-                </option>
-                <option value="OWNER_HANDLES">
-                  I handle fuel separately
-                </option>
+                <option value="FULL_TO_FULL">{t("fuelFullToFull")}</option>
+                <option value="SAME_LEVEL">{t("fuelSameLevel")}</option>
+                <option value="FREE_TANK">{t("fuelFreeTank")}</option>
+                <option value="OWNER_HANDLES">{t("fuelOwnerHandles")}</option>
               </select>
             </Field>
 
             {form.fuelPolicyType === "FULL_TO_FULL" && (
               <Field
-                label="Refuelling fee if returned low"
+                label={t("refuelFee")}
                 error={errors.refuelingFee}
               >
                 <MoneyInput
@@ -660,17 +656,17 @@ export default function CarListingWizard({
             )}
 
             <div className="border-t border-sand pt-4">
-              <Field label="Your own pickup point (optional)">
+              <Field label={t("ownPickupPoint")}>
                 <input
                   className={inputCls()}
                   value={form.locationName}
                   onChange={(e) => update("locationName", e.target.value)}
-                  placeholder="e.g. Outside Simba Supermarket, Kimironko"
+                  placeholder={t("pickupPlaceholder")}
                 />
               </Field>
               {form.locationName.trim() && (
                 <div className="mt-3">
-                  <Field label="Neighbourhood">
+                  <Field label={t("neighbourhood")}>
                     <select
                       className={inputCls()}
                       value={form.locationNeighborhoodId}
@@ -719,7 +715,7 @@ export default function CarListingWizard({
             className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold text-ink-soft disabled:invisible hover:text-ink"
           >
             <ChevronLeft className="h-4 w-4" />
-            Back
+            {t("back")}
           </button>
 
           {step < 5 ? (
@@ -728,7 +724,7 @@ export default function CarListingWizard({
               onClick={next}
               className="flex items-center gap-1 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
             >
-              Continue
+              {t("continue")}
               <ChevronRight className="h-4 w-4" />
             </button>
           ) : (
@@ -739,7 +735,7 @@ export default function CarListingWizard({
               className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              {submitting ? "Submitting…" : "Submit for review"}
+              {submitting ? t("submitting") : t("submitForReview")}
             </button>
           )}
         </div>

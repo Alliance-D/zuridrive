@@ -11,6 +11,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Loader2, Check, AlertCircle, Power } from "lucide-react";
 
@@ -34,6 +35,8 @@ interface Props {
 }
 
 export default function CarEditForm({ carId, initial }: Props) {
+  const t = useTranslations("carForm");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -71,14 +74,14 @@ export default function CarEditForm({ carId, initial }: Props) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "We couldn’t save your changes.");
+        setError(data.error ?? t("couldntSaveChanges"));
         return;
       }
 
       setSaved(true);
       router.refresh();
     } catch {
-      setError("Network problem. Please try again.");
+      setError(tc("networkRetry"));
     } finally {
       setSaving(false);
     }
@@ -88,56 +91,56 @@ export default function CarEditForm({ carId, initial }: Props) {
     <div className="space-y-4">
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-ink">
-          Car details
+          {t("carDetails")}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Make">
+          <Field label={t("make")}>
             <input className={cls} value={form.make} onChange={(e) => set("make", e.target.value)} />
           </Field>
-          <Field label="Model">
+          <Field label={t("model")}>
             <input className={cls} value={form.model} onChange={(e) => set("model", e.target.value)} />
           </Field>
-          <Field label="Year">
+          <Field label={t("year")}>
             <input className={cls} value={form.year} onChange={(e) => set("year", e.target.value)} inputMode="numeric" />
           </Field>
-          <Field label="Colour">
+          <Field label={t("colour")}>
             <input className={cls} value={form.color} onChange={(e) => set("color", e.target.value)} />
           </Field>
-          <Field label="Number plate">
+          <Field label={t("numberPlate")}>
             <input className={cls} value={form.licensePlate} onChange={(e) => set("licensePlate", e.target.value)} />
           </Field>
-          <Field label="Seats">
+          <Field label={t("seats")}>
             <input className={cls} value={form.seatingCapacity} onChange={(e) => set("seatingCapacity", e.target.value)} inputMode="numeric" />
           </Field>
-          <Field label="Category">
+          <Field label={t("category")}>
             <select className={cls} value={form.category} onChange={(e) => set("category", e.target.value)}>
               {["ECONOMY", "SUV", "LUXURY", "VAN", "MINIBUS"].map((c) => (
                 <option key={c} value={c}>{t(c)}</option>
               ))}
             </select>
           </Field>
-          <Field label="Fuel type">
+          <Field label={t("fuelType")}>
             <select className={cls} value={form.fuelType} onChange={(e) => set("fuelType", e.target.value)}>
               {["PETROL", "DIESEL", "ELECTRIC", "HYBRID"].map((c) => (
                 <option key={c} value={c}>{t(c)}</option>
               ))}
             </select>
           </Field>
-          <Field label="Transmission">
+          <Field label={t("transmission")}>
             <select className={cls} value={form.transmission} onChange={(e) => set("transmission", e.target.value)}>
               {["MANUAL", "AUTOMATIC"].map((c) => (
                 <option key={c} value={c}>{t(c)}</option>
               ))}
             </select>
           </Field>
-          <Field label="Minimum booking (days)">
+          <Field label={t("minBookingDays")}>
             <input className={cls} value={form.minBookingDays} onChange={(e) => set("minBookingDays", e.target.value)} inputMode="numeric" />
           </Field>
         </div>
       </section>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-ink">Delivery</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink">{t("delivery")}</h2>
         <label className="flex items-start gap-3">
           <input
             type="checkbox"
@@ -147,16 +150,16 @@ export default function CarEditForm({ carId, initial }: Props) {
           />
           <span>
             <span className="block text-sm font-medium text-ink">
-              I deliver anywhere in Kigali
+              {t("deliverAnywhere")}
             </span>
             <span className="block text-xs text-ink-soft">
-              Clients can request delivery to any address for a flat fee.
+              {t("deliverAnywhereNote")}
             </span>
           </span>
         </label>
         {form.deliverAnywhere && (
           <div className="mt-3 max-w-xs">
-            <Field label="Delivery fee (RWF)">
+            <Field label={t("deliveryFeeRwf")}>
               <input
                 className={cls}
                 value={form.deliveryFee}
@@ -173,7 +176,7 @@ export default function CarEditForm({ carId, initial }: Props) {
           <div>
             <h2 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
               <Power className="h-3.5 w-3.5" />
-              Accepting bookings
+              {t("acceptingBookings")}
             </h2>
             <p className="mt-0.5 text-xs text-ink-soft">
               Turn this off to pause new bookings without removing the listing.
@@ -186,7 +189,7 @@ export default function CarEditForm({ carId, initial }: Props) {
             className={`mt-0.5 flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors ${
               form.isActive ? "bg-brand" : "bg-sand-dark"
             }`}
-            aria-label="Toggle accepting bookings"
+            aria-label={t("toggleAccepting")}
           >
             <span
               className={`h-5 w-5 rounded-full bg-white transition-transform ${
@@ -215,9 +218,7 @@ export default function CarEditForm({ carId, initial }: Props) {
         </button>
         {saved && (
           <span className="flex items-center gap-1 text-sm text-success">
-            <Check className="h-4 w-4" />
-            Saved
-          </span>
+            <Check className="h-4 w-4" />{tc("saved")}</span>
         )}
       </div>
     </div>

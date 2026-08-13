@@ -172,7 +172,7 @@ export default function OwnerLayout({
           <p className="text-xs text-warning-dark">
             Your profile isn&apos;t finished yet.{" "}
             <Link href="/owner/onboarding" className="font-semibold underline">
-              Complete onboarding
+              {t("completeOnboarding")}
             </Link>{" "}
             so renters can find and contact you.
           </p>

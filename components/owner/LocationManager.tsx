@@ -13,6 +13,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { MapPin, Loader2, Trash2, Plus, X, AlertCircle } from "lucide-react";
 
@@ -32,6 +33,8 @@ export default function LocationManager({
   carId: string;
   initial: OwnerLocationItem[];
 }) {
+  const t = useTranslations("carForm");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [locations, setLocations] = useState(initial);
   const [adding, setAdding] = useState(false);
@@ -64,7 +67,7 @@ export default function LocationManager({
       setAdding(false);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -86,7 +89,7 @@ export default function LocationManager({
       setLocations((l) => l.filter((x) => x.id !== id));
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -126,7 +129,7 @@ export default function LocationManager({
                 )}
                 {!loc.isApproved && (
                   <span className="mt-1 inline-block rounded-full bg-warning-tint px-2 py-0.5 text-[10px] font-semibold text-warning-dark">
-                    Awaiting approval
+                    {t("awaitingApproval")}
                   </span>
                 )}
               </div>
@@ -158,7 +161,7 @@ export default function LocationManager({
       {adding ? (
         <form onSubmit={add} className="mt-4 rounded-lg border border-sand-dark p-3">
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-semibold text-ink">New pickup point</p>
+            <p className="text-xs font-semibold text-ink">{t("newPickupPoint")}</p>
             <button
               type="button"
               onClick={() => {
@@ -166,20 +169,20 @@ export default function LocationManager({
                 setError(null);
               }}
               className="rounded p-1 text-ink-faint hover:bg-sand"
-              aria-label="Cancel"
+              aria-label={tc("cancel")}
             >
               <X className="h-3.5 w-3.5" />
             </button>
           </div>
 
           <label htmlFor={`${carId}-loc-name`} className="mb-1 block text-xs text-ink-muted">
-            Name
+            {t("name")}
           </label>
           <input
             id={`${carId}-loc-name`}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Kimironko roundabout"
+            placeholder={t("pickupNamePlaceholder")}
             required
             className={inputCls}
           />
@@ -188,13 +191,13 @@ export default function LocationManager({
             htmlFor={`${carId}-loc-desc`}
             className="mb-1 mt-2 block text-xs text-ink-muted"
           >
-            Directions <span className="text-ink-faint">(optional)</span>
+            {t("directions")} <span className="text-ink-faint">(optional)</span>
           </label>
           <input
             id={`${carId}-loc-desc`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="By the petrol station, opposite the market"
+            placeholder={t("pickupDirectionsPlaceholder")}
             className={inputCls}
           />
 
@@ -214,7 +217,7 @@ export default function LocationManager({
             className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline"
           >
             <Plus className="h-4 w-4" />
-            Add a pickup point
+            {t("addPickupPoint")}
           </button>
         )
       )}

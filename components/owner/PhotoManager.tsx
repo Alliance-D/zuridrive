@@ -13,6 +13,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   Camera,
@@ -39,6 +40,8 @@ export default function PhotoManager({
   carId: string;
   initial: CarPhoto[];
 }) {
+  const t = useTranslations("carForm");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [photos, setPhotos] = useState<CarPhoto[]>(initial);
   const [busy, setBusy] = useState(false);
@@ -49,7 +52,7 @@ export default function PhotoManager({
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("Photos must be under 5 MB.");
+      setError(t("photosUnder5mb"));
       e.target.value = "";
       return;
     }
@@ -64,7 +67,7 @@ export default function PhotoManager({
       const up = await fetch("/api/upload", { method: "POST", body: fd });
       const upData = await up.json();
       if (!up.ok) {
-        setError(upData.error ?? "Upload failed.");
+        setError(upData.error ?? t("uploadFailed"));
         return;
       }
 
@@ -82,7 +85,7 @@ export default function PhotoManager({
       setPhotos((p) => [...p, data.photo]);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
       e.target.value = "";
@@ -105,7 +108,7 @@ export default function PhotoManager({
       setPhotos((p) => p.filter((x) => x.id !== photoId));
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -135,7 +138,7 @@ export default function PhotoManager({
       }
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
       setPhotos(photos);
     } finally {
       setBusy(false);
@@ -168,7 +171,7 @@ export default function PhotoManager({
                 />
                 {i === 0 && (
                   <span className="absolute left-1 top-1 rounded bg-brand px-1.5 py-0.5 text-[9px] font-bold text-white">
-                    COVER
+                    {t("cover")}
                   </span>
                 )}
               </div>
@@ -207,7 +210,7 @@ export default function PhotoManager({
         </ul>
       ) : (
         <p className="rounded-lg bg-warning-tint px-3 py-2 text-xs text-warning-dark">
-          No photos yet. A listing without photos will not get booked.
+          {t("noPhotosYet")}
         </p>
       )}
 
@@ -226,7 +229,7 @@ export default function PhotoManager({
             </>
           ) : (
             <>
-              <Upload className="h-4 w-4" /> Add a photo
+              <Upload className="h-4 w-4" /> {t("addAPhoto")}
             </>
           )}
           <input
