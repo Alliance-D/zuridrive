@@ -18,7 +18,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, SlidersHorizontal, ChevronDown} from "lucide-react";
 
 interface FilterOption {
-  label: string;
+  /** Key under the `enum` namespace — these are DB values. */
+  labelKey: string;
   value: string;
 }
 
@@ -59,23 +60,23 @@ export function CarsFilterSidebar({
   // Values must match the enums in schema.prisma exactly — anything else
   // silently matches zero cars.
   const categories: FilterOption[] = [
-    { label: "Economy", value: "ECONOMY" },
-    { label: "SUV", value: "SUV" },
-    { label: "Luxury", value: "LUXURY" },
-    { label: "Van", value: "VAN" },
-    { label: "Minibus", value: "MINIBUS" },
+    { labelKey: "category.ECONOMY", value: "ECONOMY" },
+    { labelKey: "category.SUV", value: "SUV" },
+    { labelKey: "category.LUXURY", value: "LUXURY" },
+    { labelKey: "category.VAN", value: "VAN" },
+    { labelKey: "category.MINIBUS", value: "MINIBUS" },
   ];
 
   const transmissions: FilterOption[] = [
-    { label: "Manual", value: "MANUAL" },
-    { label: "Automatic", value: "AUTOMATIC" },
+    { labelKey: "transmission.MANUAL", value: "MANUAL" },
+    { labelKey: "transmission.AUTOMATIC", value: "AUTOMATIC" },
   ];
 
   const fuelTypes: FilterOption[] = [
-    { label: "Petrol", value: "PETROL" },
-    { label: "Diesel", value: "DIESEL" },
-    { label: "Hybrid", value: "HYBRID" },
-    { label: "Electric", value: "ELECTRIC" },
+    { labelKey: "fuelType.PETROL", value: "PETROL" },
+    { labelKey: "fuelType.DIESEL", value: "DIESEL" },
+    { labelKey: "fuelType.HYBRID", value: "HYBRID" },
+    { labelKey: "fuelType.ELECTRIC", value: "ELECTRIC" },
   ];
 
   function apply() {
@@ -282,6 +283,7 @@ function FilterGroup({
   onSelect: (value: string) => void;
   last?: boolean;
 }) {
+  const te = useTranslations("enum");
   return (
     <fieldset className={last ? "mb-6" : "mb-6 border-b border-sand pb-6"}>
       <legend className="mb-3 font-semibold text-ink">{legend}</legend>
@@ -298,7 +300,7 @@ function FilterGroup({
               onChange={() => onSelect(o.value)}
               className="mr-2 accent-brand"
             />
-            {o.label}
+            {te(o.labelKey as never)}
           </label>
         ))}
       </div>

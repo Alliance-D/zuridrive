@@ -167,6 +167,7 @@ export default async function AdminAnalyticsPage({
       >
         <LineChart data={revenue} format="rwfCompact" />
         <TableView
+          tableLabel={t("viewAsTable")}
           caption={t("revenueByPeriod")}
           rows={revenue.map((p) => [p.label, formatRWF(p.value)])}
           headers={[t("colPeriod"), t("colCommission")]}
@@ -182,6 +183,7 @@ export default async function AdminAnalyticsPage({
           area={false}
         />
         <TableView
+          tableLabel={t("viewAsTable")}
           caption={t("bookingsByPeriod")}
           rows={bookings.map((p) => [p.label, String(p.value)])}
           headers={[t("colPeriod"), t("colBookings")]}

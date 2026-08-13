@@ -7,9 +7,11 @@
  */
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface Tab {
-  label: string;
+  /** Key under the `dashboard` namespace. */
+  labelKey: string;
   value: string;
 }
 
@@ -20,6 +22,7 @@ interface StatusFilterTabsProps {
 }
 
 export default function StatusFilterTabs({ tabs, active, total }: StatusFilterTabsProps) {
+  const t = useTranslations("dashboard");
   const router      = useRouter();
   const searchParams = useSearchParams();
 
@@ -32,7 +35,7 @@ export default function StatusFilterTabs({ tabs, active, total }: StatusFilterTa
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-      {tabs.map(({ label, value }) => {
+      {tabs.map(({ labelKey, value }) => {
         const isActive = active === value;
         return (
           <button
@@ -47,7 +50,7 @@ export default function StatusFilterTabs({ tabs, active, total }: StatusFilterTa
               }
             `}
           >
-            {label}
+            {t(labelKey)}
             {isActive && total > 0 && (
               <span className="ml-1.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-white/20 px-1 text-[10px] font-bold">
                 {total}

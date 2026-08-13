@@ -209,6 +209,7 @@ export default async function OwnerAnalyticsPage({
       >
         <LineChart data={earnings} format="rwfCompact" />
         <TableView
+          tableLabel={t("viewAsTable")}
           caption={t("earningsByPeriod")}
           headers={[t("colPeriod"), t("colYourEarnings")]}
           rows={earnings.map((p) => [p.label, formatRWF(p.value)])}

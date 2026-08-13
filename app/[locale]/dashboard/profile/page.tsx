@@ -11,6 +11,7 @@
  */
 
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
@@ -39,7 +40,14 @@ async function getProfile(userId: string) {
 
 // ─── Inner content ─────────────────────────────────────────────────────────────
 
-async function ProfileContent({ userId }: { userId: string }) {
+async function ProfileContent({
+  userId,
+  locale,
+}: {
+  userId: string;
+  locale: string;
+}) {
+  const t = await getTranslations({ locale, namespace: "dashboard" });
   const [user, unreadCount] = await Promise.all([
     getProfile(userId),
     prisma.notification.count({ where: { userId, isRead: false } }),
@@ -48,9 +56,9 @@ async function ProfileContent({ userId }: { userId: string }) {
   return (
     <DashboardLayout notificationCount={unreadCount}>
       <div className="space-y-2 mb-5">
-        <h1 className="text-xl font-bold text-ink">My Profile</h1>
+        <h1 className="text-xl font-bold text-ink">{t("myProfile")}</h1>
         <p className="text-sm text-ink-soft">
-          Keep your details accurate — they&apos;re used on every booking.
+          {t("keepDetailsAccurate")}
         </p>
       </div>
       <ProfileForm
@@ -69,7 +77,12 @@ async function ProfileContent({ userId }: { userId: string }) {
 
 // ─── Page export ───────────────────────────────────────────────────────────────
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "dashboard" });
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect(await loginPath("/dashboard/profile"));
 
@@ -81,7 +94,7 @@ export default async function ProfilePage() {
         </DashboardLayout>
       }
     >
-      <ProfileContent userId={session.user.id} />
+      <ProfileContent userId={session.user.id} locale={params.locale} />
     </Suspense>
   );
 }

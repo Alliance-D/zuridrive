@@ -89,8 +89,11 @@ export function TableView({
   caption,
   headers,
   rows,
+  tableLabel,
 }: {
   caption: string;
+  /** Disclosure label. Passed in — this file has no locale of its own. */
+  tableLabel: string;
   headers: string[];
   rows: string[][];
 }) {
@@ -99,7 +102,7 @@ export function TableView({
   return (
     <details className="mt-3">
       <summary className="cursor-pointer text-[11px] text-ink-faint hover:text-brand">
-        View as table
+        {tableLabel}
       </summary>
       <div className="mt-2 max-h-56 overflow-y-auto">
         <table className="w-full text-xs">

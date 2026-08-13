@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslations } from "next-intl";
 import { Camera, X, ArrowRight, AlertCircle, Fuel } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -48,6 +49,7 @@ export function PhotoUploadReminder({
   requiredCount,
   routePrefix,
 }: PhotoUploadReminderProps) {
+  const t = useTranslations("photos");
   const [dismissed, setDismissed] = useState(false)
 
   // Don't show if all required photos are uploaded or dismissed
@@ -149,7 +151,7 @@ export function PhotoUploadReminder({
                 `}
               >
                 <Camera size={12} />
-                Upload Now
+                {t("uploadNow")}
                 <ArrowRight size={12} />
               </Link>
             </div>
@@ -161,7 +163,7 @@ export function PhotoUploadReminder({
           <div className="bg-amber-100 border-t border-amber-200 px-4 py-2 flex items-center gap-2">
             <AlertCircle size={12} className="text-amber-600 flex-shrink-0" />
             <p className="text-xs text-amber-700">
-              Post-trip photos are needed to complete your trip and release the deposit.
+              {t("postTripNeeded")}
             </p>
           </div>
         )}

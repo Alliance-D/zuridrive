@@ -16,6 +16,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { motion, AnimatePresence } from 'framer-motion'
@@ -53,6 +54,7 @@ const CATEGORY_ORDER = [
 ]
 
 export function PhotoComparisonView({ photos, title = 'Condition Photo Comparison' }: PhotoComparisonViewProps) {
+  const t = useTranslations("photos");
   const [lightbox, setLightbox] = useState<{ url: string; label: string } | null>(null)
 
   // Group photos by category
@@ -77,7 +79,7 @@ export function PhotoComparisonView({ photos, title = 'Condition Photo Compariso
         <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-3">
           <Camera size={20} className="text-stone-300" />
         </div>
-        <p className="text-stone-400 text-sm">No condition photos available for comparison.</p>
+        <p className="text-stone-400 text-sm">{t("noComparison")}</p>
       </div>
     )
   }

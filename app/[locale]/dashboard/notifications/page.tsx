@@ -3,6 +3,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -14,7 +15,12 @@ import NotificationCenter, {
 
 export const metadata = { title: "Notifications — ZuriDrive" };
 
-export default async function ClientNotificationsPage() {
+export default async function ClientNotificationsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "dashboard" });
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect(await loginPath("/dashboard/notifications"));
 
@@ -42,9 +48,9 @@ export default async function ClientNotificationsPage() {
   return (
     <DashboardLayout notificationCount={unreadCount}>
       <div className="mb-4">
-        <h1 className="text-xl font-bold text-ink">Notifications</h1>
+        <h1 className="text-xl font-bold text-ink">{t("notifications")}</h1>
         <p className="text-sm text-ink-soft">
-          Updates about your bookings, payments and deposits.
+          {t("notificationsSub")}
         </p>
       </div>
       <NotificationCenter initial={items} unreadCount={unreadCount} />

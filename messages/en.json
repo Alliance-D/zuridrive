@@ -46,7 +46,12 @@
     "ratingCommunication": "Communication",
     "zuriDriveRenter": "ZuriDrive renter",
     "ownerReplied": "{name} replied",
-    "ownerFallback": "Owner"
+    "ownerFallback": "Owner",
+    "carNotFound": "Car Not Found",
+    "fuelFullToFullDesc": "Return the car with a full tank, as you received it.",
+    "fuelSameLevelDesc": "Return the car at the same fuel level you picked it up at.",
+    "fuelFreeTankDesc": "Owner provides a full tank. Return at any fuel level — no charges.",
+    "fuelOwnerHandlesDesc": "Fuel is managed separately between you and the owner. Ask for details."
   },
   "carDetail": {
     "pricing": "Pricing",
@@ -137,7 +142,28 @@
     "detailsRequired": "Required to confirm your identity as a driver.",
     "processing": "Processing...",
     "rentalSubtotal": "Rental subtotal",
-    "payDirect": "You pay the owner directly when you collect the car — cash or mobile money, whichever you both prefer. ZuriDrive doesn't take the payment, so there's nothing to pay now."
+    "payDirect": "You pay the owner directly when you collect the car — cash or mobile money, whichever you both prefer. ZuriDrive doesn't take the payment, so there's nothing to pay now.",
+    "agreeAtHandover": "Agree with the owner at handover",
+    "howItWorks": "How it works",
+    "momoNumber": "MTN MoMo number",
+    "momoDifferent": "This can be different from your contact number",
+    "momoPlaceholder": "07X XXX XXXX",
+    "driverSurcharge": "Driver surcharge",
+    "delivery": "Delivery",
+    "bankLabel": "Bank",
+    "accountName": "Account name",
+    "accountNumber": "Account number",
+    "swift": "SWIFT / BIC",
+    "reference": "Reference",
+    "confirmSendsRequest": "Confirming below sends your request to the owner. They have 2 hours to accept, and you'll be notified either way.",
+    "rentalSuffix": "rental",
+    "plusRefundable": "+ {amount} refundable deposit",
+    "bookingConfirmedAfterPayment": "Your booking will only be confirmed after payment is fully verified.",
+    "ownerConfirmsThenSettle": "The owner confirms your booking, then you settle up with them directly.",
+    "depositPrefix": "Deposit: {amount}.",
+    "momoHowItWorks": "After you click “Confirm & Pay”, a USSD prompt will be sent to your phone. Approve it to complete your booking.",
+    "bankHowItWorks": "Transfer the exact amount to the account below. Upload your proof of payment on the next screen. Our finance team will confirm within a few hours.",
+    "useBookingReference": "Use your booking reference (shown after this step)"
   },
   "deposit": {
     "labelPlatform": "Refundable deposit",
@@ -350,7 +376,7 @@
     "noBookings": "No bookings yet.",
     "notifications": "Notifications",
     "signOut": "Sign Out",
-    "myProfile": "My Profile",
+    "myProfile": "My profile",
     "withDriver": "With driver",
     "activeTripBadge": "Active trip",
     "viewTripDetails": "View trip details",
@@ -405,7 +431,18 @@
     "errCouldntSendCode": "Couldn't send the verification code. Please try again in a moment.",
     "errEnterSixDigit": "Enter the 6-digit code sent to your new number.",
     "errCodeIncorrect": "That code is incorrect or has expired. Please request a new one.",
-    "errCouldntSave": "We couldn't save your changes. Please try again."
+    "errCouldntSave": "We couldn't save your changes. Please try again.",
+    "filterAll": "All",
+    "filterActive": "Active",
+    "filterUpcoming": "Upcoming",
+    "filterPending": "Pending",
+    "filterCompleted": "Completed",
+    "filterCancelled": "Cancelled",
+    "filterDisputed": "Disputed",
+    "previous": "Previous",
+    "next": "Next",
+    "notificationsSub": "Updates about your bookings, payments and deposits.",
+    "keepDetailsAccurate": "Keep your details accurate — they're used on every booking."
   },
   "owner": {
     "overview": "Overview",
@@ -1312,7 +1349,8 @@
     "ratingValue": "Value",
     "ratingCommunication": "Communication",
     "noPriorPeriod": "no prior period",
-    "noData": "No data in this period."
+    "noData": "No data in this period.",
+    "viewAsTable": "View as table"
   },
   "trip": {
     "statusPendingPayment": "Pending payment",
@@ -1787,7 +1825,12 @@
     "hintFuel": "Clear photo of the dashboard fuel gauge",
     "hintOther": "Any other relevant condition",
     "stepOf": "Step {current} of {total}",
-    "fuelPolicyLine": "Fuel policy: {policy}"
+    "fuelPolicyLine": "Fuel policy: {policy}",
+    "noComparison": "No condition photos available for comparison.",
+    "before": "Before",
+    "after": "After",
+    "uploadNow": "Upload now",
+    "postTripNeeded": "Post-trip photos are needed to complete your trip and release the deposit."
   },
   "carForm": {
     "stepBasics": "Basics",

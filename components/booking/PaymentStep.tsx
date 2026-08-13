@@ -62,10 +62,10 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
           <div className="space-y-2">
             <SummaryLine label={t("rental")} value={formatRWF(pricing.baseAmount)} />
             {pricing.driverSurchargeTotal > 0 && (
-              <SummaryLine label="Driver surcharge" value={formatRWF(pricing.driverSurchargeTotal)} />
+              <SummaryLine label={t("driverSurcharge")} value={formatRWF(pricing.driverSurchargeTotal)} />
             )}
             {pricing.deliveryFee > 0 && (
-              <SummaryLine label="Delivery" value={formatRWF(pricing.deliveryFee)} />
+              <SummaryLine label={t("delivery")} value={formatRWF(pricing.deliveryFee)} />
             )}
             <div className="border-t border-stone-100 pt-2 mt-2">
               <SummaryLine label={t("rentalSubtotal")} value={formatRWF(pricing.subtotalBeforeDeposit)} bold />
@@ -100,16 +100,15 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
             {t("payDirect")}
           </p>
           <p className="mt-3 text-sm text-stone-600 leading-relaxed">
-            Confirming below sends your request to the owner. They have 2 hours
-            to accept, and you&apos;ll be notified either way.
+            {t("confirmSendsRequest")}
           </p>
           {pricing && (
             <div className="mt-4 rounded-xl bg-stone-50 border border-stone-100 p-3">
-              <p className="text-xs text-stone-500">Agree with the owner at handover</p>
+              <p className="text-xs text-stone-500">{t("agreeAtHandover")}</p>
               <p className="text-sm font-semibold text-stone-900 mt-0.5">
-                {formatRWF(pricing.subtotalBeforeDeposit)} rental
+                {formatRWF(pricing.subtotalBeforeDeposit)} {t("rentalSuffix")}
                 {pricing.depositAmount > 0 && (
-                  <> + {formatRWF(pricing.depositAmount)} refundable deposit</>
+                  <>{" "}{t("plusRefundable", { amount: formatRWF(pricing.depositAmount) })}</>
                 )}
               </p>
             </div>
@@ -154,16 +153,15 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
         {form.paymentMethod === 'MTN_MOMO' && (
           <div className="space-y-3">
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
-              <p className="text-xs text-yellow-800 font-medium">How it works</p>
+              <p className="text-xs text-yellow-800 font-medium">{t("howItWorks")}</p>
               <p className="text-xs text-yellow-700 mt-1">
-                After you click &quot;Confirm &amp; Pay&quot;, a USSD prompt will be sent to your phone.
-                Approve it to complete your booking.
+                {t("momoHowItWorks")}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1.5">
-                MTN MoMo Number
+                {t("momoNumber")}
               </label>
               <div className="relative">
                 <Smartphone
@@ -174,7 +172,7 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
                   type="tel"
                   value={form.momoPhone}
                   onChange={(e) => onChange('momoPhone', e.target.value)}
-                  placeholder="07X XXX XXXX"
+                  placeholder={t("momoPlaceholder")}
                   className={`
                     w-full pl-10 pr-3 py-3 rounded-xl border text-stone-900 text-sm
                     focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand
@@ -185,7 +183,7 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
               </div>
               {errors.momoPhone && <p className="text-red-500 text-xs mt-1">{errors.momoPhone}</p>}
               <p className="text-xs text-stone-400 mt-1">
-                This can be different from your contact number
+                {t("momoDifferent")}
               </p>
             </div>
           </div>
@@ -195,20 +193,19 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
         {form.paymentMethod === 'BANK_TRANSFER' && (
           <div className="space-y-3">
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-              <p className="text-xs text-blue-800 font-medium">How it works</p>
+              <p className="text-xs text-blue-800 font-medium">{t("howItWorks")}</p>
               <p className="text-xs text-blue-700 mt-1">
-                Transfer the exact amount to the account below. Upload your proof of payment
-                on the next screen. Our finance team will confirm within a few hours.
+                {t("bankHowItWorks")}
               </p>
             </div>
 
             <div className="space-y-2">
               {[
-                { label: 'Bank', value: BANK_DETAILS.bankName },
-                { label: 'Account Name', value: BANK_DETAILS.accountName },
-                { label: 'Account Number', value: BANK_DETAILS.accountNumber, copyable: true },
-                { label: 'SWIFT / BIC', value: BANK_DETAILS.swiftCode, copyable: true },
-                { label: 'Reference', value: 'Use your booking reference (shown after this step)', note: true },
+                { label: t('bankLabel'), value: BANK_DETAILS.bankName },
+                { label: t('accountName'), value: BANK_DETAILS.accountName },
+                { label: t('accountNumber'), value: BANK_DETAILS.accountNumber, copyable: true },
+                { label: t('swift'), value: BANK_DETAILS.swiftCode, copyable: true },
+                { label: t('reference'), value: t('useBookingReference'), note: true },
               ].map((item) => (
                 <div key={item.label} className="flex justify-between items-center py-2 border-b border-stone-100 last:border-0">
                   <span className="text-xs text-stone-500">{item.label}</span>
@@ -242,9 +239,11 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
         <Shield size={15} className="text-brand mt-0.5 flex-shrink-0" />
         <p className="text-xs text-stone-500 leading-relaxed">
           {depositCopy.heldBy === 'platform'
-            ? 'Your booking will only be confirmed after payment is fully verified.'
-            : 'The owner confirms your booking, then you settle up with them directly.'}{' '}
-          {pricing ? `Deposit: ${formatRWF(pricing.depositAmount)}. ` : ''}
+            ? t('bookingConfirmedAfterPayment')
+            : t('ownerConfirmsThenSettle')}{' '}
+          {pricing
+            ? `${t('depositPrefix', { amount: formatRWF(pricing.depositAmount) })} `
+            : ''}
           {td(depositCopy.explanationKey)}
         </p>
       </div>

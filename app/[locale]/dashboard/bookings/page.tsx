@@ -43,14 +43,14 @@ const PAGE_SIZE = 10;
 
 // Not exported: page.tsx may only export `default` and Next's reserved
 // config symbols, or the route type check fails at build time.
-const FILTER_TABS: { label: string; value: BookingStatus }[] = [
-  { label: "All",        value: "ALL"              },
-  { label: "Active",     value: "ACTIVE"           },
-  { label: "Upcoming",   value: "CONFIRMED"        },
-  { label: "Pending",    value: "PENDING_PAYMENT"  },
-  { label: "Completed",  value: "COMPLETED"        },
-  { label: "Cancelled",  value: "CANCELLED"        },
-  { label: "Disputed",   value: "DISPUTED"         },
+const FILTER_TABS: { labelKey: string; value: BookingStatus }[] = [
+  { labelKey: "filterAll",        value: "ALL"              },
+  { labelKey: "filterActive",     value: "ACTIVE"           },
+  { labelKey: "filterUpcoming",   value: "CONFIRMED"        },
+  { labelKey: "filterPending",    value: "PENDING_PAYMENT"  },
+  { labelKey: "filterCompleted",  value: "COMPLETED"        },
+  { labelKey: "filterCancelled",  value: "CANCELLED"        },
+  { labelKey: "filterDisputed",   value: "DISPUTED"         },
 ];
 
 // ─── Data fetcher ─────────────────────────────────────────────────────────────
@@ -109,14 +109,17 @@ async function getBookings(
 // ─── Inner content component ──────────────────────────────────────────────────
 
 async function BookingsContent({
+  locale,
   userId,
   status,
   page,
 }: {
+  locale: string;
   userId: string;
   status: BookingStatus;
   page: number;
 }) {
+  const t = await getTranslations({ locale, namespace: "dashboard" });
   const { bookings, total } = await getBookings(userId, status, page);
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -200,7 +203,7 @@ async function BookingsContent({
                   href={`/dashboard/bookings?status=${status}&page=${page - 1}`}
                   className="rounded-lg border border-sand-dark px-4 py-2 text-sm font-medium text-ink-muted hover:border-brand hover:text-brand transition-colors"
                 >
-                  Previous
+                  {t("previous")}
                 </a>
               )}
               <span className="text-sm text-ink-soft">
@@ -211,7 +214,7 @@ async function BookingsContent({
                   href={`/dashboard/bookings?status=${status}&page=${page + 1}`}
                   className="rounded-lg border border-sand-dark px-4 py-2 text-sm font-medium text-ink-muted hover:border-brand hover:text-brand transition-colors"
                 >
-                  Next
+                  {t("next")}
                 </a>
               )}
             </div>
@@ -249,7 +252,12 @@ export default async function BookingsPage({ params, searchParams }: PageProps) 
       }
     >
       <DashboardLayoutWrapper userId={session.user.id}>
-        <BookingsContent userId={session.user.id} status={safeStatus} page={page} />
+        <BookingsContent
+          userId={session.user.id}
+          status={safeStatus}
+          page={page}
+          locale={params.locale}
+        />
       </DashboardLayoutWrapper>
     </Suspense>
   );

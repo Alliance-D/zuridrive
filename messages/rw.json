@@ -46,7 +46,12 @@
     "ratingCommunication": "Itumanaho",
     "zuriDriveRenter": "Umukode wa ZuriDrive",
     "ownerReplied": "{name} yasubije",
-    "ownerFallback": "Nyirayo"
+    "ownerFallback": "Nyirayo",
+    "carNotFound": "Imodoka ntiyabonetse",
+    "fuelFullToFullDesc": "Garura imodoka ifite tanki yuzuye, nk'uko wayakiriye.",
+    "fuelSameLevelDesc": "Garura imodoka ifite lisansi ingana n'iyo wayifatanye.",
+    "fuelFreeTankDesc": "Nyir'imodoka atanga tanki yuzuye. Garura ufite lisansi iyo ari yo yose — nta mafaranga.",
+    "fuelOwnerHandlesDesc": "Lisansi mubyumvikanaho ubwanyu na nyir'imodoka. Mubaze ibisobanuro."
   },
   "carDetail": {
     "pricing": "Ibiciro",
@@ -137,7 +142,28 @@
     "detailsRequired": "Arakenewe kugira ngo hemezwe ko ari wowe utwara.",
     "processing": "Birimo gukorwa...",
     "rentalSubtotal": "Igiteranyo cy'ubukode",
-    "payDirect": "Wishyura nyir'imodoka ubwe igihe ufata imodoka — amafaranga mu ntoki cyangwa kuri telefone, uko mwumvikanye. ZuriDrive ntiyakira ayo mafaranga, bityo nta cyo wishyura ubu."
+    "payDirect": "Wishyura nyir'imodoka ubwe igihe ufata imodoka — amafaranga mu ntoki cyangwa kuri telefone, uko mwumvikanye. ZuriDrive ntiyakira ayo mafaranga, bityo nta cyo wishyura ubu.",
+    "agreeAtHandover": "Mwumvikane na nyir'imodoka igihe muyakiranira",
+    "howItWorks": "Uko bikora",
+    "momoNumber": "Nimero ya MTN MoMo",
+    "momoDifferent": "Ishobora gutandukana n'iyo bagushakaho",
+    "momoPlaceholder": "07X XXX XXXX",
+    "driverSurcharge": "Amafaranga y'umushoferi",
+    "delivery": "Kuzana imodoka",
+    "bankLabel": "Banki",
+    "accountName": "Izina rya konti",
+    "accountNumber": "Nimero ya konti",
+    "swift": "SWIFT / BIC",
+    "reference": "Nimero y'ubwishyu",
+    "confirmSendsRequest": "Wemeje hasi, ubusabe bwawe bwoherezwa kwa nyir'imodoka. Afite amasaha 2 yo kwemera, kandi uzamenyeshwa uko byagenze kose.",
+    "rentalSuffix": "ubukode",
+    "plusRefundable": "+ ingwate isubizwa ya {amount}",
+    "bookingConfirmedAfterPayment": "Ubukode bwawe buzemezwa gusa nyuma y'uko ubwishyu bwemejwe burundu.",
+    "ownerConfirmsThenSettle": "Nyir'imodoka yemeza ubukode bwawe, hanyuma mukishyurana mwembi.",
+    "depositPrefix": "Ingwate: {amount}.",
+    "momoHowItWorks": "Nyuma yo gukanda “Emeza wishyure”, ubutumwa bwa USSD buzoherezwa kuri telefoni yawe. Bwemeze kugira ngo ubukode burangire.",
+    "bankHowItWorks": "Ohereza amafaranga nyayo kuri konti iri hasi. Shyiraho icyemezo cy'ubwishyu ku rupapuro rukurikira. Abashinzwe imari bazabyemeza mu masaha make.",
+    "useBookingReference": "Koresha nimero y'ubukode bwawe (igaragara nyuma y'iyi ntambwe)"
   },
   "deposit": {
     "labelPlatform": "Ingwate isubizwa",
@@ -405,7 +431,18 @@
     "errCouldntSendCode": "Ntitwashoboye kohereza kode yo kwemeza. Ongera ugerageze mu kanya.",
     "errEnterSixDigit": "Andika kode y'imibare 6 yoherejwe kuri nimero yawe nshya.",
     "errCodeIncorrect": "Iyo kode si yo cyangwa yarangiye. Saba indi.",
-    "errCouldntSave": "Ntitwashoboye kubika impinduka zawe. Ongera ugerageze."
+    "errCouldntSave": "Ntitwashoboye kubika impinduka zawe. Ongera ugerageze.",
+    "filterAll": "Byose",
+    "filterActive": "Burimo gukorwa",
+    "filterUpcoming": "Buri imbere",
+    "filterPending": "Butegereje",
+    "filterCompleted": "Bwarangiye",
+    "filterCancelled": "Bwahagaritswe",
+    "filterDisputed": "Bufite impaka",
+    "previous": "Ibanza",
+    "next": "Ibikurikira",
+    "notificationsSub": "Amakuru ku bukode bwawe, ubwishyu n'ingwate.",
+    "keepDetailsAccurate": "Gumana amakuru yawe ari ukuri — akoreshwa kuri buri bukode."
   },
   "owner": {
     "overview": "Incamake",
@@ -1312,7 +1349,8 @@
     "ratingValue": "Agaciro",
     "ratingCommunication": "Itumanaho",
     "noPriorPeriod": "nta gihe cyabanje",
-    "noData": "Nta makuru muri iki gihe."
+    "noData": "Nta makuru muri iki gihe.",
+    "viewAsTable": "Reba nk'imbonerahamwe"
   },
   "trip": {
     "statusPendingPayment": "Butegereje kwishyurwa",
@@ -1787,7 +1825,12 @@
     "hintFuel": "Ifoto igaragara neza y'igipimo cya lisansi ku kibaho",
     "hintOther": "Ikindi cyose gifitanye isano n'uko imodoka imeze",
     "stepOf": "Intambwe ya {current} kuri {total}",
-    "fuelPolicyLine": "Amabwiriza ya lisansi: {policy}"
+    "fuelPolicyLine": "Amabwiriza ya lisansi: {policy}",
+    "noComparison": "Nta mafoto y'uko imodoka yari imeze ahari yo kugereranya.",
+    "before": "Mbere",
+    "after": "Nyuma",
+    "uploadNow": "Shyiraho nonaha",
+    "postTripNeeded": "Amafoto yo nyuma y'urugendo arakenewe kugira ngo urugendo rurangire n'ingwate isubizwe."
   },
   "carForm": {
     "stepBasics": "Ibanze",
