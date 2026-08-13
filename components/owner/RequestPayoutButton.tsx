@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { formatRWF } from "@/lib/currency";
 import { Banknote, Loader2, AlertCircle, Smartphone, Landmark } from "lucide-react";
 
@@ -19,6 +20,8 @@ export default function RequestPayoutButton({
   hasBank,
   hasOpenRequest,
 }: Props) {
+  const t = useTranslations("payout");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [method, setMethod] = useState<"MTN_MOMO" | "BANK_TRANSFER">(
@@ -41,14 +44,14 @@ export default function RequestPayoutButton({
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong. Please try again.");
+        setError(data.error ?? t("genericError"));
         return;
       }
 
       setOpen(false);
       router.refresh();
     } catch {
-      setError("Network problem. Please check your connection and retry.");
+      setError(tc("networkError"));
     } finally {
       setSubmitting(false);
     }
@@ -59,10 +62,10 @@ export default function RequestPayoutButton({
       <div className="rounded-2xl bg-white p-4 shadow-sm">
         <p className="text-sm text-ink-soft">
           {hasOpenRequest
-            ? "You have a payout in progress. We’ll text you once it’s been sent."
+            ? t("inProgress")
             : available === 0
-              ? "No earnings available to withdraw yet."
-              : "Add a MoMo number or bank account in your profile to request a payout."}
+              ? t("noEarnings")
+              : t("addMethod")}
         </p>
       </div>
     );
@@ -74,10 +77,10 @@ export default function RequestPayoutButton({
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-ink">
-              {formatRWF(available)} ready to withdraw
+              {t("readyToWithdraw", { amount: formatRWF(available) })}
             </p>
             <p className="text-xs text-ink-soft">
-              Paid out within 1–3 business days of approval.
+              {t("paidWithin")}
             </p>
           </div>
           <button
@@ -85,17 +88,17 @@ export default function RequestPayoutButton({
             className="flex shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             <Banknote className="h-4 w-4" />
-            Request payout
+            {t("request")}
           </button>
         </div>
       ) : (
         <div className="space-y-3">
           <div>
             <p className="text-sm font-semibold text-ink">
-              Withdraw {formatRWF(available)}
+              {t("withdrawAmount", { amount: formatRWF(available) })}
             </p>
             <p className="text-xs text-ink-soft">
-              This covers every completed trip not yet paid out.
+              {t("coversEveryTrip")}
             </p>
           </div>
 
@@ -103,7 +106,7 @@ export default function RequestPayoutButton({
             {hasMomo && (
               <MethodButton
                 icon={Smartphone}
-                label="MTN MoMo"
+                label={t("mtnMomo")}
                 selected={method === "MTN_MOMO"}
                 onClick={() => setMethod("MTN_MOMO")}
               />
@@ -111,7 +114,7 @@ export default function RequestPayoutButton({
             {hasBank && (
               <MethodButton
                 icon={Landmark}
-                label="Bank transfer"
+                label={t("bankTransfer")}
                 selected={method === "BANK_TRANSFER"}
                 onClick={() => setMethod("BANK_TRANSFER")}
               />
@@ -131,7 +134,7 @@ export default function RequestPayoutButton({
               disabled={submitting}
               className="flex-1 rounded-lg border border-sand-dark px-3 py-2 text-sm font-semibold text-ink-muted hover:border-brand"
             >
-              Cancel
+              {tc("cancel")}
             </button>
             <button
               onClick={submit}
@@ -139,7 +142,7 @@ export default function RequestPayoutButton({
               className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              {submitting ? "Submitting…" : "Confirm request"}
+              {submitting ? tc("submitting") : t("confirmRequest")}
             </button>
           </div>
         </div>

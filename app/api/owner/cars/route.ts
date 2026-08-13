@@ -16,7 +16,10 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { notifyAdminsWithModule } from '@/lib/notifications'
 import { getPlatformSettings } from '@/lib/platform-settings'
-import { getOwnerAllowance } from '@/lib/subscriptions/limits'
+import {
+  getOwnerAllowance,
+  formatAllowanceReason,
+} from '@/lib/subscriptions/limits'
 import { getPhoneVerification } from '@/lib/phone-verification'
 import { uploadedFileUrl } from '@/lib/validation/urls'
 import { z } from 'zod'
@@ -120,7 +123,9 @@ export async function POST(req: NextRequest) {
     if (!allowance.canListMore) {
       return NextResponse.json(
         {
-          error: allowance.reason ?? 'You have reached your listing limit.',
+          error: allowance.reason
+            ? formatAllowanceReason(allowance.reason)
+            : 'You have reached your listing limit.',
           limit: {
             used: allowance.used,
             maxListings: allowance.maxListings,

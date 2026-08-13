@@ -12,7 +12,7 @@
  */
 
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import CarCardGrid from "@/components/car-card-grid";
@@ -24,7 +24,11 @@ export const metadata = {
 };
 
 export default async function NotFound() {
-  const t = await getTranslations("notFound");
+  // Next does not pass params to not-found.tsx, so the locale has to be read
+  // from the request rather than from the route segment. This is the one place
+  // an explicit locale argument isn't available.
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "notFound" });
   // A 404 must never itself fail. If the database is unreachable the page still
   // has to render — just without suggestions.
   let cars: Awaited<ReturnType<typeof getSuggestedCars>> = [];

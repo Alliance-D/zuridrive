@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, Reply, AlertCircle } from "lucide-react";
 
 /**
@@ -9,6 +10,8 @@ import { Loader2, Reply, AlertCircle } from "lucide-react";
  * form disappears on success rather than staying open.
  */
 export default function ReviewReplyForm({ reviewId }: { reviewId: string }) {
+  const t = useTranslations("reviewReply");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -29,7 +32,7 @@ export default function ReviewReplyForm({ reviewId }: { reviewId: string }) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "We couldn’t post your reply.");
+        setError(data.error ?? t("postError"));
         return;
       }
 
@@ -37,7 +40,7 @@ export default function ReviewReplyForm({ reviewId }: { reviewId: string }) {
       setText("");
       router.refresh();
     } catch {
-      setError("Network problem. Please try again.");
+      setError(t("networkError"));
     } finally {
       setSubmitting(false);
     }
@@ -50,7 +53,7 @@ export default function ReviewReplyForm({ reviewId }: { reviewId: string }) {
         className="flex items-center gap-1.5 text-xs font-semibold text-brand hover:underline"
       >
         <Reply className="h-3 w-3" />
-        Reply to this review
+        {t("replyToReview")}
       </button>
     );
   }
@@ -63,7 +66,7 @@ export default function ReviewReplyForm({ reviewId }: { reviewId: string }) {
         rows={3}
         maxLength={2000}
         autoFocus
-        placeholder="Thanks for renting with us…"
+        placeholder={t("placeholder")}
         className="w-full rounded-lg border border-sand-dark px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand/20"
       />
 
@@ -81,7 +84,7 @@ export default function ReviewReplyForm({ reviewId }: { reviewId: string }) {
           className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
         >
           {submitting && <Loader2 className="h-3 w-3 animate-spin" />}
-          {submitting ? "Posting…" : "Post reply"}
+          {submitting ? tc("posting") : t("postReply")}
         </button>
         <button
           onClick={() => {
@@ -91,10 +94,10 @@ export default function ReviewReplyForm({ reviewId }: { reviewId: string }) {
           disabled={submitting}
           className="text-xs font-semibold text-ink-soft hover:text-ink"
         >
-          Cancel
+          {tc("cancel")}
         </button>
         <span className="ml-auto text-[10px] text-ink-faint">
-          Replies are public and can only be posted once.
+          {t("publicOnce")}
         </span>
       </div>
     </div>

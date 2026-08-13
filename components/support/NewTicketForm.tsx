@@ -10,6 +10,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CATEGORY_LABELS } from "@/lib/support";
 import { Loader2, AlertCircle, Upload, X, CheckCircle2, Zap } from "lucide-react";
 
@@ -24,6 +25,9 @@ export default function NewTicketForm({
   responseHours: number;
   planName: string | null;
 }) {
+  const t = useTranslations("ticket");
+  const tc = useTranslations("common");
+  const te = useTranslations("enum");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState("");
@@ -49,13 +53,13 @@ export default function NewTicketForm({
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         const data = await res.json();
         if (!res.ok) {
-          setError(data.error ?? "Upload failed.");
+          setError(data.error ?? t("uploadFailed"));
           break;
         }
         setAttachments((a) => [...a, data.url]);
       }
     } catch {
-      setError("Upload failed. Please retry.");
+      setError(t("uploadRetry"));
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -78,13 +82,13 @@ export default function NewTicketForm({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "We couldn't open your ticket.");
+        setError(data.error ?? t("openError"));
         return;
       }
       router.push(`/owner/support/${data.ticket.id}`);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -98,7 +102,7 @@ export default function NewTicketForm({
         onClick={() => setOpen(true)}
         className="w-full rounded-2xl bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
       >
-        Ask for help
+        {t("askForHelp")}
       </button>
     );
   }
@@ -106,13 +110,13 @@ export default function NewTicketForm({
   return (
     <section className="rounded-2xl bg-white p-4 shadow-sm">
       <h2 className="text-sm font-semibold text-ink">
-        What&apos;s the problem?
+        {t("whatsTheProblem")}
       </h2>
 
       <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-soft">
         {isPriority && <Zap className="h-3.5 w-3.5 text-accent" />}
-        We aim to reply within <strong>{responseHours} hours</strong>
-        {isPriority && planName ? ` — priority support is part of ${planName}.` : "."}
+        {t("replyWithin", { hours: responseHours })}
+        {isPriority && planName ? t("prioritySuffix", { plan: planName }) : "."}
       </p>
 
       <div className="mt-3 space-y-2.5">
@@ -121,14 +125,14 @@ export default function NewTicketForm({
             htmlFor="ticket-subject"
             className="mb-1 block text-xs font-medium text-ink-muted"
           >
-            Subject
+            {t("subject")}
           </label>
           <input
             id="ticket-subject"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             maxLength={150}
-            placeholder="A short summary — e.g. Payout for June hasn't arrived"
+            placeholder={t("subjectPlaceholder")}
             className={input}
           />
         </div>
@@ -138,7 +142,7 @@ export default function NewTicketForm({
             htmlFor="ticket-category"
             className="mb-1 block text-xs font-medium text-ink-muted"
           >
-            What is it about?
+            {t("whatAbout")}
           </label>
           <select
             id="ticket-category"
@@ -148,7 +152,7 @@ export default function NewTicketForm({
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {CATEGORY_LABELS[c]}
+                {te(`ticketCategory.${c}` as never)}
               </option>
             ))}
           </select>
@@ -159,20 +163,20 @@ export default function NewTicketForm({
             htmlFor="ticket-message"
             className="mb-1 block text-xs font-medium text-ink-muted"
           >
-            Details
+            {t("details")}
           </label>
           <textarea
             id="ticket-message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             rows={5}
-            placeholder="What happened, when, and what you expected instead. Booking references help us a lot."
+            placeholder={t("detailsPlaceholder")}
             className={input}
           />
           <p className="mt-1 text-[11px] text-ink-faint">
             {message.trim().length < 20
-              ? `${message.trim().length}/20 characters`
-              : "Thanks — that's enough to get started."}
+              ? t("charCount", { count: message.trim().length })
+              : t("enoughToStart")}
           </p>
         </div>
 
@@ -184,12 +188,12 @@ export default function NewTicketForm({
                 className="flex items-center gap-1 rounded-full bg-bone px-2 py-0.5 text-[11px] text-ink-muted"
               >
                 <CheckCircle2 className="h-3 w-3 text-success" />
-                File {i + 1}
+                {t("fileN", { n: i + 1 })}
                 <button
                   onClick={() =>
                     setAttachments((list) => list.filter((x) => x !== u))
                   }
-                  aria-label={`Remove file ${i + 1}`}
+                  aria-label={t("removeFile", { n: i + 1 })}
                   className="text-ink-faint hover:text-danger-strong"
                 >
                   <X className="h-2.5 w-2.5" />
@@ -205,7 +209,7 @@ export default function NewTicketForm({
           ) : (
             <Upload className="h-3.5 w-3.5" />
           )}
-          {uploading ? "Uploading…" : "Attach a screenshot or document"}
+          {uploading ? tc("uploading") : t("attach")}
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -230,7 +234,7 @@ export default function NewTicketForm({
             className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
           >
             {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-            {busy ? "Sending…" : "Send"}
+            {busy ? t("sending") : t("send")}
           </button>
           <button
             onClick={() => {
@@ -240,7 +244,7 @@ export default function NewTicketForm({
             disabled={busy}
             className="text-sm font-semibold text-ink-soft"
           >
-            Cancel
+            {tc("cancel")}
           </button>
         </div>
       </div>

@@ -38,6 +38,20 @@ const PRIORITY_BY_TIER: Record<string, number> = {
 /** Owners with no active plan sort last. */
 const DEFAULT_PRIORITY = 3;
 
+/**
+ * Why an owner can't list another car, as data rather than as a sentence.
+ *
+ * This used to be a ready-made English string. That reads well until the page
+ * around it is in Kinyarwanda and the one line explaining why the button is
+ * disabled is still in English — and there is nothing the page can do about it,
+ * because by then the sentence is already built. Returning the key and its
+ * numbers lets each caller render it in its own locale.
+ */
+export type AllowanceReason =
+  | { key: "planLapsed"; plan: string; max: number }
+  | { key: "chooseAPlan"; max: number }
+  | { key: "planCovers"; plan: string; max: number };
+
 export interface OwnerAllowance {
   /** The active plan, or null when there isn't one. */
   plan: SubscriptionPlan | null;
@@ -50,7 +64,23 @@ export interface OwnerAllowance {
   remaining: number | null;
   canListMore: boolean;
   /** Why not, when canListMore is false. */
-  reason: string | null;
+  reason: AllowanceReason | null;
+}
+
+/**
+ * English rendering of an allowance reason, for contexts with no locale —
+ * the JSON API, logs. UI should translate the key instead.
+ */
+export function formatAllowanceReason(reason: AllowanceReason): string {
+  const cars = (n: number) => `${n} car${n === 1 ? "" : "s"}`;
+  switch (reason.key) {
+    case "planLapsed":
+      return `Your ${reason.plan} plan has lapsed. Renew it to list more than ${cars(reason.max)}.`;
+    case "chooseAPlan":
+      return `Choose a plan to list more than ${cars(reason.max)}.`;
+    case "planCovers":
+      return `Your ${reason.plan} plan covers ${cars(reason.max)}. Upgrade to list more.`;
+  }
 }
 
 /**
@@ -98,8 +128,12 @@ export async function getOwnerAllowance(
         remaining > 0
           ? null
           : subscription
-            ? `Your ${subscription.plan.name} plan has lapsed. Renew it to list more than ${maxListings} car${maxListings === 1 ? "" : "s"}.`
-            : `Choose a plan to list more than ${maxListings} car${maxListings === 1 ? "" : "s"}.`,
+            ? {
+                key: "planLapsed",
+                plan: subscription.plan.name,
+                max: maxListings,
+              }
+            : { key: "chooseAPlan", max: maxListings },
     };
   }
 
@@ -115,7 +149,11 @@ export async function getOwnerAllowance(
     canListMore: remaining === null || remaining > 0,
     reason:
       remaining !== null && remaining <= 0
-        ? `Your ${subscription.plan.name} plan covers ${maxListings} car${maxListings === 1 ? "" : "s"}. Upgrade to list more.`
+        ? {
+            key: "planCovers",
+            plan: subscription.plan.name,
+            max: maxListings!,
+          }
         : null,
   };
 }

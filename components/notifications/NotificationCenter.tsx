@@ -9,8 +9,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import type { NotificationType } from "@prisma/client";
+import { formatDate } from "@/lib/dates";
 import {
   Bell,
   Check,
@@ -48,16 +50,25 @@ function iconFor(type: NotificationType) {
   return Megaphone;
 }
 
-function timeAgo(iso: string) {
+/**
+ * Relative time. The translator and locale are passed in because this is a
+ * module-level function — there is no hook context here, and hard-coding the
+ * strings would leave "3d ago" in English on an otherwise translated page.
+ */
+function timeAgo(
+  iso: string,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  locale: string,
+) {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t("justNow");
+  if (mins < 60) return t("minutesAgo", { count: mins });
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
+  if (hrs < 24) return t("hoursAgo", { count: hrs });
   const days = Math.floor(hrs / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-RW");
+  if (days < 30) return t("daysAgo", { count: days });
+  return formatDate(iso, locale);
 }
 
 export default function NotificationCenter({
@@ -67,6 +78,9 @@ export default function NotificationCenter({
   initial: NotificationItem[];
   unreadCount: number;
 }) {
+  const t = useTranslations("notificationCentre");
+  const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const [items, setItems] = useState(initial);
   const [unread, setUnread] = useState(unreadCount);
@@ -119,7 +133,7 @@ export default function NotificationCenter({
                 : "bg-white text-ink-soft hover:text-ink"
             }`}
           >
-            All
+            {tc("all")}
           </button>
           <button
             onClick={() => setFilter("unread")}
@@ -129,7 +143,7 @@ export default function NotificationCenter({
                 : "bg-white text-ink-soft hover:text-ink"
             }`}
           >
-            Unread
+            {t("unread")}
             {unread > 0 && (
               <span
                 className={`rounded-full px-1.5 text-[10px] ${
@@ -155,7 +169,7 @@ export default function NotificationCenter({
             ) : (
               <CheckCheck className="h-3 w-3" />
             )}
-            Mark all read
+            {t("markAllRead")}
           </button>
         )}
       </div>
@@ -166,12 +180,12 @@ export default function NotificationCenter({
             <Bell className="h-5 w-5 text-ink-faint" />
           </div>
           <h2 className="text-base font-semibold text-ink">
-            {filter === "unread" ? "Nothing unread" : "No notifications yet"}
+            {filter === "unread" ? t("nothingUnread") : t("noneYet")}
           </h2>
           <p className="mt-1 text-sm text-ink-soft">
             {filter === "unread"
-              ? "You're all caught up."
-              : "Updates about your bookings and payments will appear here."}
+              ? t("allCaughtUp")
+              : t("updatesAppearHere")}
           </p>
         </div>
       ) : (
@@ -206,7 +220,7 @@ export default function NotificationCenter({
                       {n.title}
                     </p>
                     <span className="shrink-0 text-[11px] text-ink-faint">
-                      {timeAgo(n.createdAt)}
+                      {timeAgo(n.createdAt, t, locale)}
                     </span>
                   </div>
                   <p className="mt-0.5 text-xs text-ink-soft">{n.body}</p>
@@ -219,7 +233,7 @@ export default function NotificationCenter({
                       e.stopPropagation();
                       markRead(n.id);
                     }}
-                    aria-label="Mark as read"
+                    aria-label={t("markAsRead")}
                     className="shrink-0 rounded-full p-1 text-ink-faint hover:bg-white hover:text-brand"
                   >
                     <Check className="h-3.5 w-3.5" />

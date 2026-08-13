@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, Check, AlertCircle, Smartphone, Landmark, User } from "lucide-react";
 
 interface Props {
@@ -28,6 +29,8 @@ interface Props {
 }
 
 export default function OwnerProfileForm({ initial }: Props) {
+  const t = useTranslations("ownerProfile");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -47,17 +50,17 @@ export default function OwnerProfileForm({ initial }: Props) {
 
   function validate() {
     const e: Record<string, string> = {};
-    if (form.name.trim().length < 2) e.name = "Enter your full name";
+    if (form.name.trim().length < 2) e.name = t("errName");
     if (form.ownerType === "COMPANY" && form.businessName.trim().length < 2)
-      e.businessName = "Enter the business name renters will see";
+      e.businessName = t("errBusinessName");
     if (form.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email))
-      e.email = "Enter a valid email";
+      e.email = t("errEmail");
 
     // A bank destination is only usable if all three parts are present.
     const bankParts = [form.bankName, form.bankAccountName, form.bankAccountNumber];
     const filled = bankParts.filter((p) => p.trim()).length;
     if (filled > 0 && filled < 3)
-      e.bankAccountNumber = "Fill in bank name, account name and number together";
+      e.bankAccountNumber = t("errBankParts");
 
     setFieldErrors(e);
     return Object.keys(e).length === 0;
@@ -77,14 +80,14 @@ export default function OwnerProfileForm({ initial }: Props) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "We couldn’t save your changes.");
+        setError(data.error ?? t("saveError"));
         return;
       }
 
       setSaved(true);
       router.refresh();
     } catch {
-      setError("Network problem. Please check your connection and retry.");
+      setError(tc("networkError"));
     } finally {
       setSaving(false);
     }
@@ -96,7 +99,7 @@ export default function OwnerProfileForm({ initial }: Props) {
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center gap-2">
           <User className="h-4 w-4 text-brand" />
-          <h2 className="text-sm font-semibold text-ink">Your details</h2>
+          <h2 className="text-sm font-semibold text-ink">{t("yourDetails")}</h2>
         </div>
 
         {/* Who is listing. A company still has one person behind the login —
@@ -104,21 +107,21 @@ export default function OwnerProfileForm({ initial }: Props) {
             but renters see the business name on the listing. */}
         <div className="mb-4">
           <p className="mb-2 text-xs font-medium text-ink-muted">
-            Are you listing as yourself or as a business?
+            {t("listingAs")}
           </p>
           <div className="flex gap-2">
-            {(["INDIVIDUAL", "COMPANY"] as const).map((t) => (
+            {(["INDIVIDUAL", "COMPANY"] as const).map((ownerType) => (
               <button
-                key={t}
+                key={ownerType}
                 type="button"
-                onClick={() => set("ownerType", t)}
+                onClick={() => set("ownerType", ownerType)}
                 className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-                  form.ownerType === t
+                  form.ownerType === ownerType
                     ? "border-brand bg-brand text-white"
                     : "border-sand-edge bg-white text-ink-muted hover:border-brand"
                 }`}
               >
-                {t === "INDIVIDUAL" ? "Myself" : "A business"}
+                {ownerType === "INDIVIDUAL" ? t("myself") : t("aBusiness")}
               </button>
             ))}
           </div>
@@ -127,26 +130,26 @@ export default function OwnerProfileForm({ initial }: Props) {
         {form.ownerType === "COMPANY" && (
           <div className="mb-4 grid gap-3 rounded-xl bg-bone p-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Field label="Business name" error={fieldErrors.businessName}>
+              <Field label={t("businessName")} error={fieldErrors.businessName}>
                 <input
                   className={cls(fieldErrors.businessName)}
                   value={form.businessName}
                   onChange={(e) => set("businessName", e.target.value)}
-                  placeholder="Kigali Fleet Ltd"
+                  placeholder={t("businessNamePlaceholder")}
                 />
               </Field>
               <p className="mt-1 text-[11px] text-ink-faint">
-                This is the name renters see on your listings.
+                {t("businessNameHint")}
               </p>
             </div>
-            <Field label="RDB registration number (optional)">
+            <Field label={t("rdbNumber")}>
               <input
                 className={cls()}
                 value={form.registrationNumber}
                 onChange={(e) => set("registrationNumber", e.target.value)}
               />
             </Field>
-            <Field label="TIN (optional)">
+            <Field label={t("tin")}>
               <input
                 className={cls()}
                 value={form.tin}
@@ -157,21 +160,21 @@ export default function OwnerProfileForm({ initial }: Props) {
         )}
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Full name" error={fieldErrors.name}>
+          <Field label={t("fullName")} error={fieldErrors.name}>
             <input
               className={cls(fieldErrors.name)}
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
             />
           </Field>
-          <Field label="Phone (used to sign in)">
+          <Field label={t("phoneSignIn")}>
             <input
               className={`${cls()} bg-bone text-ink-soft`}
               value={form.phone}
               disabled
             />
           </Field>
-          <Field label="Email (optional)" error={fieldErrors.email}>
+          <Field label={t("emailOptional")} error={fieldErrors.email}>
             <input
               className={cls(fieldErrors.email)}
               value={form.email}
@@ -181,8 +184,7 @@ export default function OwnerProfileForm({ initial }: Props) {
           </Field>
         </div>
         <p className="mt-2 text-xs text-ink-faint">
-          Your phone number can&apos;t be changed here — it verifies your account.
-          Contact support if you need to update it.
+          {t("phoneHint")}
         </p>
       </section>
 
@@ -191,19 +193,19 @@ export default function OwnerProfileForm({ initial }: Props) {
         <div className="mb-1 flex items-center gap-2">
           <Smartphone className="h-4 w-4 text-brand" />
           <h2 className="text-sm font-semibold text-ink">
-            Where we send your earnings
+            {t("whereEarnings")}
           </h2>
         </div>
         <p className="mb-3 text-xs text-ink-soft">
-          Add at least one. You choose which to use each time you request a payout.
+          {t("addAtLeastOne")}
         </p>
 
-        <Field label="MTN MoMo number">
+        <Field label={t("momoNumber")}>
           <input
             className={cls()}
             value={form.momoNumber}
             onChange={(e) => set("momoNumber", e.target.value)}
-            placeholder="07X XXX XXXX"
+            placeholder={t("momoPlaceholder")}
             inputMode="tel"
           />
         </Field>
@@ -212,19 +214,19 @@ export default function OwnerProfileForm({ initial }: Props) {
           <div className="mb-3 flex items-center gap-2">
             <Landmark className="h-4 w-4 text-ink-soft" />
             <p className="text-xs font-semibold text-ink-muted">
-              Bank account (optional)
+              {t("bankOptional")}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Bank name">
+            <Field label={t("bankName")}>
               <input
                 className={cls()}
                 value={form.bankName}
                 onChange={(e) => set("bankName", e.target.value)}
-                placeholder="Bank of Kigali"
+                placeholder={t("bankNamePlaceholder")}
               />
             </Field>
-            <Field label="Account name">
+            <Field label={t("accountName")}>
               <input
                 className={cls()}
                 value={form.bankAccountName}
@@ -232,7 +234,7 @@ export default function OwnerProfileForm({ initial }: Props) {
               />
             </Field>
             <Field
-              label="Account number"
+              label={t("accountNumber")}
               error={fieldErrors.bankAccountNumber}
             >
               <input
@@ -260,12 +262,12 @@ export default function OwnerProfileForm({ initial }: Props) {
           className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
         >
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          {saving ? "Saving…" : "Save changes"}
+          {saving ? tc("saving") : tc("saveChanges")}
         </button>
         {saved && (
           <span className="flex items-center gap-1 text-sm text-success">
             <Check className="h-4 w-4" />
-            Saved
+            {tc("saved")}
           </span>
         )}
       </div>

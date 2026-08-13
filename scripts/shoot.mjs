@@ -42,7 +42,17 @@ if (!cfg) {
   process.exit(1);
 }
 
-const OUT = `shots/${role}`;
+// Every route is locale-prefixed since the app/[locale] restructure. Passing a
+// locale walks the same pages in that language, and the dumped body text is
+// what makes leftover English greppable rather than something to spot by eye.
+const locale = process.argv[3] ?? "en";
+
+// Any further arguments narrow the walk to those routes. Re-checking one page
+// after a fix shouldn't mean recompiling twenty in dev mode.
+const extraRoutes = process.argv.slice(4);
+if (extraRoutes.length) cfg.routes = extraRoutes;
+
+const OUT = `shots/${role}-${locale}`;
 mkdirSync(OUT, { recursive: true });
 
 // Uses the system Edge/Chrome instead of Playwright's own browser download.
@@ -73,14 +83,14 @@ page.on("console", (m) => {
 
 // ---- sign in -------------------------------------------------------------
 if (cfg.phone) {
-  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/${locale}/login`, { waitUntil: "networkidle" });
   await page.fill('input[type="tel"]', cfg.phone);
   await page.fill('input[type="password"]', PASSWORD);
   // The submit button, not the nav link or the mode toggle - three elements
   // match "Sign In" on this page.
   // Exact accessible name. ":has-text" is a substring match, so it also hits
   // "Sign in with email instead" and "Forgot it? Sign in with a one-time code".
-  await page.getByRole("button", { name: /^Sign In$/i }).click();
+  await page.getByRole("button", { name: /^(Sign In|Injira)$/i }).click();
   // Dev-mode Next compiles routes on demand, so the first authenticated
   // navigation can take several seconds. Wait for the URL to actually change
   // rather than guessing a duration.
@@ -98,7 +108,7 @@ for (const route of cfg.routes) {
 
   let status = "?";
   try {
-    const res = await page.goto(`${BASE}${route}`, { waitUntil: "networkidle", timeout: 30000 });
+    const res = await page.goto(`${BASE}/${locale}${route}`, { waitUntil: "networkidle", timeout: 30000 });
     status = res?.status() ?? "?";
   } catch (e) {
     status = `NAV_FAIL: ${e.message.slice(0, 80)}`;
@@ -117,6 +127,7 @@ for (const route of cfg.routes) {
     .catch(() => null);
 
   const bodyText = await page.locator("body").innerText().catch(() => "");
+  writeFileSync(`${OUT}/${name}.txt`, bodyText);
 
   report.push({
     route,

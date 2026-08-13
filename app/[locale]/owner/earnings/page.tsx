@@ -7,15 +7,29 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile, getAvailableBalance } from "@/lib/owner";
 import { formatRWF } from "@/lib/currency";
+import { formatDate } from "@/lib/dates";
 import { routes } from "@/lib/routes";
-import { Wallet, TrendingUp, Receipt, Banknote, ArrowRight } from "lucide-react";
+import { Wallet, TrendingUp, Receipt, Banknote } from "lucide-react";
 
-export const metadata = { title: "Earnings — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("earnings")} — ZuriDrive` };
+}
 
-export default async function OwnerEarningsPage() {
+export default async function OwnerEarningsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const { profile } = await requireOwnerProfile();
 
   const now = new Date();
@@ -63,10 +77,8 @@ export default async function OwnerEarningsPage() {
     <div className="space-y-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-ink">Earnings</h1>
-          <p className="text-sm text-ink-soft">
-            Earnings are released once a trip completes.
-          </p>
+          <h1 className="text-xl font-bold text-ink">{t("earnings")}</h1>
+          <p className="text-sm text-ink-soft">{t("earningsSub")}</p>
         </div>
         {balance.available > 0 && (
           <Link
@@ -74,7 +86,7 @@ export default async function OwnerEarningsPage() {
             className="flex shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             <Banknote className="h-4 w-4" />
-            Request payout
+            {t("requestPayout")}
           </Link>
         )}
       </div>
@@ -86,40 +98,36 @@ export default async function OwnerEarningsPage() {
             <Wallet className="h-4 w-4 text-accent" />
           </div>
           <p className="text-2xl font-bold">{formatRWF(balance.available)}</p>
-          <p className="mt-0.5 text-xs text-brand-tint">Available now</p>
+          <p className="mt-0.5 text-xs text-brand-tint">{t("availableNow")}</p>
         </div>
 
         <Stat
           icon={TrendingUp}
           value={formatRWF(monthAgg._sum.netOwnerAmount ?? 0)}
-          label="This month"
+          label={t("thisMonth")}
         />
         <Stat
           icon={Receipt}
           value={formatRWF(balance.totalEarned)}
-          label="Lifetime earnings"
-          hint={`${commissions.length} completed trip${commissions.length === 1 ? "" : "s"}`}
+          label={t("lifetimeEarnings")}
+          hint={t("completedTripCount", { count: commissions.length })}
         />
         <Stat
           icon={Banknote}
           value={formatRWF(balance.totalRequested)}
-          label="Already paid out"
+          label={t("alreadyPaidOut")}
         />
       </div>
 
       {/* Commission explainer */}
       <div className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-ink">
-          How your earnings are calculated
+          {t("howEarningsCalculated")}
         </h2>
-        <p className="mt-1 text-xs text-ink-soft">
-          ZuriDrive takes 20% of the rental and driver fee. Delivery fees and
-          damage deposits are never commissioned — deposits are held separately
-          and returned to the client after a clean return.
-        </p>
+        <p className="mt-1 text-xs text-ink-soft">{t("commissionExplain")}</p>
         {lifetimeCommission > 0 && (
           <p className="mt-2 text-xs text-ink-faint">
-            Platform commission to date: {formatRWF(lifetimeCommission)}
+            {t("commissionToDate", { amount: formatRWF(lifetimeCommission) })}
           </p>
         )}
       </div>
@@ -127,24 +135,29 @@ export default async function OwnerEarningsPage() {
       {/* Ledger */}
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-ink">
-          Completed trips
+          {t("completedTrips")}
         </h2>
 
         {commissions.length === 0 ? (
           <p className="rounded-xl bg-bone px-4 py-6 text-sm text-ink-soft">
-            No completed trips yet. Earnings appear here once a trip finishes and
-            both parties confirm the return.
+            {t("noCompletedTrips")}
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-sand text-left text-xs text-ink-faint">
-                  <th className="pb-2 font-medium">Trip</th>
-                  <th className="pb-2 font-medium">Completed</th>
-                  <th className="pb-2 text-right font-medium">Rental</th>
-                  <th className="pb-2 text-right font-medium">Commission</th>
-                  <th className="pb-2 text-right font-medium">You earned</th>
+                  <th className="pb-2 font-medium">{t("colTrip")}</th>
+                  <th className="pb-2 font-medium">{t("colCompleted")}</th>
+                  <th className="pb-2 text-right font-medium">
+                    {t("colRental")}
+                  </th>
+                  <th className="pb-2 text-right font-medium">
+                    {t("colCommission")}
+                  </th>
+                  <th className="pb-2 text-right font-medium">
+                    {t("colYouEarned")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand">
@@ -160,12 +173,12 @@ export default async function OwnerEarningsPage() {
                       </Link>
                       <p className="text-[11px] text-ink-faint">
                         {c.booking.reference} · {c.booking.totalDays}d ·{" "}
-                        {c.booking.client.name ?? "Client"}
+                        {c.booking.client.name ?? t("client")}
                       </p>
                     </td>
                     <td className="py-2.5 text-xs text-ink-soft">
                       {c.booking.tripEndedAt
-                        ? c.booking.tripEndedAt.toLocaleDateString("en-RW")
+                        ? formatDate(c.booking.tripEndedAt, params.locale)
                         : "—"}
                     </td>
                     <td className="py-2.5 text-right text-xs text-ink-soft">

@@ -13,6 +13,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { formatRWF } from "@/lib/currency";
 import {
   Loader2,
@@ -40,6 +41,8 @@ export default function PlanCheckout({
   hasActivePlan: boolean;
   defaultMomoNumber: string | null;
 }) {
+  const t = useTranslations("plan");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [method, setMethod] = useState<Method>("MTN_MOMO");
@@ -65,13 +68,13 @@ export default function PlanCheckout({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "We couldn't start that payment.");
+        setError(data.error ?? t("startError"));
         return;
       }
       setNotice(data.message);
       await pollUntilResolved(data.subscriptionId);
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -104,13 +107,13 @@ export default function PlanCheckout({
           return;
         }
         if (data.status === "FAILED") {
-          setError(data.error ?? "That payment wasn't approved.");
+          setError(data.error ?? t("notApproved"));
           setNotice(null);
           return;
         }
       }
       setNotice(
-        "We haven't seen that payment yet. If you approved it, refresh in a minute — or pay by bank transfer instead.",
+        t("notSeenYet"),
       );
     } finally {
       setPolling(false);
@@ -131,7 +134,7 @@ export default function PlanCheckout({
       const up = await fetch("/api/upload", { method: "POST", body: fd });
       const upData = await up.json();
       if (!up.ok) {
-        setError(upData.error ?? "Upload failed.");
+        setError(upData.error ?? t("uploadFailed"));
         return;
       }
 
@@ -146,13 +149,13 @@ export default function PlanCheckout({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "We couldn't submit that.");
+        setError(data.error ?? t("submitError"));
         return;
       }
       setNotice(data.message);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
       e.target.value = "";
@@ -169,7 +172,11 @@ export default function PlanCheckout({
             : "bg-brand text-white hover:bg-brand-dark"
         }`}
       >
-        {isCurrent ? "Renew early" : hasActivePlan ? "Switch to this" : "Choose"}
+        {isCurrent
+          ? t("renewEarly")
+          : hasActivePlan
+            ? t("switchToThis")
+            : t("choose")}
       </button>
     );
   }
@@ -177,14 +184,14 @@ export default function PlanCheckout({
   return (
     <div className="mt-4 space-y-2 border-t border-sand pt-3">
       <p className="text-xs font-semibold text-ink">
-        {formatRWF(priceMonthly)} for 30 days
+        {t("forThirtyDays", { amount: formatRWF(priceMonthly) })}
       </p>
 
       {hasActivePlan && (
         <p className="text-[11px] text-ink-soft">
           {isCurrent
-            ? "Any days left on your current month are added on top — you lose nothing by renewing early."
-            : "Days remaining on your current plan carry over to this one."}
+            ? t("renewNote")
+            : t("switchNote")}
         </p>
       )}
 
@@ -193,26 +200,26 @@ export default function PlanCheckout({
           active={method === "MTN_MOMO"}
           onClick={() => setMethod("MTN_MOMO")}
           icon={<Smartphone className="h-3 w-3" />}
-          label="MoMo"
+          label={t("momo")}
         />
         <MethodTab
           active={method === "BANK_TRANSFER"}
           onClick={() => setMethod("BANK_TRANSFER")}
           icon={<Building2 className="h-3 w-3" />}
-          label="Bank transfer"
+          label={t("bankTransfer")}
         />
       </div>
 
       {method === "MTN_MOMO" ? (
         <div className="space-y-1.5">
           <label htmlFor={`momo-${planId}`} className="sr-only">
-            MTN MoMo number
+            {t("momo")}
           </label>
           <input
             id={`momo-${planId}`}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="078…"
+            placeholder={t("momoPlaceholder")}
             inputMode="tel"
             className="w-full rounded-lg border border-sand-dark px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
@@ -223,10 +230,10 @@ export default function PlanCheckout({
           >
             {(busy || polling) && <Loader2 className="h-3 w-3 animate-spin" />}
             {polling
-              ? "Waiting for your approval…"
+              ? t("waitingApproval")
               : busy
-                ? "Sending prompt…"
-                : `Pay ${formatRWF(priceMonthly)}`}
+                ? t("sendingPrompt")
+                : t("payAmount", { amount: formatRWF(priceMonthly) })}
           </button>
         </div>
       ) : (
@@ -236,7 +243,7 @@ export default function PlanCheckout({
           ) : (
             <Upload className="h-3 w-3" />
           )}
-          {busy ? "Uploading…" : "Upload proof of transfer"}
+          {busy ? tc("uploading") : t("uploadProof")}
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -270,7 +277,7 @@ export default function PlanCheckout({
           }}
           className="w-full text-[11px] font-semibold text-ink-faint"
         >
-          Cancel
+          {tc("cancel")}
         </button>
       )}
     </div>

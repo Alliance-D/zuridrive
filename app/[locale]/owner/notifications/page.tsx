@@ -4,15 +4,28 @@
  * The owner shell provides the chrome, so this only renders the list.
  */
 
+import { getTranslations } from "next-intl/server";
 import { requireOwnerProfile } from "@/lib/owner";
 import { prisma } from "@/lib/db";
 import NotificationCenter, {
   type NotificationItem,
 } from "@/components/notifications/NotificationCenter";
 
-export const metadata = { title: "Notifications — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("notifications")} — ZuriDrive` };
+}
 
-export default async function OwnerNotificationsPage() {
+export default async function OwnerNotificationsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const { session } = await requireOwnerProfile();
 
   const [rows, unreadCount] = await Promise.all([
@@ -39,10 +52,8 @@ export default async function OwnerNotificationsPage() {
   return (
     <div>
       <div className="mb-4">
-        <h1 className="text-xl font-bold text-ink">Notifications</h1>
-        <p className="text-sm text-ink-soft">
-          Booking requests, payouts and platform updates.
-        </p>
+        <h1 className="text-xl font-bold text-ink">{t("notifications")}</h1>
+        <p className="text-sm text-ink-soft">{t("notificationsSub")}</p>
       </div>
       <NotificationCenter initial={items} unreadCount={unreadCount} />
     </div>

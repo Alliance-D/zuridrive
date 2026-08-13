@@ -18,6 +18,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatRWF } from "@/lib/currency";
+import { formatDate } from "@/lib/dates";
 import { routes } from "@/lib/routes";
 import {
   Car,
@@ -160,7 +161,7 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
           className="flex shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
         >
           <Plus className="h-4 w-4" />
-          List a car
+          {t("listACar")}
         </Link>
       </div>
 
@@ -176,7 +177,7 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
           icon={TrendingUp}
           value={formatRWF(lifetimeEarnings._sum.netOwnerAmount ?? 0)}
           label={t("lifetimeEarnings")}
-          hint={`${completedCount} completed trip${completedCount === 1 ? "" : "s"}`}
+          hint={t("completedTripCount", { count: completedCount })}
         />
         <StatCard
           icon={Car}
@@ -184,7 +185,10 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
           label={t("carsLive")}
           hint={
             pendingCars || draftCars
-              ? `${pendingCars} pending · ${draftCars} draft`
+              ? t("pendingDraftHint", {
+                  pending: pendingCars,
+                  draft: draftCars,
+                })
               : undefined
           }
         />
@@ -201,7 +205,7 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
           <h2 className="text-sm font-semibold text-ink">{t("waitingOnYou")}</h2>
           {awaitingConfirmation.length > 0 && (
             <span className="rounded-full bg-warning-tint px-2 py-0.5 text-xs font-semibold text-warning-dark">
-              {awaitingConfirmation.length} to confirm
+              {t("toConfirmCount", { count: awaitingConfirmation.length })}
             </span>
           )}
         </div>
@@ -226,9 +230,9 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
                       {b.car.year} {b.car.make} {b.car.model}
                     </p>
                     <p className="text-xs text-ink-soft">
-                      {b.client.name ?? "Client"} ·{" "}
-                      {b.startDate.toLocaleDateString("en-RW")} →{" "}
-                      {b.endDate.toLocaleDateString("en-RW")} · {b.reference}
+                      {b.client.name ?? t("client")} ·{" "}
+                      {formatDate(b.startDate, params.locale)} →{" "}
+                      {formatDate(b.endDate, params.locale)} · {b.reference}
                     </p>
                   </div>
                   <span className="shrink-0 text-sm font-bold text-brand">
@@ -246,7 +250,7 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
       {activeTrips.length > 0 && (
         <section className="rounded-2xl bg-white p-4 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold text-ink">
-            Cars currently out
+            {t("carsCurrentlyOut")}
           </h2>
           <ul className="divide-y divide-sand">
             {activeTrips.map((b) => (
@@ -260,8 +264,10 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
                       {b.car.year} {b.car.make} {b.car.model}
                     </p>
                     <p className="text-xs text-ink-soft">
-                      With {b.client.name ?? "client"} · due back{" "}
-                      {b.endDate.toLocaleDateString("en-RW")}
+                      {t("withClientDueBack", {
+                        name: b.client.name ?? t("clientLower"),
+                        date: formatDate(b.endDate, params.locale),
+                      })}
                     </p>
                   </div>
                   <ArrowRight className="h-4 w-4 shrink-0 text-ink-faint" />
@@ -279,18 +285,17 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
             <Car className="h-5 w-5 text-brand" />
           </div>
           <h2 className="text-base font-semibold text-ink">
-            You haven&apos;t listed a car yet
+            {t("noCarListedYet")}
           </h2>
           <p className="mx-auto mt-1 max-w-sm text-sm text-ink-soft">
-            Listing takes about five minutes. You set your own rates and choose
-            which dates you&apos;re available.
+            {t("noCarListedHint")}
           </p>
           <Link
             href={routes.ownerFleetNew}
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             <Plus className="h-4 w-4" />
-            List your first car
+            {t("listFirstCar")}
           </Link>
         </section>
       )}

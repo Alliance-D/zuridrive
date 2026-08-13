@@ -13,6 +13,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatRWF } from "@/lib/currency";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { routes } from "@/lib/routes";
 import { getOwnerAllowance } from "@/lib/subscriptions/limits";
 import type { CarStatus } from "@prisma/client";
@@ -32,6 +33,7 @@ const STATUS_STYLES: Record<CarStatus, { labelKey: string; className: string }> 
 
 export default async function OwnerFleetPage({ params }: { params: { locale: string } }) {
   const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  const label = await getEnumLabeller(params.locale);
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
@@ -62,7 +64,7 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
           <p className="text-sm text-ink-soft">
             {cars.length === 0
               ? t("noCarsYet")
-              : `${cars.length} car${cars.length === 1 ? "" : "s"} listed.`}
+              : t("carsListedCount", { count: cars.length })}
           </p>
         </div>
         {allowance.canListMore ? (
@@ -71,7 +73,7 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
             className="flex shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             <Plus className="h-4 w-4" />
-            Add a car
+            {t("addACar")}
           </Link>
         ) : (
           <Link
@@ -79,7 +81,7 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
             className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm font-semibold text-ink-muted hover:border-brand hover:text-brand"
           >
             <Plus className="h-4 w-4" />
-            Upgrade to add more
+            {t("upgradeToAddMore")}
           </Link>
         )}
       </div>
@@ -91,27 +93,34 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs text-ink-muted">
             <span className="font-semibold">
-              {allowance.used} of{" "}
-              {allowance.maxListings === null ? "unlimited" : allowance.maxListings}
+              {t("listingsUsed", {
+                used: allowance.used,
+                max:
+                  allowance.maxListings === null
+                    ? t("unlimited")
+                    : allowance.maxListings,
+              })}
             </span>{" "}
-            listings used
+            {t("listingsUsedSuffix")}
             {allowance.plan && allowance.status !== "LAPSED"
-              ? ` on ${allowance.plan.name}`
+              ? t("onPlan", { plan: allowance.plan.name })
               : allowance.status === "LAPSED"
-                ? " — your plan has lapsed"
-                : " on the free tier"}
+                ? t("planLapsed")
+                : t("onFreeTier")}
           </p>
           {!allowance.canListMore && (
             <Link
               href={routes.ownerSubscription}
               className="text-xs font-semibold text-warning underline"
             >
-              See plans
+              {t("seePlansShort")}
             </Link>
           )}
         </div>
         {allowance.reason && (
-          <p className="mt-1 text-[11px] text-warning">{allowance.reason}</p>
+          <p className="mt-1 text-[11px] text-warning">
+            {t(`allowance.${allowance.reason.key}`, { ...allowance.reason })}
+          </p>
         )}
       </div>
 
@@ -121,17 +130,17 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
             <Car className="h-5 w-5 text-brand" />
           </div>
           <h2 className="text-base font-semibold text-ink">
-            Your fleet is empty
+            {t("fleetEmpty")}
           </h2>
           <p className="mx-auto mt-1 max-w-sm text-sm text-ink-soft">
-            Add your first car to start receiving booking requests.
+            {t("fleetEmptyHint")}
           </p>
           <Link
             href={routes.ownerFleetNew}
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             <Plus className="h-4 w-4" />
-            Add a car
+            {t("addACar")}
           </Link>
         </section>
       ) : (
@@ -176,7 +185,7 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
                         {car.year} {car.make} {car.model}
                       </h2>
                       <p className="text-xs text-ink-soft">
-                        {car.licensePlate} · {car.category}
+                        {car.licensePlate} · {label("category", car.category)}
                       </p>
                     </div>
                     {avgRating !== null && (
@@ -214,7 +223,7 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
                   {!car.pricing && (
                     <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-warning-tint px-2.5 py-2 text-[11px] text-warning-dark">
                       <AlertTriangle className="mt-px h-3 w-3 shrink-0" />
-                      This car has no pricing yet, so it can&apos;t be booked.
+                      {t("noPricingYet")}
                     </p>
                   )}
 
@@ -224,14 +233,14 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
                       className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-sand-dark px-3 py-2 text-xs font-semibold text-ink-muted hover:border-brand hover:text-brand"
                     >
                       <Pencil className="h-3 w-3" />
-                      Edit
+                      {t("edit")}
                     </Link>
                     {car.status === "LIVE" && (
                       <Link
                         href={routes.carDetail(car.id)}
                         className="flex flex-1 items-center justify-center rounded-lg border border-sand-dark px-3 py-2 text-xs font-semibold text-ink-muted hover:border-brand hover:text-brand"
                       >
-                        View listing
+                        {t("viewListing")}
                       </Link>
                     )}
                   </div>

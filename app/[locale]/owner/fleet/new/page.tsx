@@ -6,6 +6,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -14,9 +15,21 @@ import { getOwnerAllowance } from "@/lib/subscriptions/limits";
 import Link from "next/link";
 import { routes } from "@/lib/routes";
 
-export const metadata = { title: "List a car — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("listACar")} — ZuriDrive` };
+}
 
-export default async function NewCarPage() {
+export default async function NewCarPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login?next=/owner/fleet/new");
 
@@ -32,28 +45,34 @@ export default async function NewCarPage() {
     return (
       <div className="mx-auto max-w-lg rounded-2xl bg-white p-8 text-center shadow-sm">
         <h1 className="text-base font-semibold text-ink">
-          You&apos;ve used all your listings
+          {t("usedAllListings")}
         </h1>
-        <p className="mx-auto mt-1 max-w-sm text-sm text-ink-soft">
-          {allowance.reason}
-        </p>
+        {allowance.reason && (
+          <p className="mx-auto mt-1 max-w-sm text-sm text-ink-soft">
+            {t(`allowance.${allowance.reason.key}`, { ...allowance.reason })}
+          </p>
+        )}
         <p className="mt-2 text-xs text-ink-faint">
-          {allowance.used} of{" "}
-          {allowance.maxListings === null ? "unlimited" : allowance.maxListings}{" "}
-          used.
+          {t("listingsUsedPlain", {
+            used: allowance.used,
+            max:
+              allowance.maxListings === null
+                ? t("unlimited")
+                : allowance.maxListings,
+          })}
         </p>
         <div className="mt-4 flex justify-center gap-2">
           <Link
             href={routes.ownerSubscription}
             className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
           >
-            See plans
+            {t("seePlansShort")}
           </Link>
           <Link
             href={routes.ownerFleet}
             className="rounded-lg border border-sand-dark px-4 py-2 text-sm font-semibold text-ink-muted hover:border-brand"
           >
-            Back to fleet
+            {t("backToFleet")}
           </Link>
         </div>
       </div>
@@ -69,10 +88,8 @@ export default async function NewCarPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-ink">List a car</h1>
-        <p className="text-sm text-ink-soft">
-          Five short steps. You can edit everything later.
-        </p>
+        <h1 className="text-xl font-bold text-ink">{t("listACar")}</h1>
+        <p className="text-sm text-ink-soft">{t("listACarSub")}</p>
       </div>
       <CarListingWizard neighborhoods={neighborhoods} />
     </div>

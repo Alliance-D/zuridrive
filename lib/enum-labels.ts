@@ -17,7 +17,16 @@
 import { getTranslations } from "next-intl/server";
 import { formatEnumLabel } from "@/lib/labels";
 
-export type EnumKind = "category" | "fuelType" | "transmission" | "fuelPolicy";
+export type EnumKind =
+  | "category"
+  | "fuelType"
+  | "transmission"
+  | "fuelPolicy"
+  | "bookingStatus"
+  | "payoutStatus"
+  | "ticketCategory"
+  | "ticketStatus"
+  | "analyticsLevel";
 
 /**
  * Server-side label lookup.

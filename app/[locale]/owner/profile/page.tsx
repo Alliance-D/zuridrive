@@ -4,14 +4,27 @@
  * Covers onboarding steps 1 and 2.
  */
 
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile } from "@/lib/owner";
 import OwnerProfileForm from "@/components/owner/OwnerProfileForm";
 import { CalendarDays, Clock, Car } from "lucide-react";
 
-export const metadata = { title: "Profile — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("profile")} — ZuriDrive` };
+}
 
-export default async function OwnerProfilePage() {
+export default async function OwnerProfilePage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const { session, profile } = await requireOwnerProfile();
 
   const [user, carCount] = await Promise.all([
@@ -25,10 +38,8 @@ export default async function OwnerProfilePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-ink">Profile</h1>
-        <p className="text-sm text-ink-soft">
-          Your details and where your earnings are sent.
-        </p>
+        <h1 className="text-xl font-bold text-ink">{t("profile")}</h1>
+        <p className="text-sm text-ink-soft">{t("profileSub")}</p>
       </div>
 
       {/* Public stats — what clients see about you */}
@@ -36,9 +47,13 @@ export default async function OwnerProfilePage() {
         <MiniStat
           icon={CalendarDays}
           value={profile.memberSince.getFullYear().toString()}
-          label="Member since"
+          label={t("memberSince")}
         />
-        <MiniStat icon={Car} value={carCount.toString()} label="Cars listed" />
+        <MiniStat
+          icon={Car}
+          value={carCount.toString()}
+          label={t("carsListedLabel")}
+        />
         <MiniStat
           icon={Clock}
           value={
@@ -46,7 +61,7 @@ export default async function OwnerProfilePage() {
               ? `${profile.avgResponseTimeMinutes}m`
               : "—"
           }
-          label="Avg. response"
+          label={t("avgResponse")}
         />
       </div>
 

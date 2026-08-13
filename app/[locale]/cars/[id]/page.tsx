@@ -424,7 +424,7 @@ function OwnerStat({ icon, label }: { icon: React.ReactNode; label: string }) {
 
 // Desktop booking widget — mirrored in the booking flow (Step 3)
 async function BookingWidget({ car, locale }: { locale: string; car: Parameters<typeof CarDetailPage>[0]["params"] extends { id: string } ? Awaited<ReturnType<typeof getCar>> : never }) {
-  const t = await getTranslations("carDetail");
+  const t = await getTranslations({ locale, namespace: "carDetail" });
   if (!car) return null;
   const pricing = car.pricing;
 

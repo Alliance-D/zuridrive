@@ -5,12 +5,21 @@
  * they cannot edit or remove a review; that's a Content Moderator action.
  */
 
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile } from "@/lib/owner";
+import { formatDate } from "@/lib/dates";
 import ReviewReplyForm from "@/components/owner/ReviewReplyForm";
 import { Star, MessageSquare } from "lucide-react";
 
-export const metadata = { title: "Reviews — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("reviews")} — ZuriDrive` };
+}
 
 function Stars({ value }: { value: number }) {
   return (
@@ -29,7 +38,12 @@ function Stars({ value }: { value: number }) {
   );
 }
 
-export default async function OwnerReviewsPage() {
+export default async function OwnerReviewsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const { profile } = await requireOwnerProfile();
 
   const reviews = await prisma.review.findMany({
@@ -52,27 +66,21 @@ export default async function OwnerReviewsPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-ink">Reviews</h1>
-        <p className="text-sm text-ink-soft">
-          What clients said after their trips.
-        </p>
+        <h1 className="text-xl font-bold text-ink">{t("reviews")}</h1>
+        <p className="text-sm text-ink-soft">{t("reviewsSub")}</p>
       </div>
 
       {reviews.length > 0 && (
         <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-white p-4 shadow-sm">
           <div>
-            <p className="text-2xl font-bold text-ink">
-              {avg!.toFixed(2)}
-            </p>
+            <p className="text-2xl font-bold text-ink">{avg!.toFixed(2)}</p>
             <Stars value={avg!} />
           </div>
           <div className="text-xs text-ink-soft">
-            <p>
-              {reviews.length} review{reviews.length === 1 ? "" : "s"}
-            </p>
+            <p>{t("reviewCount", { count: reviews.length })}</p>
             {unanswered > 0 && (
               <p className="mt-0.5 font-semibold text-warning-dark">
-                {unanswered} awaiting your reply
+                {t("awaitingYourReply", { count: unanswered })}
               </p>
             )}
           </div>
@@ -85,11 +93,9 @@ export default async function OwnerReviewsPage() {
             <MessageSquare className="h-5 w-5 text-ink-faint" />
           </div>
           <h2 className="text-base font-semibold text-ink">
-            No reviews yet
+            {t("noReviewsYet")}
           </h2>
-          <p className="mt-1 text-sm text-ink-soft">
-            Clients are invited to review once a trip completes.
-          </p>
+          <p className="mt-1 text-sm text-ink-soft">{t("reviewsEmptyHint")}</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -98,11 +104,11 @@ export default async function OwnerReviewsPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-ink">
-                    {r.client.name ?? "ZuriDrive renter"}
+                    {r.client.name ?? t("zuriDriveRenter")}
                   </p>
                   <p className="text-xs text-ink-soft">
                     {r.car.year} {r.car.make} {r.car.model} ·{" "}
-                    {r.createdAt.toLocaleDateString("en-RW")}
+                    {formatDate(r.createdAt, params.locale)}
                   </p>
                 </div>
                 <Stars value={r.overallRating} />
@@ -113,17 +119,19 @@ export default async function OwnerReviewsPage() {
               )}
 
               <dl className="mt-3 grid grid-cols-4 gap-2 border-t border-sand pt-3 text-center">
-                {[
-                  ["Clean", r.cleanlinessRating],
-                  ["Comfort", r.comfortRating],
-                  ["Value", r.valueRating],
-                  ["Comms", r.communicationRating],
-                ].map(([label, val]) => (
-                  <div key={label as string}>
-                    <dt className="text-[10px] text-ink-faint">{label}</dt>
-                    <dd className="text-sm font-semibold text-ink">
-                      {val as number}
-                    </dd>
+                {(
+                  [
+                    ["ratingClean", r.cleanlinessRating],
+                    ["ratingComfort", r.comfortRating],
+                    ["ratingValue", r.valueRating],
+                    ["ratingComms", r.communicationRating],
+                  ] as [string, number][]
+                ).map(([labelKey, val]) => (
+                  <div key={labelKey}>
+                    <dt className="text-[10px] text-ink-faint">
+                      {t(labelKey)}
+                    </dt>
+                    <dd className="text-sm font-semibold text-ink">{val}</dd>
                   </div>
                 ))}
               </dl>
@@ -131,7 +139,7 @@ export default async function OwnerReviewsPage() {
               {r.reply ? (
                 <div className="mt-3 rounded-xl bg-bone p-3">
                   <p className="text-xs font-semibold text-ink">
-                    Your reply
+                    {t("yourReply")}
                   </p>
                   <p className="mt-1 text-sm text-ink-muted">
                     {r.reply.content}

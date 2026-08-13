@@ -12,21 +12,32 @@
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import {
-  resolvePriority,
-  FIRST_RESPONSE_HOURS,
-  CATEGORY_LABELS,
-  STATUS_LABELS,
-} from "@/lib/support";
+import { resolvePriority, FIRST_RESPONSE_HOURS } from "@/lib/support";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import NewTicketForm from "@/components/support/NewTicketForm";
 import { Zap, MessageSquare, ArrowRight } from "lucide-react";
 
-export const metadata = { title: "Support — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("support")} — ZuriDrive` };
+}
 
-export default async function OwnerSupportPage() {
+export default async function OwnerSupportPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  const label = await getEnumLabeller(params.locale);
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login?next=/owner/support");
 
@@ -46,18 +57,14 @@ export default async function OwnerSupportPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-bold text-ink">Support</h1>
-        <p className="text-xs text-ink-soft">
-          Talk to a human about your fleet, payouts or account.
-        </p>
+        <h1 className="text-xl font-bold text-ink">{t("support")}</h1>
+        <p className="text-xs text-ink-soft">{t("supportSub")}</p>
       </div>
 
       {/* The promise, stated in hours */}
       <div
         className={`rounded-2xl p-4 ${
-          priority.isPriority
-            ? "bg-brand text-white"
-            : "bg-white shadow-sm"
+          priority.isPriority ? "bg-brand text-white" : "bg-white shadow-sm"
         }`}
       >
         <div className="flex items-start gap-2.5">
@@ -73,8 +80,8 @@ export default async function OwnerSupportPage() {
               }`}
             >
               {priority.isPriority
-                ? `Priority support — we reply within ${responseHours} hours`
-                : `We reply within ${responseHours} hours`}
+                ? t("prioritySupportHours", { hours: responseHours })
+                : t("standardSupportHours", { hours: responseHours })}
             </p>
             <p
               className={`mt-0.5 ${
@@ -82,19 +89,17 @@ export default async function OwnerSupportPage() {
               }`}
             >
               {priority.isPriority ? (
-                <>
-                  Included with {priority.planName}. Your tickets are answered
-                  ahead of the standard queue.
-                </>
+                t("includedWithPlan", { plan: priority.planName ?? "" })
               ) : (
                 <>
-                  Priority support cuts this to {FIRST_RESPONSE_HOURS.priority}{" "}
-                  hours and moves your tickets nearer the front of the queue.{" "}
+                  {t("priorityUpsell", {
+                    hours: FIRST_RESPONSE_HOURS.priority,
+                  })}{" "}
                   <Link
                     href="/owner/subscription"
                     className="font-semibold text-brand hover:underline"
                   >
-                    See plans
+                    {t("seePlans")}
                   </Link>
                 </>
               )}
@@ -111,14 +116,14 @@ export default async function OwnerSupportPage() {
 
       {tickets.length === 0 ? (
         <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-ink-soft shadow-sm">
-          You haven&apos;t asked us anything yet.
+          {t("noTicketsYet")}
         </p>
       ) : (
         <ul className="space-y-2">
-          {tickets.map((t) => (
-            <li key={t.id}>
+          {tickets.map((ticket) => (
+            <li key={ticket.id}>
               <Link
-                href={`/owner/support/${t.id}`}
+                href={`/owner/support/${ticket.id}`}
                 className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm hover:ring-1 hover:ring-brand/20"
               >
                 <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
@@ -126,32 +131,32 @@ export default async function OwnerSupportPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <p className="truncate text-sm font-semibold text-ink">
-                      {t.subject}
+                      {ticket.subject}
                     </p>
-                    {t.isPriority && (
+                    {ticket.isPriority && (
                       <span className="rounded-full bg-warning-bg px-1.5 py-0.5 text-[10px] font-semibold text-warning">
-                        Priority
+                        {t("priorityBadge")}
                       </span>
                     )}
                   </div>
                   <p className="mt-0.5 text-[11px] text-ink-faint">
-                    {t.reference} · {CATEGORY_LABELS[t.category]} ·{" "}
-                    {t._count.messages} message
-                    {t._count.messages === 1 ? "" : "s"} ·{" "}
-                    {t.updatedAt.toLocaleDateString("en-RW")}
+                    {ticket.reference} ·{" "}
+                    {label("ticketCategory", ticket.category)} ·{" "}
+                    {t("messageCount", { count: ticket._count.messages })} ·{" "}
+                    {formatDate(ticket.updatedAt, params.locale)}
                   </p>
                 </div>
 
                 <span
                   className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                    t.status === "OPEN"
+                    ticket.status === "OPEN"
                       ? "bg-brand text-white"
-                      : t.status === "AWAITING_USER"
+                      : ticket.status === "AWAITING_USER"
                         ? "bg-warning-bg text-warning"
                         : "bg-bone text-ink-soft"
                   }`}
                 >
-                  {STATUS_LABELS[t.status]}
+                  {label("ticketStatus", ticket.status)}
                 </span>
 
                 <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-line" />

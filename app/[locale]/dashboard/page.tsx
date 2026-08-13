@@ -93,8 +93,14 @@ async function getDashboardData(userId: string) {
 
 // ─── Inner async component (wrapped in Suspense) ──────────────────────────────
 
-async function OverviewContent({ userId }: { userId: string }) {
-  const t = await getTranslations("dashboard");
+async function OverviewContent({
+  userId,
+  locale,
+}: {
+  userId: string;
+  locale: string;
+}) {
+  const t = await getTranslations({ locale, namespace: "dashboard" });
   const { bookings, unreadCount } = await getDashboardData(userId);
 
   // Classify bookings
@@ -237,7 +243,11 @@ async function OverviewContent({ userId }: { userId: string }) {
 
 // ─── Page export ──────────────────────────────────────────────────────────────
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login?next=/dashboard");
 
@@ -249,7 +259,7 @@ export default async function DashboardPage() {
         </DashboardLayout>
       }
     >
-      <OverviewContent userId={session.user.id} />
+      <OverviewContent userId={session.user.id} locale={params.locale} />
     </Suspense>
   );
 }

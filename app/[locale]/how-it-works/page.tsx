@@ -23,8 +23,15 @@ export const metadata: Metadata = {
   description: "Learn how ZuriDrive works — for renters and car owners in Rwanda.",
 };
 
-export default async function HowItWorksPage() {
-  const tdep = await getTranslations("deposit");
+export default async function HowItWorksPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const tdep = await getTranslations({
+    locale: params.locale,
+    namespace: "deposit",
+  });
   return (
     <div className="min-h-screen bg-bone">
       <Navbar />

@@ -6,23 +6,34 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile } from "@/lib/owner";
 import { formatRWF } from "@/lib/currency";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { routes } from "@/lib/routes";
 import type { BookingStatus, Prisma } from "@prisma/client";
 import { CalendarDays, ArrowRight, Inbox } from "lucide-react";
 
-export const metadata = { title: "Bookings — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${t("bookings")} — ZuriDrive` };
+}
 
-const TABS: { label: string; value: string }[] = [
-  { label: "All", value: "ALL" },
-  { label: "To confirm", value: "AWAITING_OWNER_CONFIRMATION" },
-  { label: "Upcoming", value: "CONFIRMED" },
-  { label: "Active", value: "ACTIVE" },
-  { label: "Completed", value: "COMPLETED" },
-  { label: "Cancelled", value: "CANCELLED" },
-  { label: "Disputed", value: "DISPUTED" },
+// Keys, not text: evaluated once at import, where no translator exists.
+const TABS: { labelKey: string; value: string }[] = [
+  { labelKey: "tabAll", value: "ALL" },
+  { labelKey: "tabToConfirm", value: "AWAITING_OWNER_CONFIRMATION" },
+  { labelKey: "tabUpcoming", value: "CONFIRMED" },
+  { labelKey: "tabActive", value: "ACTIVE" },
+  { labelKey: "tabCompleted", value: "COMPLETED" },
+  { labelKey: "tabCancelled", value: "CANCELLED" },
+  { labelKey: "tabDisputed", value: "DISPUTED" },
 ];
 
 const STATUS_STYLES: Record<BookingStatus, string> = {
@@ -37,14 +48,18 @@ const STATUS_STYLES: Record<BookingStatus, string> = {
 };
 
 export default async function OwnerBookingsPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { status?: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "owner" });
+  const label = await getEnumLabeller(params.locale);
   const { profile } = await requireOwnerProfile();
 
   const requested = searchParams.status ?? "ALL";
-  const active = TABS.some((t) => t.value === requested) ? requested : "ALL";
+  const active = TABS.some((tab) => tab.value === requested) ? requested : "ALL";
 
   const statusFilter: Prisma.EnumBookingStatusFilter | undefined =
     active === "ALL" ? undefined : { equals: active as BookingStatus };
@@ -79,10 +94,8 @@ export default async function OwnerBookingsPage({
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-ink">Bookings</h1>
-        <p className="text-sm text-ink-soft">
-          Every booking across your fleet.
-        </p>
+        <h1 className="text-xl font-bold text-ink">{t("bookings")}</h1>
+        <p className="text-sm text-ink-soft">{t("bookingsSub")}</p>
       </div>
 
       {/* Filter tabs */}
@@ -97,7 +110,7 @@ export default async function OwnerBookingsPage({
                 : "bg-white text-ink-soft hover:text-ink"
             }`}
           >
-            {tab.label}
+            {t(tab.labelKey)}
           </Link>
         ))}
       </div>
@@ -108,12 +121,10 @@ export default async function OwnerBookingsPage({
             <Inbox className="h-5 w-5 text-ink-faint" />
           </div>
           <h2 className="text-base font-semibold text-ink">
-            No bookings here
+            {t("noBookingsHere")}
           </h2>
           <p className="mt-1 text-sm text-ink-soft">
-            {active === "ALL"
-              ? "Booking requests will appear here once clients start renting."
-              : "Nothing matches this filter right now."}
+            {active === "ALL" ? t("noBookingsAll") : t("noBookingsFilter")}
           </p>
         </div>
       ) : (
@@ -147,13 +158,13 @@ export default async function OwnerBookingsPage({
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_STYLES[b.status]}`}
                     >
-                      {b.status.replace(/_/g, " ").toLowerCase()}
+                      {label("bookingStatus", b.status)}
                     </span>
                   </div>
                   <p className="mt-0.5 truncate text-xs text-ink-soft">
-                    {b.client.name ?? "Client"} ·{" "}
-                    {b.startDate.toLocaleDateString("en-RW")} →{" "}
-                    {b.endDate.toLocaleDateString("en-RW")}
+                    {b.client.name ?? t("client")} ·{" "}
+                    {formatDate(b.startDate, params.locale)} →{" "}
+                    {formatDate(b.endDate, params.locale)}
                   </p>
                   <p className="text-[11px] text-ink-faint">{b.reference}</p>
                 </div>
@@ -162,7 +173,9 @@ export default async function OwnerBookingsPage({
                   <p className="text-sm font-bold text-brand">
                     {formatRWF(b.ownerEarnings)}
                   </p>
-                  <p className="text-[10px] text-ink-faint">your earnings</p>
+                  <p className="text-[10px] text-ink-faint">
+                    {t("yourEarningsLabel")}
+                  </p>
                 </div>
 
                 <ArrowRight className="h-4 w-4 shrink-0 text-ink-faint" />
