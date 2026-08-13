@@ -1,4 +1,5 @@
 {
+  "_README": "EVERY user-facing string in the product lives in this file. If you are adding text a person will read, add a key here and reference it — do not write it into a component. This file is also the answer to 'where does that word come from?', which is otherwise hard: strings assembled by code are invisible to search. Ones that caused real trouble here were a module-level STEPS constant, a ternary ('Payment' : 'Confirm'), a pluralising conditional, helper functions returning English prose (getRateLabel, getDepositCopy), and 'Personal Information' written in title case but rendered uppercase by CSS — so grepping the visible text found nothing. Locale files other than en.json may be partial; missing keys fall back to English per key, which is why English must stay complete.",
   "nav": {
     "browseCars": "Browse Cars",
     "howItWorks": "How It Works",
@@ -196,5 +197,20 @@
       "FREE_TANK": "Free Tank",
       "OWNER_HANDLES": "Owner Handles"
     }
+  },
+  "dashboard": {
+    "overview": "Overview",
+    "bookings": "Bookings",
+    "profile": "Profile",
+    "totalBookings": "Total Bookings",
+    "activeTrips": "Active Trips",
+    "completedTrips": "Completed Trips",
+    "pendingBookings": "Pending Bookings",
+    "recentBookings": "Recent Bookings",
+    "viewAll": "View all",
+    "noBookings": "No bookings yet.",
+    "notifications": "Notifications",
+    "signOut": "Sign Out",
+    "myProfile": "My Profile"
   }
 }

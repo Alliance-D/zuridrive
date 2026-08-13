@@ -197,5 +197,20 @@
       "FREE_TANK": "Tanki y'ubuntu",
       "OWNER_HANDLES": "Nyir'imodoka abyishyura"
     }
+  },
+  "dashboard": {
+    "overview": "Incamake",
+    "bookings": "Ubukode",
+    "profile": "Umwirondoro",
+    "totalBookings": "Ubukode bwose",
+    "activeTrips": "Ingendo zikora",
+    "completedTrips": "Ingendo zarangiye",
+    "pendingBookings": "Ubukode butegereje",
+    "recentBookings": "Ubukode buherutse",
+    "viewAll": "Reba byose",
+    "noBookings": "Nta bukode burahari.",
+    "notifications": "Amatangazo",
+    "signOut": "Sohoka",
+    "myProfile": "Umwirondoro wanjye"
   }
 }

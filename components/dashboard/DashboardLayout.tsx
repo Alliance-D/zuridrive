@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -32,8 +33,8 @@ import {
 // grow — /dashboard/reviews, /support and /favourites are all linked-to but do
 // not exist yet — which is the other reason not to spend a slot on Profile.
 const TABS = [
-  { label: "Overview",  href: "/dashboard",           icon: LayoutDashboard },
-  { label: "Bookings",  href: "/dashboard/bookings",  icon: CalendarDays    },
+  { labelKey: "overview",  href: "/dashboard",           icon: LayoutDashboard },
+  { labelKey: "bookings",  href: "/dashboard/bookings",  icon: CalendarDays    },
 ];
 
 interface DashboardLayoutProps {
@@ -46,6 +47,7 @@ export default function DashboardLayout({
   children,
   notificationCount = 0,
 }: DashboardLayoutProps) {
+  const t = useTranslations("dashboard");
   const pathname  = usePathname();
   const router    = useRouter();
   const { data: session } = useSession();
@@ -138,14 +140,14 @@ export default function DashboardLayout({
                       href="/dashboard/profile"
                       className="flex items-center gap-2 px-4 py-2 text-sm text-ink-muted hover:bg-bone transition-colors"
                     >
-                      <User className="h-4 w-4" /> My Profile
+                      <User className="h-4 w-4" /> {t("myProfile")}
                     </Link>
                     <div className="my-1 h-px bg-sand-dark" />
                     <button
                       onClick={() => signOut({ callbackUrl: "/" })}
                       className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
-                      <LogOut className="h-4 w-4" /> Sign Out
+                      <LogOut className="h-4 w-4" /> {t("signOut")}
                     </button>
                   </div>
                 )}
@@ -171,7 +173,7 @@ export default function DashboardLayout({
         <div className="border-t border-sand-dark bg-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <nav className="flex gap-0 overflow-x-auto scrollbar-none" aria-label="Dashboard tabs">
-              {TABS.map(({ label, href, icon: Icon }) => {
+              {TABS.map(({ labelKey, href, icon: Icon }) => {
                 const isActive = activeTab === href;
                 return (
                   <Link
@@ -187,7 +189,7 @@ export default function DashboardLayout({
                     `}
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
-                    {label}
+                    {t(labelKey)}
                     {/* Active underline */}
                     {isActive && (
                       <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full bg-brand" />
@@ -233,7 +235,7 @@ export default function DashboardLayout({
               onClick={() => signOut({ callbackUrl: "/" })}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-red-600 hover:bg-red-50"
             >
-              <LogOut className="h-4 w-4" /> Sign Out
+              <LogOut className="h-4 w-4" /> {t("signOut")}
             </button>
           </div>
         )}

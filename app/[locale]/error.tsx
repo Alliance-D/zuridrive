@@ -16,6 +16,7 @@
  */
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
 
@@ -26,6 +27,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("error");
   useEffect(() => {
     console.error("[render error]", error);
   }, [error]);
@@ -33,23 +35,22 @@ export default function Error({
   return (
     <div className="flex min-h-screen items-center justify-center bg-bone px-4">
       <div className="max-w-lg text-center">
-        <p className="label mb-4 block text-danger-error">◆ Something broke</p>
+        <p className="label mb-4 block text-danger-error">◆ {t("eyebrow")}</p>
 
         <h1 className="mb-4 font-display text-fluid-3xl font-normal leading-[1.1] tracking-[-0.03em] text-ink">
-          That didn&apos;t work.
+          {t("title")}
         </h1>
 
         <p className="mx-auto mb-8 max-w-[46ch] text-fluid-base leading-[1.7] text-ink-soft">
-          Something went wrong on our side. No payment was taken and no booking
-          was changed. Trying again usually works.
+          {t("body")}
         </p>
 
         <div className="flex flex-wrap justify-center gap-3">
           <button onClick={reset} className="btn btn-primary btn-lg">
-            Try again
+            {t("tryAgain")}
           </button>
           <Link href={ROUTES.home} className="btn btn-secondary btn-lg">
-            Go home
+            {t("goHome")}
           </Link>
         </div>
 
@@ -57,7 +58,7 @@ export default function Error({
             needs to find this exact error in the logs. */}
         {error.digest && (
           <p className="mt-8 font-mono text-fluid-xs text-ink-faint">
-            Reference: {error.digest}
+            {t("reference", { digest: error.digest })}
           </p>
         )}
       </div>

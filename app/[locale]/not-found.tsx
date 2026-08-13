@@ -12,6 +12,7 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import CarCardGrid from "@/components/car-card-grid";
@@ -23,6 +24,7 @@ export const metadata = {
 };
 
 export default async function NotFound() {
+  const t = await getTranslations("notFound");
   // A 404 must never itself fail. If the database is unreachable the page still
   // has to render — just without suggestions.
   let cars: Awaited<ReturnType<typeof getSuggestedCars>> = [];
@@ -39,23 +41,22 @@ export default async function NotFound() {
       <main className="flex-1 px-4 py-20">
         <div className="mx-auto max-w-5xl">
           <div className="text-center">
-            <p className="label mb-4 block text-brand">◆ 404</p>
+            <p className="label mb-4 block text-brand">◆ {t("eyebrow")}</p>
 
             <h1 className="mb-4 font-display text-fluid-3xl font-normal leading-[1.1] tracking-[-0.03em] text-ink">
-              We couldn&apos;t find that page.
+              {t("title")}
             </h1>
 
             <p className="mx-auto mb-8 max-w-[46ch] text-fluid-base leading-[1.7] text-ink-soft">
-              The link may be out of date, or the car may no longer be listed.
-              Nothing has gone wrong with your account.
+              {t("body")}
             </p>
 
             <div className="flex flex-wrap justify-center gap-3">
               <Link href={ROUTES.cars} className="btn btn-primary btn-lg">
-                Browse all cars
+                {t("browseAll")}
               </Link>
               <Link href={ROUTES.home} className="btn btn-secondary btn-lg">
-                Go home
+                {t("goHome")}
               </Link>
             </div>
           </div>
@@ -63,7 +64,7 @@ export default async function NotFound() {
           {cars.length > 0 && (
             <section className="mt-16">
               <h2 className="mb-6 text-center font-sans text-fluid-lg font-bold tracking-[-0.01em] text-ink">
-                Available right now
+                {t("availableNow")}
               </h2>
               <CarCardGrid cars={cars} />
             </section>
