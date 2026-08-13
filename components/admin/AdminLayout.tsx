@@ -11,6 +11,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -38,7 +39,8 @@ import {
 } from "lucide-react";
 
 interface NavItem {
-  label: string;
+  /** Message key under the `admin` namespace, resolved at render. */
+  labelKey: string;
   href: string;
   icon: React.ElementType;
   /** Module required to see this. null = super admin only. */
@@ -46,21 +48,21 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { label: "Overview",      href: "/admin",               icon: LayoutDashboard, module: null },
-  { label: "Finance",       href: "/admin/finance",       icon: Wallet,          module: "FINANCE_MANAGER" },
-  { label: "Deposits",      href: "/admin/finance/deposits", icon: ShieldCheck,  module: "DEPOSIT_MANAGER" },
-  { label: "Disputes",      href: "/admin/disputes",      icon: Scale,           module: "BOOKING_MANAGER" },
-  { label: "Bookings",      href: "/admin/bookings",      icon: CalendarDays,    module: "BOOKING_MANAGER" },
-  { label: "Fleet",         href: "/admin/fleet",         icon: Car,             module: "FLEET_MANAGER" },
-  { label: "Users",         href: "/admin/users",         icon: Users,           module: "USER_MANAGER" },
-  { label: "Reviews",       href: "/admin/reviews",       icon: Star,            module: "CONTENT_MODERATOR" },
-  { label: "Locations",     href: "/admin/locations",     icon: MapPin,          module: "CONTENT_MODERATOR" },
-  { label: "Neighbourhoods", href: "/admin/neighborhoods", icon: Map,            module: "CONTENT_MODERATOR" },
-  { label: "Notifications", href: "/admin/notifications", icon: Bell,            module: "COMMUNICATIONS" },
-  { label: "Analytics",     href: "/admin/analytics",     icon: BarChart3,       module: "ANALYTICS_VIEWER" },
-  { label: "Support",       href: "/admin/support",       icon: LifeBuoy,        module: "SUPPORT_AGENT" },
-  { label: "Team",          href: "/admin/team",          icon: UserCog,         module: null },
-  { label: "Settings",      href: "/admin/settings",      icon: Settings,        module: null },
+  { labelKey: "overview",      href: "/admin",               icon: LayoutDashboard, module: null },
+  { labelKey: "finance",       href: "/admin/finance",       icon: Wallet,          module: "FINANCE_MANAGER" },
+  { labelKey: "deposits",      href: "/admin/finance/deposits", icon: ShieldCheck,  module: "DEPOSIT_MANAGER" },
+  { labelKey: "disputes",      href: "/admin/disputes",      icon: Scale,           module: "BOOKING_MANAGER" },
+  { labelKey: "bookings",      href: "/admin/bookings",      icon: CalendarDays,    module: "BOOKING_MANAGER" },
+  { labelKey: "fleet",         href: "/admin/fleet",         icon: Car,             module: "FLEET_MANAGER" },
+  { labelKey: "users",         href: "/admin/users",         icon: Users,           module: "USER_MANAGER" },
+  { labelKey: "reviews",       href: "/admin/reviews",       icon: Star,            module: "CONTENT_MODERATOR" },
+  { labelKey: "locations",     href: "/admin/locations",     icon: MapPin,          module: "CONTENT_MODERATOR" },
+  { labelKey: "neighbourhoods", href: "/admin/neighborhoods", icon: Map,            module: "CONTENT_MODERATOR" },
+  { labelKey: "notifications", href: "/admin/notifications", icon: Bell,            module: "COMMUNICATIONS" },
+  { labelKey: "analytics",     href: "/admin/analytics",     icon: BarChart3,       module: "ANALYTICS_VIEWER" },
+  { labelKey: "support",       href: "/admin/support",       icon: LifeBuoy,        module: "SUPPORT_AGENT" },
+  { labelKey: "team",          href: "/admin/team",          icon: UserCog,         module: null },
+  { labelKey: "settings",      href: "/admin/settings",      icon: Settings,        module: null },
 ];
 
 interface AdminLayoutProps {
@@ -76,6 +78,7 @@ export default function AdminLayout({
   roleModules,
   adminName,
 }: AdminLayoutProps) {
+  const t = useTranslations("admin");
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -119,7 +122,7 @@ export default function AdminLayout({
               <div className="leading-tight">
                 <p className="font-display text-lg font-semibold leading-[1.15] tracking-[-0.02em] text-white">Zuri<span className="text-accent">Drive</span></p>
                 <p className="text-[10px] uppercase tracking-wider text-white/50">
-                  {isSuperAdmin ? "Super Admin" : "Admin"}
+                  {isSuperAdmin ? t("superAdmin") : t("admin")}
                 </p>
               </div>
             </Link>
@@ -164,7 +167,7 @@ export default function AdminLayout({
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               );
             })}
@@ -186,7 +189,7 @@ export default function AdminLayout({
               className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-soft transition-colors hover:bg-sand hover:text-brand"
             >
               <ArrowLeft className="h-4 w-4 shrink-0" />
-              Back to ZuriDrive
+              {t("backToZuriDrive")}
             </Link>
           </div>
         </aside>

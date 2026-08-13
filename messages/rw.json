@@ -138,7 +138,7 @@
     "body": "Uru rufunguzo rushobora kuba rwarangiye, cyangwa imodoka ntikiri ku rutonde. Nta kibazo kiri kuri konti yawe.",
     "browseAll": "Reba imodoka zose",
     "goHome": "Subira ahabanza",
-    "availableNow": "Zihari ubu"
+    "availableNow": "Izihari ubu"
   },
   "error": {
     "eyebrow": "Habaye ikibazo",
@@ -212,5 +212,42 @@
     "notifications": "Amatangazo",
     "signOut": "Sohoka",
     "myProfile": "Umwirondoro wanjye"
+  },
+  "owner": {
+    "overview": "Incamake",
+    "fleet": "Imodoka zanjye",
+    "bookings": "Ubukode",
+    "earnings": "Inyungu",
+    "payouts": "Ubwishyu",
+    "analytics": "Isesengura",
+    "reviews": "Ibitekerezo",
+    "locations": "Ahantu",
+    "support": "Ubufasha",
+    "profile": "Umwirondoro",
+    "backToZuriDrive": "Subira kuri ZuriDrive",
+    "collapse": "Funga",
+    "owner": "Nyir'imodoka",
+    "signOut": "Sohoka",
+    "notifications": "Amatangazo"
+  },
+  "admin": {
+    "overview": "Incamake",
+    "finance": "Imari",
+    "deposits": "Ingwate",
+    "disputes": "Impaka",
+    "bookings": "Ubukode",
+    "fleet": "Imodoka",
+    "users": "Abakoresha",
+    "reviews": "Ibitekerezo",
+    "locations": "Ahantu",
+    "neighbourhoods": "Uduce",
+    "notifications": "Amatangazo",
+    "analytics": "Isesengura",
+    "support": "Ubufasha",
+    "team": "Ikipe",
+    "settings": "Igenamiterere",
+    "backToZuriDrive": "Subira kuri ZuriDrive",
+    "admin": "Umuyobozi",
+    "superAdmin": "Umuyobozi mukuru"
   }
 }

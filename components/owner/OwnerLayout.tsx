@@ -23,6 +23,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -48,16 +49,16 @@ import {
 } from "lucide-react";
 
 const TABS = [
-  { label: "Overview", href: "/owner/dashboard", icon: LayoutDashboard },
-  { label: "Fleet", href: "/owner/fleet", icon: Car },
-  { label: "Bookings", href: "/owner/bookings", icon: CalendarDays },
-  { label: "Earnings", href: "/owner/earnings", icon: Wallet },
-  { label: "Payouts", href: "/owner/payouts", icon: Banknote },
-  { label: "Analytics", href: "/owner/analytics", icon: BarChart3 },
-  { label: "Reviews", href: "/owner/reviews", icon: Star },
-  { label: "Locations", href: "/owner/locations", icon: MapPin },
-  { label: "Support", href: "/owner/support", icon: LifeBuoy },
-  { label: "Profile", href: "/owner/profile", icon: User },
+  { labelKey: "overview", href: "/owner/dashboard", icon: LayoutDashboard },
+  { labelKey: "fleet", href: "/owner/fleet", icon: Car },
+  { labelKey: "bookings", href: "/owner/bookings", icon: CalendarDays },
+  { labelKey: "earnings", href: "/owner/earnings", icon: Wallet },
+  { labelKey: "payouts", href: "/owner/payouts", icon: Banknote },
+  { labelKey: "analytics", href: "/owner/analytics", icon: BarChart3 },
+  { labelKey: "reviews", href: "/owner/reviews", icon: Star },
+  { labelKey: "locations", href: "/owner/locations", icon: MapPin },
+  { labelKey: "support", href: "/owner/support", icon: LifeBuoy },
+  { labelKey: "profile", href: "/owner/profile", icon: User },
 ];
 
 const COLLAPSE_KEY = "zuridrive.owner.navCollapsed";
@@ -73,6 +74,7 @@ export default function OwnerLayout({
   notificationCount = 0,
   isOnboardingComplete = true,
 }: OwnerLayoutProps) {
+  const t = useTranslations("owner");
   const pathname = usePathname();
   const { data: session } = useSession();
 
@@ -126,7 +128,7 @@ export default function OwnerLayout({
               <div className="leading-tight">
                 <p className="font-display text-lg font-semibold leading-[1.15] tracking-[-0.02em] text-brand">Zuri<span className="text-accent">Drive</span></p>
                 <p className="text-[10px] uppercase tracking-wider text-ink-soft">
-                  Owner
+                  {t("owner")}
                 </p>
               </div>
             </Link>
@@ -156,7 +158,7 @@ export default function OwnerLayout({
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="rounded-lg p-2 text-ink-muted hover:bg-sand hover:text-danger"
-              aria-label="Sign out"
+              aria-label={t("signOut")}
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -197,8 +199,8 @@ export default function OwnerLayout({
                     // The label is still the accessible name when collapsed —
                     // an icon-only link with no name is unusable with a screen
                     // reader, and unguessable with a mouse.
-                    title={collapsed ? item.label : undefined}
-                    aria-label={collapsed ? item.label : undefined}
+                    title={collapsed ? t(item.labelKey) : undefined}
+                    aria-label={collapsed ? t(item.labelKey) : undefined}
                     className={`mb-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
                       isActive
                         ? "bg-brand font-semibold text-white"
@@ -206,7 +208,7 @@ export default function OwnerLayout({
                     } ${collapsed ? "lg:justify-center lg:px-0" : ""}`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    <span className={collapsed ? "lg:hidden" : ""}>{item.label}</span>
+                    <span className={collapsed ? "lg:hidden" : ""}>{t(item.labelKey)}</span>
                   </Link>
                 );
               })}
@@ -217,14 +219,14 @@ export default function OwnerLayout({
                   site at all before this. */}
               <Link
                 href="/"
-                title={collapsed ? "Back to ZuriDrive" : undefined}
+                title={collapsed ? t("backToZuriDrive") : undefined}
                 className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-soft transition-colors hover:bg-sand hover:text-brand ${
                   collapsed ? "lg:justify-center lg:px-0" : ""
                 }`}
               >
                 <ArrowLeft className="h-4 w-4 shrink-0" />
                 <span className={collapsed ? "lg:hidden" : ""}>
-                  Back to ZuriDrive
+                  {t("backToZuriDrive")}
                 </span>
               </Link>
 
@@ -240,7 +242,7 @@ export default function OwnerLayout({
                 ) : (
                   <>
                     <PanelLeftClose className="h-4 w-4 shrink-0" />
-                    <span>Collapse</span>
+                    <span>{t("collapse")}</span>
                   </>
                 )}
               </button>

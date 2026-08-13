@@ -12,6 +12,7 @@
  */
 
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -93,6 +94,7 @@ async function getDashboardData(userId: string) {
 // ─── Inner async component (wrapped in Suspense) ──────────────────────────────
 
 async function OverviewContent({ userId }: { userId: string }) {
+  const t = await getTranslations("dashboard");
   const { bookings, unreadCount } = await getDashboardData(userId);
 
   // Classify bookings
@@ -194,18 +196,18 @@ async function OverviewContent({ userId }: { userId: string }) {
 
         {/* ── Stats Row ────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard icon={CalendarDays} value={totalBookings}     label="Total Bookings"     />
-          <StatCard icon={Car}          value={activeBooking ? 1 : 0} label="Active Trips" accent={!!activeBooking} />
-          <StatCard icon={CheckCircle2} value={completedBookings} label="Completed Trips"    />
-          <StatCard icon={Clock}        value={pendingBookings}   label="Pending Bookings"   />
+          <StatCard icon={CalendarDays} value={totalBookings}     label={t("totalBookings")}     />
+          <StatCard icon={Car}          value={activeBooking ? 1 : 0} label={t("activeTrips")} accent={!!activeBooking} />
+          <StatCard icon={CheckCircle2} value={completedBookings} label={t("completedTrips")}    />
+          <StatCard icon={Clock}        value={pendingBookings}   label={t("pendingBookings")}   />
         </div>
 
         {/* ── Recent Bookings ──────────────────────────────────────────── */}
         <div>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-ink">Recent Bookings</h2>
+            <h2 className="text-base font-semibold text-ink">{t("recentBookings")}</h2>
             <a href="/dashboard/bookings" className="text-sm font-medium text-brand hover:underline">
-              View all
+              {t("viewAll")}
             </a>
           </div>
 

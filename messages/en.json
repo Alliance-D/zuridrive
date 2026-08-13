@@ -212,5 +212,42 @@
     "notifications": "Notifications",
     "signOut": "Sign Out",
     "myProfile": "My Profile"
+  },
+  "owner": {
+    "overview": "Overview",
+    "fleet": "Fleet",
+    "bookings": "Bookings",
+    "earnings": "Earnings",
+    "payouts": "Payouts",
+    "analytics": "Analytics",
+    "reviews": "Reviews",
+    "locations": "Locations",
+    "support": "Support",
+    "profile": "Profile",
+    "backToZuriDrive": "Back to ZuriDrive",
+    "collapse": "Collapse",
+    "owner": "Owner",
+    "signOut": "Sign out",
+    "notifications": "Notifications"
+  },
+  "admin": {
+    "overview": "Overview",
+    "finance": "Finance",
+    "deposits": "Deposits",
+    "disputes": "Disputes",
+    "bookings": "Bookings",
+    "fleet": "Fleet",
+    "users": "Users",
+    "reviews": "Reviews",
+    "locations": "Locations",
+    "neighbourhoods": "Neighbourhoods",
+    "notifications": "Notifications",
+    "analytics": "Analytics",
+    "support": "Support",
+    "team": "Team",
+    "settings": "Settings",
+    "backToZuriDrive": "Back to ZuriDrive",
+    "admin": "Admin",
+    "superAdmin": "Super Admin"
   }
 }
