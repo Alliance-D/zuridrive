@@ -18,6 +18,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { localePath, loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -29,13 +30,13 @@ export default async function DashboardLayout({
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    redirect("/login?next=/dashboard");
+    redirect(await loginPath("/dashboard"));
   }
 
   // Owners and admins have their own areas; lib/auth/landing.ts routes each
   // role to the right one at sign-in.
   if ((session.user as { role?: string }).role !== "CLIENT") {
-    redirect("/");
+    redirect(await localePath("/"));
   }
 
   return <>{children}</>;

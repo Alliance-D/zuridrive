@@ -8,6 +8,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
+import { localePath, loginPath } from "@/lib/navigation";
 import bcrypt from "bcryptjs";
 import { AdminRoleModule, UserRole } from "@prisma/client";
 
@@ -35,7 +36,7 @@ export async function getSession() {
 export async function requireAuth() {
   const session = await getSession();
   if (!session?.user) {
-    redirect("/login");
+    redirect(await loginPath());
   }
   return session;
 }
@@ -70,7 +71,7 @@ export async function requireClient() {
     session.user.role !== "SUB_ADMIN" &&
     session.user.role !== "SUPER_ADMIN"
   ) {
-    redirect("/");
+    redirect(await localePath("/"));
   }
   return session;
 }
@@ -81,7 +82,7 @@ export async function requireClient() {
 export async function requireOwner() {
   const session = await requireAuth();
   if (session.user.role !== "OWNER" && session.user.role !== "SUPER_ADMIN") {
-    redirect("/");
+    redirect(await localePath("/"));
   }
   return session;
 }
@@ -92,7 +93,7 @@ export async function requireOwner() {
 export async function requireSuperAdmin() {
   const session = await requireAuth();
   if (session.user.role !== "SUPER_ADMIN") {
-    redirect("/login");
+    redirect(await loginPath());
   }
   return session;
 }
@@ -109,13 +110,13 @@ export async function requireAdminModule(module: AdminRoleModule) {
   }
 
   if (session.user.role !== "SUB_ADMIN") {
-    redirect("/login");
+    redirect(await loginPath());
   }
 
   if (!session.user.roleModules?.includes(module)) {
     // Don't show a 403 — just redirect to admin home
     // Sub-admins should never see sections they don't have access to (sidebar filters)
-    redirect("/admin");
+    redirect(await localePath("/admin"));
   }
 
   return session;

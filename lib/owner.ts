@@ -8,6 +8,7 @@
 // =============================================================================
 
 import { redirect } from "next/navigation";
+import { localePath, loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -18,7 +19,7 @@ import { prisma } from "@/lib/db";
  */
 export async function requireOwnerProfile() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/owner/dashboard");
+  if (!session?.user?.id) redirect(await loginPath("/owner/dashboard"));
 
   const profile = await prisma.carOwnerProfile.findUnique({
     where: { userId: session.user.id },
@@ -43,7 +44,7 @@ export async function requireOwnerProfile() {
     },
   });
 
-  if (!profile) redirect("/owner/onboarding");
+  if (!profile) redirect(await localePath("/owner/onboarding"));
 
   return { session, profile };
 }

@@ -10,6 +10,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { loginPath } from "@/lib/navigation";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -21,7 +22,7 @@ export const metadata = { title: "Set up your owner account — ZuriDrive" };
 
 export default async function OwnerOnboardingPage() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/owner/onboarding");
+  if (!session?.user?.id) redirect(await loginPath("/owner/onboarding"));
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },

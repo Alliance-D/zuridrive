@@ -12,6 +12,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { localePath, loginPath } from "@/lib/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
@@ -78,7 +79,7 @@ function StatCard({
 export default async function OwnerDashboardPage({ params }: { params: { locale: string } }) {
   const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirect(await loginPath());
 
   const profile = await prisma.carOwnerProfile.findUnique({
     where: { userId: session.user.id },
@@ -86,7 +87,7 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
   });
 
   // An OWNER with no profile row has not started onboarding yet.
-  if (!profile) redirect("/owner/onboarding");
+  if (!profile) redirect(await localePath("/owner/onboarding"));
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);

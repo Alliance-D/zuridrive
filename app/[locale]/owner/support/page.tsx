@@ -12,6 +12,7 @@
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { loginPath } from "@/lib/navigation";
 import { getTranslations } from "next-intl/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -39,7 +40,7 @@ export default async function OwnerSupportPage({
   const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const label = await getEnumLabeller(params.locale);
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/owner/support");
+  if (!session?.user?.id) redirect(await loginPath("/owner/support"));
 
   const [priority, tickets] = await Promise.all([
     resolvePriority(session.user.id),

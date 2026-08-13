@@ -6,6 +6,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { localePath, loginPath } from "@/lib/navigation";
 import { getTranslations } from "next-intl/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -31,13 +32,13 @@ export default async function NewCarPage({
 }) {
   const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/owner/fleet/new");
+  if (!session?.user?.id) redirect(await loginPath("/owner/fleet/new"));
 
   const profile = await prisma.carOwnerProfile.findUnique({
     where: { userId: session.user.id },
     select: { id: true },
   });
-  if (!profile) redirect("/owner/onboarding");
+  if (!profile) redirect(await localePath("/owner/onboarding"));
 
   // Stop here rather than letting them fill in five steps and be rejected.
   const allowance = await getOwnerAllowance(profile.id);

@@ -399,10 +399,11 @@ export async function getOwnerBookingOutcomes(
 
 // ── FULL ─────────────────────────────────────────────────────────────────────
 
+// Message keys, resolved by the page. See the note on RANGES in queries.ts.
 const WEEKDAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
+  "sunday",
+  "monday",
+  "tuesday",
   "Wednesday",
   "Thursday",
   "Friday",
@@ -411,9 +412,9 @@ const WEEKDAYS = [
 
 export interface DemandPatterns {
   /** Trips starting on each weekday. */
-  byWeekday: { id: string; label: string; value: number }[];
+  byWeekday: { id: string; labelKey: string; value: number }[];
   /** How far ahead clients book. */
-  byLeadTime: { id: string; label: string; value: number }[];
+  byLeadTime: { id: string; labelKey: string; value: number }[];
   /** Most common trip length, in days. */
   medianTripDays: number | null;
 }
@@ -461,14 +462,14 @@ export async function getOwnerDemandPatterns(
     // Monday-first — a rental week reads better that way than Sunday-first.
     byWeekday: [1, 2, 3, 4, 5, 6, 0].map((d) => ({
       id: WEEKDAYS[d],
-      label: WEEKDAYS[d],
+      labelKey: WEEKDAYS[d],
       value: weekdayCounts[d],
     })),
     byLeadTime: [
-      { id: "same", label: "Same day", value: leadBuckets.same },
-      { id: "week", label: "1–6 days ahead", value: leadBuckets.week },
-      { id: "month", label: "1–4 weeks ahead", value: leadBuckets.month },
-      { id: "beyond", label: "A month or more", value: leadBuckets.beyond },
+      { id: "same", labelKey: "leadSame", value: leadBuckets.same },
+      { id: "week", labelKey: "leadWeek", value: leadBuckets.week },
+      { id: "month", labelKey: "leadMonth", value: leadBuckets.month },
+      { id: "beyond", labelKey: "leadBeyond", value: leadBuckets.beyond },
     ],
     medianTripDays,
   };

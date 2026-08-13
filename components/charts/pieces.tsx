@@ -18,17 +18,22 @@ export function Metric({
   value,
   hint,
   delta,
+  noBaselineLabel,
 }: {
   label: string;
   value: string;
   hint?: string;
   delta?: number | null;
+  /** Required only when a delta is shown — see Delta below. */
+  noBaselineLabel?: string;
 }) {
   return (
     <div className="rounded-2xl bg-white p-4 shadow-sm">
       <p className="text-xs text-ink-soft">{label}</p>
       <p className="mt-1 text-2xl font-bold text-ink">{value}</p>
-      {delta !== undefined && <Delta value={delta} />}
+      {delta !== undefined && (
+        <Delta value={delta} noBaselineLabel={noBaselineLabel ?? ""} />
+      )}
       {hint && <p className="mt-1 text-[11px] text-ink-faint">{hint}</p>}
     </div>
   );
@@ -41,9 +46,13 @@ export function Metric({
 export function Delta({
   value,
   onDark = false,
+  noBaselineLabel,
 }: {
   value: number | null | undefined;
   onDark?: boolean;
+  /** Shown when there is nothing to compare against. Passed in so this stays
+   *  a plain presentational component with no locale of its own. */
+  noBaselineLabel: string;
 }) {
   if (value === null || value === undefined) {
     return (
@@ -51,7 +60,7 @@ export function Delta({
         className={`mt-1 flex items-center gap-1 text-[11px] ${onDark ? "text-brand-tint" : "text-ink-faint"}`}
       >
         <Minus className="h-3 w-3" />
-        no prior period
+        {noBaselineLabel}
       </span>
     );
   }

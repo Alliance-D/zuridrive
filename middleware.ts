@@ -16,5 +16,10 @@ import { routing } from "@/i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|.*\..*).*)"],
+  // The backslash must be escaped. "\." inside a string literal is just ".",
+  // which turned the lookahead into `.*..*` — a pattern matching any path of
+  // two characters or more. The matcher therefore excluded everything except
+  // "/", so no unprefixed path was ever redirected to a locale; /cars, /login
+  // and /owner/onboarding all fell through to a 404 instead.
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
 };

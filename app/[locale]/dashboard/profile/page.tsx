@@ -12,6 +12,7 @@
 
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -70,7 +71,7 @@ async function ProfileContent({ userId }: { userId: string }) {
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/dashboard/profile");
+  if (!session?.user?.id) redirect(await loginPath("/dashboard/profile"));
 
   return (
     <Suspense

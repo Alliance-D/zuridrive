@@ -14,6 +14,7 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -249,7 +250,7 @@ export default async function DashboardPage({
   params: { locale: string };
 }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/dashboard");
+  if (!session?.user?.id) redirect(await loginPath("/dashboard"));
 
   return (
     <Suspense

@@ -28,7 +28,7 @@ const SERIES = "#2a78d6";
 export default function BarList({
   items,
   format = "number",
-  emptyMessage = "No data in this period.",
+  emptyMessage,
 }: {
   items: BarItem[];
   /** Named format applied client-side. See lib/charts/format.ts for why

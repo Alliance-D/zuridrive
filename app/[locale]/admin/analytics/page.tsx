@@ -11,7 +11,9 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { requireAdminModule } from "@/lib/auth";
+import { formatDate } from "@/lib/dates";
 import { formatRWF, formatRWFCompact } from "@/lib/currency";
 import {
   resolveRange,
@@ -29,13 +31,27 @@ import BarList from "@/components/charts/BarList";
 import { Metric, Delta, TableView } from "@/components/charts/pieces";
 import { Eye } from "lucide-react";
 
-export const metadata = { title: "Analytics — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const ta = await getTranslations({ locale: params.locale, namespace: "admin" });
+  return { title: `${ta("analytics")} — ZuriDrive Admin` };
+}
 
 export default async function AdminAnalyticsPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { range?: string };
 }) {
+  const t = await getTranslations({
+    locale: params.locale,
+    namespace: "analytics",
+  });
+  const ta = await getTranslations({ locale: params.locale, namespace: "admin" });
   await requireAdminModule("ANALYTICS_VIEWER");
 
   const range = resolveRange(searchParams.range);
@@ -57,8 +73,8 @@ export default async function AdminAnalyticsPage({
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Analytics"
-        subtitle="Platform performance. Read-only."
+        title={ta("analytics")}
+        subtitle={t("adminSub")}
       />
 
       {/* Range filter — one row above the charts */}
@@ -73,11 +89,11 @@ export default async function AdminAnalyticsPage({
                 : "bg-white text-ink-soft hover:text-ink"
             }`}
           >
-            {r.label}
+            {t(r.labelKey)}
           </Link>
         ))}
         <span className="ml-2 text-[11px] text-ink-faint">
-          since {range.from.toLocaleDateString("en-RW")}
+          {t("since", { date: formatDate(range.from, params.locale) })}
         </span>
       </div>
 
@@ -85,65 +101,80 @@ export default async function AdminAnalyticsPage({
       <div className="grid gap-3 lg:grid-cols-4">
         <div className="rounded-2xl bg-brand p-5 text-white shadow-sm lg:col-span-2">
           <p className="text-xs uppercase tracking-wider text-brand-tint">
-            Platform revenue
+            {t("platformRevenue")}
           </p>
           <p className="mt-1 text-[48px] font-bold leading-none">
             {formatRWF(headlines.revenue)}
           </p>
           <div className="mt-2 flex items-center gap-3">
-            <Delta value={headlines.revenueDelta} onDark />
+            <Delta
+              value={headlines.revenueDelta}
+              onDark
+              noBaselineLabel={t("noPriorPeriod")}
+            />
             <span className="text-xs text-brand-tint">
-              {headlines.completedTrips} completed trip
-              {headlines.completedTrips === 1 ? "" : "s"}
+              {t("completedTripCount", {
+                count: headlines.completedTrips,
+              })}
             </span>
           </div>
           <p className="mt-3 text-[11px] text-brand-tint">
-            Commission only — excludes deposits and owner earnings.
+            {t("commissionOnly")}
           </p>
         </div>
 
         <Metric
-          label="Owner earnings"
+          label={t("ownerEarnings")}
           value={formatRWF(headlines.ownerEarnings)}
-          hint="Paid or payable to owners"
+          hint={t("paidOrPayable")}
         />
         <Metric
-          label="MRR"
+          label={t("mrr")}
           value={formatRWF(headlines.mrr)}
-          hint={`${headlines.activeSubscriptions} active subscription${headlines.activeSubscriptions === 1 ? "" : "s"}`}
+          hint={t("activeSubCount", {
+            count: headlines.activeSubscriptions,
+          })}
         />
       </div>
 
       <div className="grid gap-3 lg:grid-cols-3">
         <Metric
-          label="Completed trips"
+          label={t("completedTrips")}
           value={String(headlines.completedTrips)}
           delta={headlines.tripsDelta}
+          noBaselineLabel={t("noPriorPeriod")}
         />
         <Metric
-          label="New users"
+          label={t("newUsers")}
           value={String(headlines.newUsers)}
           delta={headlines.usersDelta}
+          noBaselineLabel={t("noPriorPeriod")}
         />
         <Metric
-          label="Booking conversion"
+          label={t("bookingConversion")}
           value={conversion !== null ? `${conversion}%` : "—"}
-          hint="Started → completed"
+          hint={t("startedToCompleted")}
         />
       </div>
 
       {/* Revenue over time — single series, no legend needed */}
-      <Card title={`Revenue over time (${range.bucket === "day" ? "daily" : "monthly"})`}>
+      <Card
+        title={
+          range.bucket === "day"
+            ? t("revenueOverTimeDaily")
+            : t("revenueOverTimeMonthly")
+        }
+      >
         <LineChart data={revenue} format="rwfCompact" />
         <TableView
-          caption="Revenue by period"
+          caption={t("revenueByPeriod")}
           rows={revenue.map((p) => [p.label, formatRWF(p.value)])}
-          headers={["Period", "Commission"]}
+          headers={[t("colPeriod"), t("colCommission")]}
         />
       </Card>
 
       {/* Bookings over time */}
-      <Card title="Bookings created">
+      <Card title={t("bookingsCreated")}>
         <LineChart
           data={bookings}
           format="number"
@@ -151,60 +182,64 @@ export default async function AdminAnalyticsPage({
           area={false}
         />
         <TableView
-          caption="Bookings by period"
+          caption={t("bookingsByPeriod")}
           rows={bookings.map((p) => [p.label, String(p.value)])}
-          headers={["Period", "Bookings"]}
+          headers={[t("colPeriod"), t("colBookings")]}
         />
       </Card>
 
       <div className="grid gap-3 lg:grid-cols-2">
         {/* Funnel */}
-        <Card title="Booking funnel">
+        <Card title={t("bookingFunnel")}>
           <BarList
             items={funnel.map((f) => ({
               id: f.stage,
-              label: f.stage,
+              label: t(f.stage),
               value: f.count,
               meta:
                 started > 0
-                  ? `${Math.round((f.count / started) * 100)}% of started`
+                  ? t("percentOfStarted", {
+                      percent: Math.round((f.count / started) * 100),
+                    })
                   : undefined,
             }))}
             format="number"
-            emptyMessage="No bookings started in this period."
+            emptyMessage={t("noBookingsStarted")}
           />
         </Card>
 
         {/* Top cars */}
-        <Card title="Top performing cars">
+        <Card title={t("topCars")}>
           <BarList
             items={topCars.map((c) => ({
               id: c.id,
               label: c.name,
               value: c.revenue,
-              meta: `${c.trips} trip${c.trips === 1 ? "" : "s"}`,
+              meta: t("tripCount", { count: c.trips }),
             }))}
             format="rwf"
-            emptyMessage="No completed trips in this period."
+            emptyMessage={t("noCompletedTrips")}
           />
         </Card>
       </div>
 
       {/* Owner leaderboard — a table, because it's identity plus several
           measures, which a chart would flatten */}
-      <Card title="Owner leaderboard">
+      <Card title={t("ownerLeaderboard")}>
         {leaderboard.length === 0 ? (
-          <EmptyRow>No owner earnings in this period.</EmptyRow>
+          <EmptyRow>{t("noOwnerEarnings")}</EmptyRow>
         ) : (
           <div className="-mx-4 overflow-x-auto px-4">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-sand text-left text-xs text-ink-faint">
                   <th className="pb-2 font-medium">#</th>
-                  <th className="pb-2 font-medium">Owner</th>
-                  <th className="pb-2 text-right font-medium">Trips</th>
-                  <th className="pb-2 text-right font-medium">Cars</th>
-                  <th className="pb-2 text-right font-medium">Earnings</th>
+                  <th className="pb-2 font-medium">{t("colOwner")}</th>
+                  <th className="pb-2 text-right font-medium">{t("colTrips")}</th>
+                  <th className="pb-2 text-right font-medium">{t("colCars")}</th>
+                  <th className="pb-2 text-right font-medium">
+                    {t("colEarnings")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand">
@@ -233,7 +268,7 @@ export default async function AdminAnalyticsPage({
 
       <p className="flex items-center justify-center gap-1.5 pb-2 text-[11px] text-ink-faint">
         <Eye className="h-3 w-3" />
-        This page is read-only — nothing here changes any record.
+        {t("readOnlyNote")}
       </p>
     </div>
   );

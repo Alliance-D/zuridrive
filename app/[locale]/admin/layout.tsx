@@ -8,6 +8,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { localePath, loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -19,7 +20,7 @@ export default async function AdminAreaLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/admin");
+  if (!session?.user?.id) redirect(await loginPath("/admin"));
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -32,8 +33,10 @@ export default async function AdminAreaLayout({
     },
   });
 
-  if (!user || user.isSuspended) redirect("/login?error=ACCOUNT_SUSPENDED");
-  if (user.role !== "SUPER_ADMIN" && user.role !== "SUB_ADMIN") redirect("/");
+  if (!user || user.isSuspended)
+    redirect(await localePath("/login?error=ACCOUNT_SUSPENDED"));
+  if (user.role !== "SUPER_ADMIN" && user.role !== "SUB_ADMIN")
+    redirect(await localePath("/"));
 
   return (
     <AdminLayout

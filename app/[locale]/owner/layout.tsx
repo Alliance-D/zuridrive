@@ -7,6 +7,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { localePath, loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -18,11 +19,11 @@ export default async function OwnerAreaLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/owner/dashboard");
+  if (!session?.user?.id) redirect(await loginPath("/owner/dashboard"));
 
   // Super admins can view the owner area for support purposes.
   if (session.user.role !== "OWNER" && session.user.role !== "SUPER_ADMIN") {
-    redirect("/");
+    redirect(await localePath("/"));
   }
 
   const [profile, notificationCount] = await Promise.all([

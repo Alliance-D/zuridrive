@@ -13,11 +13,13 @@ import { prisma } from "@/lib/db";
 
 export type RangeKey = "7d" | "30d" | "90d" | "12m";
 
-export const RANGES: { key: RangeKey; label: string; days: number }[] = [
-  { key: "7d", label: "7 days", days: 7 },
-  { key: "30d", label: "30 days", days: 30 },
-  { key: "90d", label: "90 days", days: 90 },
-  { key: "12m", label: "12 months", days: 365 },
+// labelKey, not label: this is evaluated at import, where no translator
+// exists. The page resolves it against the `analytics` namespace at render.
+export const RANGES: { key: RangeKey; labelKey: string; days: number }[] = [
+  { key: "7d", labelKey: "range7d", days: 7 },
+  { key: "30d", labelKey: "range30d", days: 30 },
+  { key: "90d", labelKey: "range90d", days: 90 },
+  { key: "12m", labelKey: "range12m", days: 365 },
 ];
 
 export function resolveRange(key: string | undefined): {
@@ -148,11 +150,12 @@ export async function getFunnel(from: Date) {
   const confirmed = bookings.filter((b) => b.ownerConfirmedAt !== null).length;
   const completed = bookings.filter((b) => b.status === "COMPLETED").length;
 
+  // Stage keys, resolved by the page — see the note on RANGES.
   return [
-    { stage: "Booking started", count: created },
-    { stage: "Payment confirmed", count: paid },
-    { stage: "Owner accepted", count: confirmed },
-    { stage: "Trip completed", count: completed },
+    { stage: "funnelStarted", count: created },
+    { stage: "funnelPaid", count: paid },
+    { stage: "funnelAccepted", count: confirmed },
+    { stage: "funnelCompleted", count: completed },
   ];
 }
 

@@ -8,7 +8,8 @@
  */
 
 import { redirect } from "next/navigation";
+import { localePath } from "@/lib/navigation";
 
-export default function OwnerIndexPage() {
-  redirect("/owner/dashboard");
+export default async function OwnerIndexPage() {
+  redirect(await localePath("/owner/dashboard"));
 }

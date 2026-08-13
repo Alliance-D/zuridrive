@@ -18,6 +18,7 @@
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { localePath, loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -34,27 +35,45 @@ import {
   getOwnerRatingBreakdown,
   hasLevel,
 } from "@/lib/analytics/owner-queries";
+import { getTranslations } from "next-intl/server";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import LineChart from "@/components/charts/LineChart";
 import BarList from "@/components/charts/BarList";
 import { Metric, Delta, TableView } from "@/components/charts/pieces";
 import LockedInsight from "@/components/owner/LockedInsight";
 import { Star, Sparkles } from "lucide-react";
 
-export const metadata = { title: "Analytics — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const to = await getTranslations({ locale: params.locale, namespace: "owner" });
+  return { title: `${to("analytics")} — ZuriDrive` };
+}
 
 export default async function OwnerAnalyticsPage({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { range?: string };
 }) {
+  const t = await getTranslations({
+    locale: params.locale,
+    namespace: "analytics",
+  });
+  const to = await getTranslations({ locale: params.locale, namespace: "owner" });
+  const label = await getEnumLabeller(params.locale);
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/owner/analytics");
+  if (!session?.user?.id) redirect(await loginPath("/owner/analytics"));
 
   const profile = await prisma.carOwnerProfile.findUnique({
     where: { userId: session.user.id },
     select: { id: true },
   });
-  if (!profile) redirect("/owner/onboarding");
+  if (!profile) redirect(await localePath("/owner/onboarding"));
 
   const range = resolveRange(searchParams.range);
   const access = await getOwnerAnalyticsLevel(profile.id);
@@ -88,18 +107,16 @@ export default async function OwnerAnalyticsPage({
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="text-xl font-bold text-ink">Analytics</h1>
-          <p className="text-xs text-ink-soft">
-            How your fleet is performing.
-          </p>
+          <h1 className="text-xl font-bold text-ink">{to("analytics")}</h1>
+          <p className="text-xs text-ink-soft">{t("ownerSub")}</p>
         </div>
         <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-ink-soft shadow-sm">
-          {access.planName ?? "Free tier"} ·{" "}
+          {access.planName ?? t("freeTier")} ·{" "}
           {access.level === "FULL"
-            ? "Full analytics"
+            ? t("levelFull")
             : access.level === "ADVANCED"
-              ? "Advanced analytics"
-              : "Basic analytics"}
+              ? t("levelAdvanced")
+              : t("levelBasic")}
         </span>
       </div>
 
@@ -115,11 +132,11 @@ export default async function OwnerAnalyticsPage({
                 : "bg-white text-ink-soft hover:text-ink"
             }`}
           >
-            {r.label}
+            {t(r.labelKey)}
           </Link>
         ))}
         <span className="ml-2 text-[11px] text-ink-faint">
-          since {range.from.toLocaleDateString("en-RW")}
+          {t("since", { date: formatDate(range.from, params.locale) })}
         </span>
       </div>
 
@@ -127,26 +144,31 @@ export default async function OwnerAnalyticsPage({
       <div className="grid gap-3 lg:grid-cols-4">
         <div className="rounded-2xl bg-brand p-5 text-white shadow-sm lg:col-span-2">
           <p className="text-xs uppercase tracking-wider text-brand-tint">
-            Your earnings
+            {t("yourEarnings")}
           </p>
           <p className="mt-1 text-[44px] font-bold leading-none">
             {formatRWF(headlines.earnings)}
           </p>
           <div className="mt-2">
-            <Delta value={headlines.earningsDelta} onDark />
+            <Delta
+              value={headlines.earningsDelta}
+              onDark
+              noBaselineLabel={t("noPriorPeriod")}
+            />
           </div>
           <p className="mt-3 text-[11px] text-brand-tint">
-            After the platform commission — this is what you are paid.
+            {t("afterCommission")}
           </p>
         </div>
 
         <Metric
-          label="Completed trips"
+          label={t("completedTrips")}
           value={String(headlines.completedTrips)}
           delta={headlines.tripsDelta}
+          noBaselineLabel={t("noPriorPeriod")}
         />
         <Metric
-          label="Average rating"
+          label={t("averageRating")}
           value={
             headlines.avgRating !== null
               ? headlines.avgRating.toFixed(1)
@@ -154,37 +176,41 @@ export default async function OwnerAnalyticsPage({
           }
           hint={
             headlines.reviewCount > 0
-              ? `${headlines.reviewCount} review${headlines.reviewCount === 1 ? "" : "s"} in this period`
-              : "No reviews yet in this period"
+              ? t("reviewsInPeriod", { count: headlines.reviewCount })
+              : t("noReviewsInPeriod")
           }
         />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Metric
-          label="Request acceptance"
+          label={t("requestAcceptance")}
           value={
             headlines.acceptanceRate !== null
               ? `${headlines.acceptanceRate}%`
               : "—"
           }
-          hint="Of the requests you responded to"
+          hint={t("ofRequestsResponded")}
         />
         <Metric
-          label="Cars listed"
+          label={t("carsListed")}
           value={String(headlines.liveCars)}
-          hint="Live and visible to clients right now"
+          hint={t("liveAndVisible")}
         />
       </div>
 
       {/* Earnings over time — single series, so no legend; the title names it */}
       <Card
-        title={`Earnings over time (${range.bucket === "day" ? "daily" : "monthly"})`}
+        title={
+          range.bucket === "day"
+            ? t("earningsOverTimeDaily")
+            : t("earningsOverTimeMonthly")
+        }
       >
         <LineChart data={earnings} format="rwfCompact" />
         <TableView
-          caption="Earnings by period"
-          headers={["Period", "Your earnings"]}
+          caption={t("earningsByPeriod")}
+          headers={[t("colPeriod"), t("colYourEarnings")]}
           rows={earnings.map((p) => [p.label, formatRWF(p.value)])}
         />
       </Card>
@@ -192,22 +218,32 @@ export default async function OwnerAnalyticsPage({
       {/* ── ADVANCED ──────────────────────────────────────────────────────── */}
       {advanced && cars && outcomes ? (
         <>
-          <Card title="How each car is doing">
+          <Card title={t("howEachCar")}>
             {cars.length === 0 ? (
               <p className="rounded-xl bg-bone px-4 py-8 text-center text-sm text-ink-soft">
-                You haven&apos;t listed a car yet.
+                {t("noCarYet")}
               </p>
             ) : (
               <div className="-mx-4 overflow-x-auto px-4">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-sand text-left text-xs text-ink-faint">
-                      <th className="pb-2 font-medium">Car</th>
-                      <th className="pb-2 text-right font-medium">Trips</th>
-                      <th className="pb-2 text-right font-medium">Days out</th>
-                      <th className="pb-2 text-right font-medium">Used</th>
-                      <th className="pb-2 text-right font-medium">Rating</th>
-                      <th className="pb-2 text-right font-medium">Earnings</th>
+                      <th className="pb-2 font-medium">{t("colCar")}</th>
+                      <th className="pb-2 text-right font-medium">
+                        {t("colTrips")}
+                      </th>
+                      <th className="pb-2 text-right font-medium">
+                        {t("colDaysOut")}
+                      </th>
+                      <th className="pb-2 text-right font-medium">
+                        {t("colUsed")}
+                      </th>
+                      <th className="pb-2 text-right font-medium">
+                        {t("colRating")}
+                      </th>
+                      <th className="pb-2 text-right font-medium">
+                        {t("colEarnings")}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-sand">
@@ -217,7 +253,7 @@ export default async function OwnerAnalyticsPage({
                           {c.name}
                           {!c.isLive && (
                             <span className="ml-1.5 rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-ink-faint">
-                              not listed
+                              {t("notListed")}
                             </span>
                           )}
                         </td>
@@ -243,54 +279,54 @@ export default async function OwnerAnalyticsPage({
               </div>
             )}
             <p className="mt-2 text-[11px] text-ink-faint">
-              &ldquo;Used&rdquo; is the share of days the car was out on a trip,
-              counted from the day you listed it.
+              {t("usedExplainer")}
             </p>
           </Card>
 
-          <Card title="Where your bookings ended up">
+          <Card title={t("whereBookingsEnded")}>
             <BarList
               items={[
                 {
                   id: "completed",
-                  label: "Completed",
+                  label: t("outcomeCompleted"),
                   value: outcomes.completed,
                 },
                 {
                   id: "rejected",
-                  label: "You declined",
+                  label: t("outcomeDeclined"),
                   value: outcomes.rejectedByOwner,
                 },
                 {
                   id: "cancelled",
-                  label: "Client cancelled",
+                  label: t("outcomeCancelled"),
                   value: outcomes.cancelledByClient,
                 },
                 {
                   id: "unpaid",
-                  label: "Never paid for",
+                  label: t("outcomeUnpaid"),
                   value: outcomes.expiredUnpaid,
                 },
               ]}
               format="number"
-              emptyMessage="No bookings in this period."
+              emptyMessage={t("noBookingsInPeriod")}
             />
             {outcomes.completionRate !== null && (
               <p className="mt-2 text-[11px] text-ink-faint">
-                {outcomes.completionRate}% of the bookings that reached a
-                conclusion ended in a completed trip.
+                {t("completionRateNote", {
+                  percent: outcomes.completionRate,
+                })}
               </p>
             )}
           </Card>
         </>
       ) : (
         <LockedInsight
-          title="Per-car performance and booking outcomes"
+          title={t("lockedAdvancedTitle")}
           planName={access.nextPlanName}
           what={[
-            "Which of your cars earns most, and which sits idle",
-            "How many days each car is actually out on trips",
-            "Why bookings fall through — declined, cancelled, or never paid for",
+            t("lockedAdvanced1"),
+            t("lockedAdvanced2"),
+            t("lockedAdvanced3"),
           ]}
         />
       )}
@@ -299,45 +335,54 @@ export default async function OwnerAnalyticsPage({
       {full && demand && pricing && ratings ? (
         <>
           <div className="grid gap-3 lg:grid-cols-2">
-            <Card title="When trips start">
+            <Card title={t("whenTripsStart")}>
               <BarList
-                items={demand.byWeekday}
+                items={demand.byWeekday.map((d) => ({
+                  ...d,
+                  label: t(d.labelKey),
+                }))}
                 format="number"
-                emptyMessage="No paid bookings in this period."
+                emptyMessage={t("noPaidBookings")}
               />
               {demand.medianTripDays !== null && (
                 <p className="mt-2 text-[11px] text-ink-faint">
-                  A typical trip runs {demand.medianTripDays} day
-                  {demand.medianTripDays === 1 ? "" : "s"}.
+                  {t("typicalTrip", { count: demand.medianTripDays })}
                 </p>
               )}
             </Card>
 
-            <Card title="How far ahead clients book">
+            <Card title={t("howFarAhead")}>
               <BarList
-                items={demand.byLeadTime}
+                items={demand.byLeadTime.map((d) => ({
+                  ...d,
+                  label: t(d.labelKey),
+                }))}
                 format="number"
-                emptyMessage="No paid bookings in this period."
+                emptyMessage={t("noPaidBookings")}
               />
             </Card>
           </div>
 
-          <Card title="Your rates against the market">
+          <Card title={t("ratesAgainstMarket")}>
             {pricing.length === 0 ? (
               <p className="rounded-xl bg-bone px-4 py-8 text-center text-sm text-ink-soft">
-                Add pricing to a car to see how it compares.
+                {t("addPricingToCompare")}
               </p>
             ) : (
               <div className="-mx-4 overflow-x-auto px-4">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-sand text-left text-xs text-ink-faint">
-                      <th className="pb-2 font-medium">Car</th>
-                      <th className="pb-2 text-right font-medium">Your rate</th>
+                      <th className="pb-2 font-medium">{t("colCar")}</th>
                       <th className="pb-2 text-right font-medium">
-                        Typical rate
+                        {t("colYourRate")}
                       </th>
-                      <th className="pb-2 text-right font-medium">Difference</th>
+                      <th className="pb-2 text-right font-medium">
+                        {t("colTypicalRate")}
+                      </th>
+                      <th className="pb-2 text-right font-medium">
+                        {t("colDifference")}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-sand">
@@ -346,7 +391,7 @@ export default async function OwnerAnalyticsPage({
                         <td className="py-2.5 text-xs font-medium text-ink">
                           {p.name}
                           <span className="block text-[10px] capitalize text-ink-faint">
-                            {p.category}
+                            {label("category", p.category)}
                           </span>
                         </td>
                         <td className="py-2.5 text-right text-xs text-ink">
@@ -360,10 +405,10 @@ export default async function OwnerAnalyticsPage({
                         <td className="py-2.5 text-right text-xs font-semibold">
                           {p.difference === null ? (
                             <span className="font-normal text-ink-faint">
-                              too few to compare
+                              {t("tooFewToCompare")}
                             </span>
                           ) : p.difference === 0 ? (
-                            <span className="text-ink-soft">at market</span>
+                            <span className="text-ink-soft">{t("atMarket")}</span>
                           ) : (
                             <span
                               className={
@@ -384,32 +429,29 @@ export default async function OwnerAnalyticsPage({
               </div>
             )}
             <p className="mt-2 text-[11px] text-ink-faint">
-              The typical rate is the middle in-city daily rate among other live
-              cars in the same category. It is hidden below three comparable
-              cars — a market rate drawn from one other listing is noise.
+              {t("marketRateExplainer")}
             </p>
           </Card>
 
-          <Card title="What clients rate you on">
+          <Card title={t("whatClientsRate")}>
             {ratings.length === 0 ? (
               <p className="rounded-xl bg-bone px-4 py-8 text-center text-sm text-ink-soft">
-                No reviews in this period yet.
+                {t("noReviewsYetPeriod")}
               </p>
             ) : (
               <>
                 <BarList
                   items={ratings.map((r) => ({
                     id: r.category,
-                    label: r.category,
+                    label: t(`rating${r.category}` as never),
                     value: Math.round(r.average * 10) / 10,
                   }))}
                   format="rating"
+                  emptyMessage={t("noData")}
                 />
                 <p className="mt-2 flex items-center gap-1 text-[11px] text-ink-faint">
                   <Star className="h-3 w-3" />
-                  Across {ratings[0].count} review
-                  {ratings[0].count === 1 ? "" : "s"}. Your lowest score is the
-                  one worth fixing first.
+                  {t("acrossReviews", { count: ratings[0].count })}
                 </p>
               </>
             )}
@@ -417,15 +459,15 @@ export default async function OwnerAnalyticsPage({
         </>
       ) : (
         <LockedInsight
-          title="Demand, pricing and rating detail"
+          title={t("lockedFullTitle")}
           planName={
             access.nextLevel === "FULL" ? access.nextPlanName : null
           }
           what={[
-            "Which days of the week your cars actually get booked",
-            "How far in advance clients commit, so you can plan availability",
-            "Whether your daily rate sits above or below comparable cars",
-            "Your four rating categories separately, not one blended score",
+            t("lockedFull1"),
+            t("lockedFull2"),
+            t("lockedFull3"),
+            t("lockedFull4"),
           ]}
         />
       )}
@@ -433,7 +475,7 @@ export default async function OwnerAnalyticsPage({
       {access.nextPlanName && (
         <p className="flex items-center justify-center gap-1.5 pb-2 text-[11px] text-ink-faint">
           <Sparkles className="h-3 w-3" />
-          More detail is included with {access.nextPlanName}.
+          {t("moreWithPlan", { plan: access.nextPlanName })}
         </p>
       )}
     </div>

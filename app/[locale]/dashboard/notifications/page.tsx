@@ -3,6 +3,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -15,7 +16,7 @@ export const metadata = { title: "Notifications — ZuriDrive" };
 
 export default async function ClientNotificationsPage() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/dashboard/notifications");
+  if (!session?.user?.id) redirect(await loginPath("/dashboard/notifications"));
 
   const [rows, unreadCount] = await Promise.all([
     prisma.notification.findMany({

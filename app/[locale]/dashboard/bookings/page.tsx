@@ -9,6 +9,7 @@
 
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -223,7 +224,7 @@ async function BookingsContent({
 
 export default async function BookingsPage({ searchParams }: PageProps) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?next=/dashboard/bookings");
+  if (!session?.user?.id) redirect(await loginPath("/dashboard/bookings"));
 
   const status = (searchParams.status?.toUpperCase() as BookingStatus) ?? "ALL";
   const page   = Math.max(1, parseInt(searchParams.page ?? "1", 10));

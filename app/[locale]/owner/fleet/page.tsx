@@ -7,6 +7,7 @@
  */
 
 import { redirect } from "next/navigation";
+import { localePath, loginPath } from "@/lib/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
@@ -35,13 +36,13 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
   const t = await getTranslations({ locale: params.locale, namespace: "owner" });
   const label = await getEnumLabeller(params.locale);
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirect(await loginPath());
 
   const profile = await prisma.carOwnerProfile.findUnique({
     where: { userId: session.user.id },
     select: { id: true },
   });
-  if (!profile) redirect("/owner/onboarding");
+  if (!profile) redirect(await localePath("/owner/onboarding"));
 
   const allowance = await getOwnerAllowance(profile.id);
 
