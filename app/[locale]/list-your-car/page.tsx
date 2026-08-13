@@ -24,6 +24,7 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { prisma } from "@/lib/db";
@@ -45,40 +46,49 @@ export const metadata = {
     "Earn from your car when you are not using it. Choose a plan, list in minutes, and keep control of who drives it.",
 };
 
+// Keys, not text — module scope has no translator.
 const BENEFITS = [
   {
     icon: Wallet,
-    title: "Earn when it would be parked",
-    desc: "Most private cars sit unused most of the week. Set your rates and rent it out on the days that suit you.",
+    titleKey: "b1Title",
+    descKey: "b1Desc",
   },
   {
     icon: CalendarClock,
-    title: "You choose the days",
-    desc: "Set your own availability and minimum rental length. Nothing gets booked on a day you have blocked.",
+    titleKey: "b2Title",
+    descKey: "b2Desc",
   },
   {
     icon: ShieldCheck,
-    title: "Every trip is documented",
-    desc: "Both sides upload condition photos and the fuel gauge before and after. Disputes are settled against that record.",
+    titleKey: "b3Title",
+    descKey: "b3Desc",
   },
   {
     icon: LayoutDashboard,
-    title: "One dashboard",
-    desc: "Bookings, earnings, payouts and reviews in one place, with the numbers behind each of them.",
+    titleKey: "b4Title",
+    descKey: "b4Desc",
   },
   {
     icon: Star,
-    title: "Reviews you can answer",
-    desc: "Renters review the trip. Honest reviews stay up — we only hide abuse, spam or personal information.",
+    titleKey: "b5Title",
+    descKey: "b5Desc",
   },
   {
     icon: BadgeCheck,
-    title: "Approved renters",
-    desc: "Renters have a verified phone number, and you confirm each request before the car goes anywhere.",
+    titleKey: "b6Title",
+    descKey: "b6Desc",
   },
 ];
 
-export default async function BecomeAnOwnerPage() {
+export default async function BecomeAnOwnerPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({
+    locale: params.locale,
+    namespace: "listYourCar",
+  });
   const [plans, settings] = await Promise.all([
     prisma.subscriptionPlan.findMany({
       where: { isActive: true },
@@ -94,24 +104,23 @@ export default async function BecomeAnOwnerPage() {
       {/* Hero — light, so the nav renders its dark variant over it. */}
       <section className="border-b border-sand-dark bg-sand/40 px-4 py-16 text-center">
         <h1 className="mx-auto max-w-3xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
-          List your car. Earn on the days you don&apos;t need it.
+          {t("heroTitle")}
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-ink-muted">
-          Set your own rates and availability, approve every booking, and get
-          paid after each completed trip.
+          {t("heroSub")}
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/signup/owner"
             className="rounded-full bg-brand px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
           >
-            List your car
+            {t("ctaList")}
           </Link>
           <Link
             href="/how-it-works"
             className="rounded-full border border-sand-darker px-7 py-3 text-sm font-semibold text-ink transition-colors hover:bg-sand"
           >
-            See how it works
+            {t("ctaHowItWorks")}
           </Link>
         </div>
       </section>
@@ -123,15 +132,15 @@ export default async function BecomeAnOwnerPage() {
             const Icon = b.icon;
             return (
               <div
-                key={b.title}
+                key={t(b.titleKey)}
                 className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-sand-dark"
               >
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10">
                   <Icon className="h-5 w-5 text-brand" />
                 </div>
-                <h3 className="mb-1.5 font-semibold text-ink">{b.title}</h3>
+                <h3 className="mb-1.5 font-semibold text-ink">{t(b.titleKey)}</h3>
                 <p className="text-sm leading-relaxed text-ink-muted">
-                  {b.desc}
+                  {t(b.descKey)}
                 </p>
               </div>
             );
@@ -142,12 +151,10 @@ export default async function BecomeAnOwnerPage() {
       {/* Plans — straight from the database */}
       <section className="mx-auto max-w-5xl px-4 pb-16">
         <h2 className="text-center font-display text-3xl font-semibold text-ink">
-          Choose a plan
+          {t("choosePlan")}
         </h2>
         <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-ink-muted">
-          A plan is what lets you keep listings live. ZuriDrive also takes{" "}
-          {settings.commissionRatePercent}% commission on the rental itself —
-          never on delivery fees, and never on a damage deposit.
+          {t("planNote", { rate: settings.commissionRatePercent })}
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -164,7 +171,7 @@ export default async function BecomeAnOwnerPage() {
               >
                 {highlight && (
                   <span className="mb-3 self-start rounded-full bg-brand px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                    Most popular
+                    {t("mostPopular")}
                   </span>
                 )}
 
@@ -176,7 +183,7 @@ export default async function BecomeAnOwnerPage() {
                   {formatRWF(plan.priceMonthly)}
                   <span className="text-sm font-normal text-ink-soft">
                     {" "}
-                    /month
+                    {t("perMonth")}
                   </span>
                 </p>
 
@@ -184,43 +191,41 @@ export default async function BecomeAnOwnerPage() {
                   <li className="flex gap-2">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
                     {plan.maxListings === null
-                      ? "Unlimited listings"
-                      : `Up to ${plan.maxListings} ${
-                          plan.maxListings === 1 ? "listing" : "listings"
-                        }`}
+                      ? t("unlimitedListings")
+                      : t("upToListings", { count: plan.maxListings })}
                   </li>
                   <li className="flex gap-2">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
                     {plan.analyticsLevel === "FULL"
-                      ? "Full analytics"
+                      ? t("analyticsFull")
                       : plan.analyticsLevel === "ADVANCED"
-                        ? "Advanced analytics"
-                        : "Basic analytics"}
+                        ? t("analyticsAdvanced")
+                        : t("analyticsBasic")}
                   </li>
                   {plan.isFeatured && (
                     <li className="flex gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
                       {plan.featuredPriority === 1
-                        ? "Top placement in search"
-                        : "Featured in search results"}
+                        ? t("topPlacement")
+                        : t("featuredInSearch")}
                     </li>
                   )}
                   {plan.hasVerifiedBadge && (
                     <li className="flex gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-                      Verified badge on your listings
+                      {t("verifiedBadge")}
                     </li>
                   )}
                   {plan.hasHomepageBanner && (
                     <li className="flex gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-                      Homepage banner placement
+                      {t("homepageBanner")}
                     </li>
                   )}
                   {plan.hasPrioritySupport && (
                     <li className="flex gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-                      Priority support
+                      {t("prioritySupport")}
                     </li>
                   )}
                 </ul>
@@ -235,7 +240,7 @@ export default async function BecomeAnOwnerPage() {
                       : "border border-brand text-brand hover:bg-brand/5"
                   }`}
                 >
-                  Get started
+                  {t("getStarted")}
                 </Link>
               </div>
             );
@@ -243,12 +248,11 @@ export default async function BecomeAnOwnerPage() {
         </div>
 
         <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-ink-faint">
-          You keep your own insurance and remain the vehicle&apos;s owner
-          throughout. See the{" "}
+          {t("insuranceNotePre")}{" "}
           <Link href="/terms" className="underline hover:text-ink">
-            terms
+            {t("termsLink")}
           </Link>{" "}
-          for what each side is responsible for.
+          {t("insuranceNotePost")}
         </p>
       </section>
 
