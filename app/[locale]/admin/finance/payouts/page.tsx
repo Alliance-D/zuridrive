@@ -5,8 +5,11 @@
  * finance approves, marks paid, and the owner is notified.
  */
 
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireAdminModule } from "@/lib/auth";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { formatRWF } from "@/lib/currency";
 import { FinanceNav } from "../nav";
 import {
@@ -20,7 +23,14 @@ import PayoutActions from "@/components/admin/PayoutActions";
 import type { PayoutStatus } from "@prisma/client";
 import { Download, ShieldAlert } from "lucide-react";
 
-export const metadata = { title: "Payouts — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  return { title: `${t("navPayouts")} — ZuriDrive Admin` };
+}
 
 const TONE: Record<PayoutStatus, "warn" | "info" | "success" | "danger"> = {
   PENDING_REQUEST: "warn",
@@ -29,7 +39,13 @@ const TONE: Record<PayoutStatus, "warn" | "info" | "success" | "danger"> = {
   FAILED: "danger",
 };
 
-export default async function AdminPayoutsPage() {
+export default async function AdminPayoutsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  const label = await getEnumLabeller(params.locale);
   const session = await requireAdminModule("FINANCE_MANAGER");
   const viewerIsSuperAdmin = session.user.role === "SUPER_ADMIN";
 
@@ -70,43 +86,44 @@ export default async function AdminPayoutsPage() {
   return (
     <div>
       <PageHeader
-        title="Payouts"
-        subtitle="Approve owner withdrawals and record transfers."
+        title={t("navPayouts")}
+        subtitle={t("payoutsSub")}
         action={
           <a
             href="/api/admin/finance/export?type=payouts"
             className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm font-semibold text-ink-muted hover:border-brand hover:text-brand"
           >
             <Download className="h-4 w-4" />
-            CSV
+            {t("csv")}
           </a>
         }
       />
 
       <FinanceNav
         active="/admin/finance/payouts"
+        locale={params.locale}
         counts={{ "/admin/finance/payouts": queue.length }}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatCard
-          label="Awaiting action"
+          label={t("awaitingAction")}
           value={formatRWF(pendingSum._sum.netAmount ?? 0)}
-          hint={`${pendingSum._count} request${pendingSum._count === 1 ? "" : "s"}`}
+          hint={t("requestCount", { count: pendingSum._count })}
           tone={queue.length > 0 ? "warn" : "default"}
         />
         <StatCard
-          label="Paid out (lifetime)"
+          label={t("paidOutLifetime")}
           value={formatRWF(totals._sum.netAmount ?? 0)}
           tone="dark"
         />
-        <StatCard label="In history" value={history.length} />
+        <StatCard label={t("inHistory")} value={history.length} />
       </div>
 
       <div className="mb-4">
-        <Card title="Queue">
+        <Card title={t("queue")}>
           {queue.length === 0 ? (
-            <EmptyRow>No payout requests waiting.</EmptyRow>
+            <EmptyRow>{t("noPayoutsWaiting")}</EmptyRow>
           ) : (
             <ul className="divide-y divide-sand">
               {queue.map((p) => (
@@ -120,30 +137,35 @@ export default async function AdminPayoutsPage() {
                         {formatRWF(p.netAmount)}
                       </span>
                       <Badge tone={TONE[p.status]}>
-                        {p.status.toLowerCase().replace("_", " ")}
+                        {label("payoutStatus", p.status)}
                       </Badge>
                       {p.requiresSuperAdminApproval && (
                         <Badge tone="danger">
                           <span className="inline-flex items-center gap-1">
                             <ShieldAlert className="h-2.5 w-2.5" />
-                            large payout
+                            {t("largePayout")}
                           </span>
                         </Badge>
                       )}
                     </div>
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {p.owner.user.name ?? "Owner"} ·{" "}
+                      {p.owner.user.name ?? t("ownerFallback")} ·{" "}
                       {p.method === "MTN_MOMO"
-                        ? `MoMo ${p.momoNumber ?? p.owner.momoNumber ?? ""}`
-                        : `${p.bankName ?? p.owner.bankName ?? "Bank"} ${
+                        ? `${t("momo")} ${p.momoNumber ?? p.owner.momoNumber ?? ""}`
+                        : `${p.bankName ?? p.owner.bankName ?? t("bank")} ${
                             p.bankAccountNumber ?? p.owner.bankAccountNumber ?? ""
                           }`}
                     </p>
                     <p className="text-[11px] text-ink-faint">
-                      {p._count.items} trip{p._count.items === 1 ? "" : "s"} ·
-                      gross {formatRWF(p.grossAmount)} − commission{" "}
-                      {formatRWF(p.commissionDeducted)} · requested{" "}
-                      {p.requestedAt.toLocaleDateString("en-RW")}
+                      {t("tripCount", { count: p._count.items })} ·{" "}
+                      {t("grossMinusCommission", {
+                        gross: formatRWF(p.grossAmount),
+                        commission: formatRWF(p.commissionDeducted),
+                      })}{" "}
+                      ·{" "}
+                      {t("requestedOn", {
+                        date: formatDate(p.requestedAt, params.locale),
+                      })}
                     </p>
                   </div>
 
@@ -160,9 +182,9 @@ export default async function AdminPayoutsPage() {
         </Card>
       </div>
 
-      <Card title="History">
+      <Card title={t("history")}>
         {history.length === 0 ? (
-          <EmptyRow>No completed payouts yet.</EmptyRow>
+          <EmptyRow>{t("noCompletedPayouts")}</EmptyRow>
         ) : (
           <ul className="divide-y divide-sand">
             {history.map((p) => (
@@ -172,14 +194,19 @@ export default async function AdminPayoutsPage() {
                     <span className="text-sm font-semibold text-ink">
                       {formatRWF(p.netAmount)}
                     </span>
-                    <Badge tone={TONE[p.status]}>{p.status.toLowerCase()}</Badge>
+                    <Badge tone={TONE[p.status]}>{label("payoutStatus", p.status)}</Badge>
                   </div>
                   <p className="text-xs text-ink-soft">
-                    {p.owner.user.name ?? "Owner"} ·{" "}
+                    {p.owner.user.name ?? t("ownerFallback")} ·{" "}
                     {p.paidAt
-                      ? `paid ${p.paidAt.toLocaleDateString("en-RW")}`
-                      : `requested ${p.requestedAt.toLocaleDateString("en-RW")}`}
-                    {p.referenceNumber && ` · ref ${p.referenceNumber}`}
+                      ? t("paidOn", {
+                          date: formatDate(p.paidAt, params.locale),
+                        })
+                      : t("requestedOn", {
+                          date: formatDate(p.requestedAt, params.locale),
+                        })}
+                    {p.referenceNumber &&
+                      ` · ${t("refSuffix", { ref: p.referenceNumber })}`}
                   </p>
                   {p.failureReason && (
                     <p className="mt-1 text-[11px] text-danger">
@@ -194,7 +221,7 @@ export default async function AdminPayoutsPage() {
                     rel="noopener noreferrer"
                     className="shrink-0 text-[11px] font-semibold text-brand hover:underline"
                   >
-                    Proof
+                    {t("proof")}
                   </a>
                 )}
               </li>

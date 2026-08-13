@@ -21,12 +21,26 @@ import {
   Th,
   Td,
 } from "@/components/admin/ui";
+import { getTranslations } from "next-intl/server";
+import { formatDateTime } from "@/lib/dates";
 import RunReconciliation from "@/components/admin/RunReconciliation";
 import { CheckCircle2, AlertTriangle, Download } from "lucide-react";
 
-export const metadata = { title: "Reconciliation — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  return { title: `${t("navReconciliation")} — ZuriDrive Admin` };
+}
 
-export default async function AdminReportsPage() {
+export default async function AdminReportsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
   await requireAdminModule("FINANCE_MANAGER");
 
   const [live, history] = await Promise.all([
@@ -40,8 +54,8 @@ export default async function AdminReportsPage() {
   return (
     <div>
       <PageHeader
-        title="Reconciliation"
-        subtitle="Checks that every franc collected can be explained by the ledgers."
+        title={t("navReconciliation")}
+        subtitle={t("reconciliationSub")}
         action={
           <div className="flex gap-2">
             <a
@@ -49,14 +63,14 @@ export default async function AdminReportsPage() {
               className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm font-semibold text-ink-muted hover:border-brand hover:text-brand"
             >
               <Download className="h-4 w-4" />
-              CSV
+              {t("csv")}
             </a>
             <RunReconciliation />
           </div>
         }
       />
 
-      <FinanceNav active="/admin/finance/reports" />
+      <FinanceNav active="/admin/finance/reports" locale={params.locale} />
 
       {/* Live status */}
       <div
@@ -76,8 +90,10 @@ export default async function AdminReportsPage() {
             }`}
           >
             {live.hasMismatch
-              ? `Books are off by ${formatRWF(live.discrepancyAmount)}`
-              : "Books balance"}
+              ? t("booksOffBy", {
+                  amount: formatRWF(live.discrepancyAmount),
+                })
+              : t("booksBalance")}
           </p>
           {live.notes.length > 0 ? (
             <ul className="mt-1 space-y-0.5">
@@ -89,8 +105,7 @@ export default async function AdminReportsPage() {
             </ul>
           ) : (
             <p className="mt-0.5 text-xs text-success">
-              Commission and owner earnings reconstruct the commissionable base,
-              and every deposit is accounted for.
+              {t("booksBalanceNote")}
             </p>
           )}
         </div>
@@ -98,19 +113,19 @@ export default async function AdminReportsPage() {
 
       {/* Money in */}
       <div className="mb-4">
-        <Card title="Money collected">
+        <Card title={t("moneyCollected")}>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
             <StatCard
-              label="Rental income"
+              label={t("rentalIncome")}
               value={formatRWF(live.rentalCollected)}
             />
             <StatCard
-              label="Deposits taken"
+              label={t("depositsTaken")}
               value={formatRWF(live.depositsCollected)}
-              hint="Client money, held in trust"
+              hint={t("clientMoneyInTrust")}
             />
             <StatCard
-              label="Total collected"
+              label={t("totalCollected")}
               value={formatRWF(live.totalCollected)}
               tone="dark"
             />
@@ -120,20 +135,23 @@ export default async function AdminReportsPage() {
 
       {/* Money out / owed */}
       <div className="mb-4 grid gap-3 lg:grid-cols-2">
-        <Card title="Platform vs owners">
+        <Card title={t("platformVsOwners")}>
           <dl className="space-y-2 text-sm">
             <Row
-              label="Commission earned (completed trips)"
+              label={t("commissionEarned")}
               value={formatRWF(live.totalCommission)}
             />
             <Row
-              label="Owner earnings (completed trips)"
+              label={t("ownerEarnings")}
               value={formatRWF(live.ownerEarningsRealised)}
             />
-            <Row label="Paid out to owners" value={formatRWF(live.totalPaidOut)} />
+            <Row
+              label={t("paidOutToOwners")}
+              value={formatRWF(live.totalPaidOut)}
+            />
             <div className="border-t border-sand pt-2">
               <Row
-                label="Still owed to owners"
+                label={t("stillOwed")}
                 value={formatRWF(live.outstandingOwnerBalance)}
                 strong
               />
@@ -141,20 +159,23 @@ export default async function AdminReportsPage() {
           </dl>
         </Card>
 
-        <Card title="Deposit position">
+        <Card title={t("depositPosition")}>
           <dl className="space-y-2 text-sm">
-            <Row label="Currently held" value={formatRWF(live.totalDepositsHeld)} />
             <Row
-              label="Returned to clients"
+              label={t("currentlyHeld")}
+              value={formatRWF(live.totalDepositsHeld)}
+            />
+            <Row
+              label={t("returnedToClients")}
               value={formatRWF(live.totalDepositsReleased)}
             />
             <Row
-              label="Withheld (awarded to owners)"
+              label={t("withheldAwarded")}
               value={formatRWF(live.totalDepositsWithheld)}
             />
             <div className="border-t border-sand pt-2">
               <Row
-                label="Accounted for"
+                label={t("accountedFor")}
                 value={formatRWF(
                   live.totalDepositsHeld +
                     live.totalDepositsReleased +
@@ -165,9 +186,9 @@ export default async function AdminReportsPage() {
             </div>
             {live.pendingDeposits > 0 && (
               <p className="pt-1 text-[11px] text-ink-faint">
-                A further {formatRWF(live.pendingDeposits)} is pending on unpaid
-                bookings. No money has been collected for these, so they are
-                excluded from the figures above.
+                {t("pendingDepositsNote", {
+                  amount: formatRWF(live.pendingDeposits),
+                })}
               </p>
             )}
           </dl>
@@ -175,37 +196,34 @@ export default async function AdminReportsPage() {
       </div>
 
       {/* History */}
-      <Card title="Check history">
+      <Card title={t("checkHistory")}>
         {history.length === 0 ? (
           <EmptyRow>
-            No checks recorded yet. Press &ldquo;Run check&rdquo; to save one.
+            {t("noChecksRecorded")}
           </EmptyRow>
         ) : (
           <TableWrap>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-sand">
-                  <Th>Run at</Th>
-                  <Th>Result</Th>
-                  <Th align="right">Collected</Th>
-                  <Th align="right">Commission</Th>
-                  <Th align="right">Paid out</Th>
-                  <Th align="right">Deposits held</Th>
-                  <Th align="right">Discrepancy</Th>
+                  <Th>{t("colRunAt")}</Th>
+                  <Th>{t("colResult")}</Th>
+                  <Th align="right">{t("colCollected")}</Th>
+                  <Th align="right">{t("colCommission")}</Th>
+                  <Th align="right">{t("colPaidOut")}</Th>
+                  <Th align="right">{t("colDepositsHeld")}</Th>
+                  <Th align="right">{t("colDiscrepancy")}</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand">
                 {history.map((h) => (
                   <tr key={h.id}>
                     <Td muted>
-                      {h.runAt.toLocaleString("en-RW", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
+                      {formatDateTime(h.runAt, params.locale)}
                     </Td>
                     <Td>
                       <Badge tone={h.hasMismatch ? "danger" : "success"}>
-                        {h.hasMismatch ? "mismatch" : "balanced"}
+                        {h.hasMismatch ? t("mismatch") : t("balanced")}
                       </Badge>
                     </Td>
                     <Td align="right" muted>

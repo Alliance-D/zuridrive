@@ -10,7 +10,10 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
 import { formatRWF } from "@/lib/currency";
 import { FinanceNav } from "../nav";
@@ -27,7 +30,14 @@ import {
 import type { DepositStatus } from "@prisma/client";
 import { Download } from "lucide-react";
 
-export const metadata = { title: "Deposits — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  return { title: `${t("navDeposits")} — ZuriDrive Admin` };
+}
 
 const TONE: Record<
   DepositStatus,
@@ -41,7 +51,13 @@ const TONE: Record<
   FULLY_WITHHELD: "danger",
 };
 
-export default async function AdminDepositsPage() {
+export default async function AdminDepositsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  const label = await getEnumLabeller(params.locale);
   await requireAdminModule("DEPOSIT_MANAGER");
 
   const [deposits, byStatus] = await Promise.all([
@@ -80,64 +96,67 @@ export default async function AdminDepositsPage() {
   return (
     <div>
       <PageHeader
-        title="Deposits"
-        subtitle="Damage deposits held on behalf of clients. Never platform revenue."
+        title={t("navDeposits")}
+        subtitle={t("depositsSub")}
         action={
           <a
             href="/api/admin/finance/export?type=deposits"
             className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm font-semibold text-ink-muted hover:border-brand hover:text-brand"
           >
             <Download className="h-4 w-4" />
-            CSV
+            {t("csv")}
           </a>
         }
       />
 
       <FinanceNav
         active="/admin/finance/deposits"
+        locale={params.locale}
         counts={{ "/admin/finance/deposits": countFor("HELD") }}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Currently held"
+          label={t("currentlyHeld")}
           value={formatRWF(sumFor("HELD"))}
-          hint={`${countFor("HELD")} deposit${countFor("HELD") === 1 ? "" : "s"}`}
+          hint={t("depositCount", { count: countFor("HELD") })}
           tone="dark"
         />
         <StatCard
-          label="Released to clients"
+          label={t("releasedToClients")}
           value={formatRWF(sumFor("RELEASED"))}
-          hint={`${countFor("RELEASED")} returned in full`}
+          hint={t("returnedInFull", { count: countFor("RELEASED") })}
         />
         <StatCard
-          label="Withheld (to owners)"
+          label={t("withheldToOwners")}
           value={formatRWF(withheld)}
-          hint={`${countFor("PARTIALLY_WITHHELD") + countFor("FULLY_WITHHELD")} disputed`}
+          hint={t("disputedCount", {
+            count: countFor("PARTIALLY_WITHHELD") + countFor("FULLY_WITHHELD"),
+          })}
         />
         <StatCard
-          label="Total tracked"
+          label={t("totalTracked")}
           value={formatRWF(byStatus.reduce((s, g) => s + (g._sum.amount ?? 0), 0))}
         />
       </div>
 
-      <Card title={`Deposits (${deposits.length})`}>
+      <Card title={t("depositsCount", { count: deposits.length })}>
         {deposits.length === 0 ? (
-          <EmptyRow>No deposits recorded yet.</EmptyRow>
+          <EmptyRow>{t("noDepositsYet")}</EmptyRow>
         ) : (
           <TableWrap>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-sand">
-                  <Th>Booking</Th>
-                  <Th>Client</Th>
-                  <Th>Car</Th>
-                  <Th>Status</Th>
-                  <Th align="right">Amount</Th>
-                  <Th align="right">To client</Th>
-                  <Th align="right">To owner</Th>
-                  <Th>Held since</Th>
-                  <Th align="right">Movements</Th>
+                  <Th>{t("colBooking")}</Th>
+                  <Th>{t("colClient")}</Th>
+                  <Th>{t("colCar")}</Th>
+                  <Th>{t("colStatus")}</Th>
+                  <Th align="right">{t("colAmount")}</Th>
+                  <Th align="right">{t("colToClient")}</Th>
+                  <Th align="right">{t("colToOwner")}</Th>
+                  <Th>{t("colHeldSince")}</Th>
+                  <Th align="right">{t("colMovements")}</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand">
@@ -157,7 +176,7 @@ export default async function AdminDepositsPage() {
                     </Td>
                     <Td>
                       <Badge tone={TONE[d.status]}>
-                        {d.status.toLowerCase().replace(/_/g, " ")}
+                        {label("depositStatus", d.status)}
                       </Badge>
                     </Td>
                     <Td align="right">
@@ -171,7 +190,7 @@ export default async function AdminDepositsPage() {
                     <Td align="right" muted>
                       {d.ownerAwardAmount ? formatRWF(d.ownerAwardAmount) : "—"}
                     </Td>
-                    <Td muted>{d.heldAt.toLocaleDateString("en-RW")}</Td>
+                    <Td muted>{formatDate(d.heldAt, params.locale)}</Td>
                     <Td align="right" muted>
                       {d._count.movements}
                     </Td>

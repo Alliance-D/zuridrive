@@ -7,7 +7,10 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
 import { formatRWF } from "@/lib/currency";
 import { FinanceNav } from "../nav";
@@ -23,9 +26,22 @@ import {
 } from "@/components/admin/ui";
 import { Download } from "lucide-react";
 
-export const metadata = { title: "Commission — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  return { title: `${t("navCommission")} — ZuriDrive Admin` };
+}
 
-export default async function AdminCommissionsPage() {
+export default async function AdminCommissionsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  const label = await getEnumLabeller(params.locale);
   await requireAdminModule("FINANCE_MANAGER");
 
   const now = new Date();
@@ -86,24 +102,27 @@ export default async function AdminCommissionsPage() {
   return (
     <div>
       <PageHeader
-        title="Commission"
-        subtitle="Platform earnings. One immutable record per booking."
+        title={t("navCommission")}
+        subtitle={t("commissionSub")}
         action={
           <a
             href="/api/admin/finance/export?type=commissions"
             className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm font-semibold text-ink-muted hover:border-brand hover:text-brand"
           >
             <Download className="h-4 w-4" />
-            CSV
+            {t("csv")}
           </a>
         }
       />
 
-      <FinanceNav active="/admin/finance/commissions" />
+      <FinanceNav
+        active="/admin/finance/commissions"
+        locale={params.locale}
+      />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="This month"
+          label={t("thisMonth")}
           value={formatRWF(current)}
           hint={
             delta !== null
@@ -112,35 +131,35 @@ export default async function AdminCommissionsPage() {
           }
           tone="dark"
         />
-        <StatCard label="Last month" value={formatRWF(previous)} />
+        <StatCard label={t("lastMonth")} value={formatRWF(previous)} />
         <StatCard
-          label="Realised (completed trips)"
+          label={t("realised")}
           value={formatRWF(realised._sum.commissionAmount ?? 0)}
         />
         <StatCard
-          label="Booked (all statuses)"
+          label={t("booked")}
           value={formatRWF(lifetime._sum.commissionAmount ?? 0)}
           hint="Includes trips not yet completed"
         />
       </div>
 
-      <Card title={`Commission records (${rows.length})`}>
+      <Card title={t("commissionRecords", { count: rows.length })}>
         {rows.length === 0 ? (
-          <EmptyRow>No commission records yet.</EmptyRow>
+          <EmptyRow>{t("noCommissionYet")}</EmptyRow>
         ) : (
           <TableWrap>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-sand">
-                  <Th>Booking</Th>
-                  <Th>Owner</Th>
-                  <Th>Car</Th>
-                  <Th>Status</Th>
-                  <Th align="right">Commissionable</Th>
-                  <Th align="right">Rate</Th>
-                  <Th align="right">Commission</Th>
-                  <Th align="right">Owner net</Th>
-                  <Th>Date</Th>
+                  <Th>{t("colBooking")}</Th>
+                  <Th>{t("colOwner")}</Th>
+                  <Th>{t("colCar")}</Th>
+                  <Th>{t("colStatus")}</Th>
+                  <Th align="right">{t("colCommissionable")}</Th>
+                  <Th align="right">{t("colRate")}</Th>
+                  <Th align="right">{t("colCommission")}</Th>
+                  <Th align="right">{t("colOwnerNet")}</Th>
+                  <Th>{t("colDate")}</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand">
@@ -168,7 +187,7 @@ export default async function AdminCommissionsPage() {
                               : "info"
                         }
                       >
-                        {c.booking.status.toLowerCase().replace(/_/g, " ")}
+                        {label("bookingStatus", c.booking.status)}
                       </Badge>
                     </Td>
                     <Td align="right" muted>
@@ -186,8 +205,9 @@ export default async function AdminCommissionsPage() {
                       {formatRWF(c.netOwnerAmount)}
                     </Td>
                     <Td muted>
-                      {(c.booking.tripEndedAt ?? c.booking.createdAt).toLocaleDateString(
-                        "en-RW",
+                      {formatDate(
+                        c.booking.tripEndedAt ?? c.booking.createdAt,
+                        params.locale,
                       )}
                     </Td>
                   </tr>

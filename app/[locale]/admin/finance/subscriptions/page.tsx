@@ -5,7 +5,10 @@
  * separately because counting them as revenue would overstate the figure.
  */
 
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
 import { formatRWF } from "@/lib/currency";
 import { FinanceNav } from "../nav";
@@ -23,7 +26,14 @@ import SubscriptionActions from "@/components/admin/SubscriptionActions";
 import type { SubscriptionStatus } from "@prisma/client";
 import { Download, Paperclip, Smartphone } from "lucide-react";
 
-export const metadata = { title: "Subscriptions — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  return { title: `${t("navSubscriptions")} — ZuriDrive Admin` };
+}
 
 const TONE: Record<SubscriptionStatus, "success" | "warn" | "neutral" | "info"> = {
   ACTIVE: "success",
@@ -33,7 +43,13 @@ const TONE: Record<SubscriptionStatus, "success" | "warn" | "neutral" | "info"> 
   PENDING_PAYMENT: "warn",
 };
 
-export default async function AdminSubscriptionsPage() {
+export default async function AdminSubscriptionsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  const label = await getEnumLabeller(params.locale);
   const session = await requireAdminModule("FINANCE_MANAGER");
   const canOverride = session.user.role === "SUPER_ADMIN";
 
@@ -75,43 +91,44 @@ export default async function AdminSubscriptionsPage() {
   return (
     <div>
       <PageHeader
-        title="Subscriptions"
-        subtitle="Owner plan revenue, separate from booking commission."
+        title={t("navSubscriptions")}
+        subtitle={t("subscriptionsSub")}
         action={
           <a
             href="/api/admin/finance/export?type=subscriptions"
             className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm font-semibold text-ink-muted hover:border-brand hover:text-brand"
           >
             <Download className="h-4 w-4" />
-            CSV
+            {t("csv")}
           </a>
         }
       />
 
       <FinanceNav
         active="/admin/finance/subscriptions"
+        locale={params.locale}
         counts={{ "/admin/finance/subscriptions": pending.length }}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="MRR"
+          label={t("mrr")}
           value={formatRWF(mrr)}
-          hint="Active subscriptions only"
+          hint={t("activeOnly")}
           tone="dark"
         />
         <StatCard
-          label="Active"
+          label={t("activeCount")}
           value={active.length}
-          hint={`${renewingSoon} renewing within 7 days`}
+          hint={t("renewingSoon", { count: renewingSoon })}
         />
         <StatCard
-          label="Awaiting confirmation"
+          label={t("awaitingConfirmation")}
           value={pending.length}
           tone={pending.length > 0 ? "warn" : "default"}
         />
         <StatCard
-          label="Lapsed"
+          label={t("lapsed")}
           value={lapsed.length}
           tone={lapsed.length > 0 ? "danger" : "default"}
         />
@@ -121,7 +138,7 @@ export default async function AdminSubscriptionsPage() {
           and what puts an owner's cars back after a lapse. */}
       {pending.length > 0 && (
         <div className="mb-4">
-          <Card title={`Awaiting confirmation (${pending.length})`}>
+          <Card title={t("awaitingConfirmationCount", { count: pending.length })}>
             <ul className="divide-y divide-sand">
               {pending.map((s) => (
                 <li
@@ -132,7 +149,7 @@ export default async function AdminSubscriptionsPage() {
                     <p className="text-sm font-medium text-ink">
                       {s.owner.user.name ?? s.owner.user.phone}
                       <span className="ml-1.5 text-xs font-normal text-ink-soft">
-                        wants {s.plan.name}
+                        {t("wantsPlan", { plan: s.plan.name })}
                       </span>
                     </p>
                     <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-ink-faint">
@@ -140,12 +157,14 @@ export default async function AdminSubscriptionsPage() {
                         {formatRWF(s.pricePaid ?? s.plan.priceMonthly)}
                       </span>
                       <span>
-                        requested {s.createdAt.toLocaleDateString("en-RW")}
+                        {t("requestedOn", {
+                          date: formatDate(s.createdAt, params.locale),
+                        })}
                       </span>
                       {s.paymentMethod === "MTN_MOMO" ? (
                         <span className="flex items-center gap-1">
                           <Smartphone className="h-3 w-3" />
-                          MoMo {s.momoNumber ?? ""}
+                          {t("momo")} {s.momoNumber ?? ""}
                         </span>
                       ) : s.paymentProofUrl ? (
                         <a
@@ -155,10 +174,10 @@ export default async function AdminSubscriptionsPage() {
                           className="flex items-center gap-1 font-semibold text-brand hover:underline"
                         >
                           <Paperclip className="h-3 w-3" />
-                          View proof
+                          {t("viewProof")}
                         </a>
                       ) : (
-                        <span className="text-warning-strong">no proof attached</span>
+                        <span className="text-warning-strong">{t("noProof")}</span>
                       )}
                     </p>
                   </div>
@@ -176,7 +195,7 @@ export default async function AdminSubscriptionsPage() {
       )}
 
       <div className="mb-4">
-        <Card title="Plan mix">
+        <Card title={t("planMix")}>
           <div className="grid gap-3 sm:grid-cols-3">
             {perPlan.map(({ plan, count }) => (
               <div key={plan.id} className="rounded-xl bg-bone p-3">
@@ -199,24 +218,23 @@ export default async function AdminSubscriptionsPage() {
         </Card>
       </div>
 
-      <Card title={`Subscriptions (${subs.length})`}>
+      <Card title={t("subscriptionsCount", { count: subs.length })}>
         {subs.length === 0 ? (
           <EmptyRow>
-            No owner subscriptions yet. Owners can list cars without one during
-            early access.
+            {t("noSubscriptionsYet")}
           </EmptyRow>
         ) : (
           <TableWrap>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-sand">
-                  <Th>Owner</Th>
-                  <Th>Plan</Th>
-                  <Th>Status</Th>
-                  <Th align="right">Cars</Th>
-                  <Th align="right">Monthly</Th>
-                  <Th>Started</Th>
-                  <Th>Expires</Th>
+                  <Th>{t("colOwner")}</Th>
+                  <Th>{t("colPlan")}</Th>
+                  <Th>{t("colStatus")}</Th>
+                  <Th align="right">{t("colCars")}</Th>
+                  <Th align="right">{t("colMonthly")}</Th>
+                  <Th>{t("colStarted")}</Th>
+                  <Th>{t("colExpires")}</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand">
@@ -231,12 +249,14 @@ export default async function AdminSubscriptionsPage() {
                       {s.plan.name}
                       {s.isManualOverride && (
                         <span className="ml-1 text-[10px] text-warning-dark">
-                          (override)
+                          {t("override")}
                         </span>
                       )}
                     </Td>
                     <Td>
-                      <Badge tone={TONE[s.status]}>{s.status.toLowerCase()}</Badge>
+                      <Badge tone={TONE[s.status]}>
+                        {label("subscriptionStatus", s.status)}
+                      </Badge>
                     </Td>
                     <Td align="right" muted>
                       {s.owner._count.cars}
@@ -247,8 +267,8 @@ export default async function AdminSubscriptionsPage() {
                         {formatRWF(s.plan.priceMonthly)}
                       </span>
                     </Td>
-                    <Td muted>{s.startedAt.toLocaleDateString("en-RW")}</Td>
-                    <Td muted>{s.expiresAt.toLocaleDateString("en-RW")}</Td>
+                    <Td muted>{formatDate(s.startedAt, params.locale)}</Td>
+                    <Td muted>{formatDate(s.expiresAt, params.locale)}</Td>
                   </tr>
                 ))}
               </tbody>

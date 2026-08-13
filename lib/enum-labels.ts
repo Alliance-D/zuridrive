@@ -30,7 +30,12 @@ export type EnumKind =
   | "carStatus"
   | "disputeStatus"
   | "disputeType"
-  | "userRole";
+  | "userRole"
+  | "paymentStatus"
+  | "depositStatus"
+  | "chargeType"
+  | "chargeStatus"
+  | "subscriptionStatus";
 
 /**
  * Server-side label lookup.

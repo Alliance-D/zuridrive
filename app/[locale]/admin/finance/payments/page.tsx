@@ -6,7 +6,10 @@
  */
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { formatDate } from "@/lib/dates";
+import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
 import { formatRWF } from "@/lib/currency";
 import { FinanceNav } from "../nav";
@@ -24,7 +27,14 @@ import PaymentActions from "@/components/admin/PaymentActions";
 import type { PaymentStatus } from "@prisma/client";
 import { Download } from "lucide-react";
 
-export const metadata = { title: "Payments — ZuriDrive Admin" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  return { title: `${t("navPayments")} — ZuriDrive Admin` };
+}
 
 const STATUS_TONE: Record<PaymentStatus, "success" | "warn" | "danger" | "neutral"> = {
   CONFIRMED: "success",
@@ -33,7 +43,13 @@ const STATUS_TONE: Record<PaymentStatus, "success" | "warn" | "danger" | "neutra
   REFUNDED: "neutral",
 };
 
-export default async function AdminPaymentsPage() {
+export default async function AdminPaymentsPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "finance" });
+  const label = await getEnumLabeller(params.locale);
   await requireAdminModule("FINANCE_MANAGER");
 
   const [awaiting, recent, totals] = await Promise.all([
@@ -80,41 +96,42 @@ export default async function AdminPaymentsPage() {
   return (
     <div>
       <PageHeader
-        title="Payments"
-        subtitle="Everything clients have paid, and what still needs confirming."
+        title={t("navPayments")}
+        subtitle={t("paymentsSub")}
         action={
           <a
             href="/api/admin/finance/export?type=payments"
             className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm font-semibold text-ink-muted hover:border-brand hover:text-brand"
           >
             <Download className="h-4 w-4" />
-            CSV
+            {t("csv")}
           </a>
         }
       />
 
       <FinanceNav
         active="/admin/finance/payments"
+        locale={params.locale}
         counts={{ "/admin/finance/payments": awaiting.length }}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Collected (rental)"
+          label={t("collectedRental")}
           value={formatRWF(totals._sum.rentalAmount ?? 0)}
           tone="dark"
         />
         <StatCard
-          label="Collected (deposits)"
+          label={t("collectedDeposits")}
           value={formatRWF(totals._sum.depositAmount ?? 0)}
-          hint="Held on behalf of clients"
+          hint={t("heldOnBehalf")}
         />
         <StatCard
-          label="Total confirmed"
+          label={t("totalConfirmed")}
           value={formatRWF(totals._sum.totalAmount ?? 0)}
         />
         <StatCard
-          label="Awaiting confirmation"
+          label={t("awaitingConfirmation")}
           value={awaiting.length}
           tone={awaiting.length > 0 ? "warn" : "default"}
         />
@@ -122,11 +139,10 @@ export default async function AdminPaymentsPage() {
 
       {/* Action queue */}
       <div className="mb-4">
-        <Card title="Bank transfers to confirm">
+        <Card title={t("bankTransfersToConfirm")}>
           {awaiting.length === 0 ? (
             <EmptyRow>
-              Nothing waiting. Bank transfers appear here once a client uploads
-              proof of payment.
+              {t("nothingWaitingProof")}
             </EmptyRow>
           ) : (
             <ul className="divide-y divide-sand">
@@ -143,13 +159,17 @@ export default async function AdminPaymentsPage() {
                       {formatRWF(p.totalAmount)} · {p.booking.reference}
                     </Link>
                     <p className="text-xs text-ink-soft">
-                      {p.booking.client.name ?? "Client"} ·{" "}
-                      {p.booking.car.make} {p.booking.car.model} · uploaded{" "}
-                      {p.createdAt.toLocaleDateString("en-RW")}
+                      {p.booking.client.name ?? t("clientFallback")} ·{" "}
+                      {p.booking.car.make} {p.booking.car.model} ·{" "}
+                      {t("uploadedOn", {
+                        date: formatDate(p.createdAt, params.locale),
+                      })}
                     </p>
                     <p className="text-[11px] text-ink-faint">
-                      Rental {formatRWF(p.rentalAmount)} + deposit{" "}
-                      {formatRWF(p.depositAmount)}
+                      {t("rentalPlusDeposit", {
+                        rental: formatRWF(p.rentalAmount),
+                        deposit: formatRWF(p.depositAmount),
+                      })}
                     </p>
                   </div>
                   <PaymentActions paymentId={p.id} proofUrl={p.proofUrl} />
@@ -161,22 +181,22 @@ export default async function AdminPaymentsPage() {
       </div>
 
       {/* Full ledger */}
-      <Card title={`All payments (${recent.length})`}>
+      <Card title={t("allPayments", { count: recent.length })}>
         {recent.length === 0 ? (
-          <EmptyRow>No payments recorded yet.</EmptyRow>
+          <EmptyRow>{t("noPaymentsYet")}</EmptyRow>
         ) : (
           <TableWrap>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-sand">
-                  <Th>Booking</Th>
-                  <Th>Client</Th>
-                  <Th>Method</Th>
-                  <Th>Status</Th>
-                  <Th align="right">Rental</Th>
-                  <Th align="right">Deposit</Th>
-                  <Th align="right">Total</Th>
-                  <Th>Date</Th>
+                  <Th>{t("colBooking")}</Th>
+                  <Th>{t("colClient")}</Th>
+                  <Th>{t("colMethod")}</Th>
+                  <Th>{t("colStatus")}</Th>
+                  <Th align="right">{t("colRental")}</Th>
+                  <Th align="right">{t("colDeposit")}</Th>
+                  <Th align="right">{t("colTotal")}</Th>
+                  <Th>{t("colDate")}</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand">
@@ -192,11 +212,13 @@ export default async function AdminPaymentsPage() {
                     </Td>
                     <Td muted>{p.booking.client.name ?? "—"}</Td>
                     <Td muted>
-                      {p.method === "MTN_MOMO" ? "MoMo" : "Bank"}
+                      {p.method === "MTN_MOMO" ? t("momo") : t("bank")}
                     </Td>
                     <Td>
                       <Badge tone={p.isVoided ? "neutral" : STATUS_TONE[p.status]}>
-                        {p.isVoided ? "voided" : p.status.toLowerCase()}
+                        {p.isVoided
+                          ? t("voided")
+                          : label("paymentStatus", p.status)}
                       </Badge>
                     </Td>
                     <Td align="right" muted>
@@ -210,7 +232,7 @@ export default async function AdminPaymentsPage() {
                         {formatRWF(p.totalAmount)}
                       </span>
                     </Td>
-                    <Td muted>{p.createdAt.toLocaleDateString("en-RW")}</Td>
+                    <Td muted>{formatDate(p.createdAt, params.locale)}</Td>
                   </tr>
                 ))}
               </tbody>

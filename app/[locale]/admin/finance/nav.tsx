@@ -3,32 +3,41 @@
  *
  * Counts come from the caller so each page can show live queue sizes without
  * every page re-running the same aggregate.
+ *
+ * The section list carries message keys rather than labels: it is evaluated at
+ * import, where no translator exists, so a label written here would be English
+ * on every page in every language.
  */
 
+import { getTranslations } from "next-intl/server";
 import { SubNav } from "@/components/admin/ui";
 
 export const FINANCE_SECTIONS = [
-  { label: "Payments", href: "/admin/finance/payments" },
-  { label: "Payouts", href: "/admin/finance/payouts" },
-  { label: "Deposits", href: "/admin/finance/deposits" },
-  { label: "Commission", href: "/admin/finance/commissions" },
-  { label: "Subscriptions", href: "/admin/finance/subscriptions" },
-  { label: "Extra charges", href: "/admin/finance/extra-charges" },
-  { label: "Reconciliation", href: "/admin/finance/reports" },
+  { labelKey: "navPayments", href: "/admin/finance/payments" },
+  { labelKey: "navPayouts", href: "/admin/finance/payouts" },
+  { labelKey: "navDeposits", href: "/admin/finance/deposits" },
+  { labelKey: "navCommission", href: "/admin/finance/commissions" },
+  { labelKey: "navSubscriptions", href: "/admin/finance/subscriptions" },
+  { labelKey: "navExtraCharges", href: "/admin/finance/extra-charges" },
+  { labelKey: "navReconciliation", href: "/admin/finance/reports" },
 ] as const;
 
-export function FinanceNav({
+export async function FinanceNav({
   active,
   counts,
+  locale,
 }: {
   active: string;
   counts?: Partial<Record<string, number>>;
+  locale: string;
 }) {
+  const t = await getTranslations({ locale, namespace: "finance" });
+
   return (
     <SubNav
       active={active}
       items={FINANCE_SECTIONS.map((s) => ({
-        label: s.label,
+        label: t(s.labelKey),
         href: s.href,
         count: counts?.[s.href],
       }))}
