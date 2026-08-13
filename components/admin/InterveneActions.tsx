@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle, Ban, CheckCircle2 } from "lucide-react";
 
@@ -17,6 +18,8 @@ export default function InterveneActions({
   canCancel: boolean;
   canForceComplete: boolean;
 }) {
+  const t = useTranslations("adminActions");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [mode, setMode] = useState<null | "cancel" | "force_complete">(null);
   const [reason, setReason] = useState("");
@@ -35,14 +38,14 @@ export default function InterveneActions({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Action failed.");
+        setError(data.error ?? t("actionFailed"));
         return;
       }
       setMode(null);
       setReason("");
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -51,7 +54,7 @@ export default function InterveneActions({
   if (!canCancel && !canForceComplete) {
     return (
       <p className="text-xs text-ink-faint">
-        This booking is finished — there is nothing to intervene on.
+        {t("nothingToIntervene")}
       </p>
     );
   }
@@ -61,15 +64,15 @@ export default function InterveneActions({
       <div className="space-y-2">
         <p className="text-xs font-medium text-ink-muted">
           {mode === "cancel"
-            ? "Why are you cancelling this booking?"
-            : "Why are you force-completing this trip?"}
+            ? t("whyCancelling")
+            : t("whyForceCompleting")}
         </p>
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={3}
           autoFocus
-          placeholder="Both parties will see this."
+          placeholder={t("bothPartiesSee")}
           className="w-full rounded-lg border border-sand-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
         {mode === "cancel" && (
@@ -95,7 +98,7 @@ export default function InterveneActions({
             }`}
           >
             {busy && <Loader2 className="h-3 w-3 animate-spin" />}
-            {mode === "cancel" ? "Cancel booking" : "Force complete"}
+            {mode === "cancel" ? t("cancelBooking") : t("forceComplete")}
           </button>
           <button
             onClick={() => {
@@ -105,7 +108,7 @@ export default function InterveneActions({
             disabled={busy}
             className="rounded-lg px-3 py-2 text-xs font-semibold text-ink-soft"
           >
-            Back
+            {t("back")}
           </button>
         </div>
       </div>

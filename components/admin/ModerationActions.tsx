@@ -9,6 +9,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle } from "lucide-react";
 
@@ -45,6 +46,8 @@ export default function ModerationActions({
   /** Merged into every request body — e.g. { id } for collection endpoints. */
   extraBody?: Record<string, unknown>;
 }) {
+  const t = useTranslations("adminActions");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [active, setActive] = useState<ModerationAction | null>(null);
   const [reason, setReason] = useState("");
@@ -73,7 +76,7 @@ export default function ModerationActions({
       setReason("");
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, AlertCircle, MapPin } from "lucide-react";
 
@@ -17,6 +18,8 @@ export default function NeighborhoodManager({
 }: {
   items: NeighborhoodItem[];
 }) {
+  const t = useTranslations("adminActions");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,13 +37,13 @@ export default function NeighborhoodManager({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Could not add that.");
+        setError(data.error ?? t("couldNotAdd"));
         return;
       }
       setName("");
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -57,12 +60,12 @@ export default function NeighborhoodManager({
       });
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? "Could not update that.");
+        setError(data.error ?? t("couldNotUpdate"));
         return;
       }
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -75,7 +78,7 @@ export default function NeighborhoodManager({
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
-          placeholder="Add a neighbourhood — e.g. Gisozi"
+          placeholder={t("addNeighbourhood")}
           className="flex-1 rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
         <button
@@ -128,7 +131,7 @@ export default function NeighborhoodManager({
                 disabled={busy}
                 className="shrink-0 rounded-lg border border-sand-dark px-2.5 py-1 text-[11px] font-semibold text-ink-muted hover:border-brand disabled:opacity-50"
               >
-                {n.isActive ? "Deactivate" : "Activate"}
+                {n.isActive ? t("deactivate") : t("activate")}
               </button>
             </li>
           ))}

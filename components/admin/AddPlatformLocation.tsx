@@ -12,10 +12,13 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Plus, Loader2, X, AlertCircle } from "lucide-react";
 
 export default function AddPlatformLocation() {
+  const t = useTranslations("adminActions");
+  const tc = useTranslations("common");
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
@@ -48,14 +51,14 @@ export default function AddPlatformLocation() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "We couldn't create that location.");
+        setError(data.error ?? t("couldntCreateLocation"));
         return;
       }
       reset();
       setOpen(false);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setSaving(false);
     }
@@ -68,7 +71,7 @@ export default function AddPlatformLocation() {
         className="flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
       >
         <Plus className="h-4 w-4" />
-        Add platform location
+        {t("addPlatformLocation")}
       </button>
     );
   }
@@ -82,7 +85,9 @@ export default function AddPlatformLocation() {
       className="w-full rounded-2xl border border-sand-dark bg-white p-4"
     >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-ink">New platform location</h3>
+        <h3 className="text-sm font-semibold text-ink">
+          {t("newPlatformLocation")}
+        </h3>
         <button
           type="button"
           onClick={() => {
@@ -90,7 +95,7 @@ export default function AddPlatformLocation() {
             reset();
           }}
           className="rounded p-1 text-ink-faint hover:bg-sand"
-          aria-label="Cancel"
+          aria-label={tc("cancel")}
         >
           <X className="h-4 w-4" />
         </button>
@@ -102,13 +107,13 @@ export default function AddPlatformLocation() {
             htmlFor="loc-name"
             className="mb-1 block text-xs font-medium text-ink-muted"
           >
-            Name
+            {t("name")}
           </label>
           <input
             id="loc-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Kigali International Airport"
+            placeholder={t("namePlaceholder")}
             required
             className={inputCls}
           />
@@ -123,13 +128,14 @@ export default function AddPlatformLocation() {
             htmlFor="loc-address"
             className="mb-1 block text-xs font-medium text-ink-muted"
           >
-            Address <span className="text-ink-faint">(optional)</span>
+            {t("address")}{" "}
+            <span className="text-ink-faint">{t("optional")}</span>
           </label>
           <input
             id="loc-address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            placeholder="KN 5 Rd, Kigali"
+            placeholder={t("addressPlaceholder")}
             className={inputCls}
           />
         </div>
@@ -139,14 +145,15 @@ export default function AddPlatformLocation() {
             htmlFor="loc-desc"
             className="mb-1 block text-xs font-medium text-ink-muted"
           >
-            Directions <span className="text-ink-faint">(optional)</span>
+            {t("directions")}{" "}
+            <span className="text-ink-faint">{t("optional")}</span>
           </label>
           <textarea
             id="loc-desc"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            placeholder="Meet at the arrivals car park, level 1."
+            placeholder={t("directionsPlaceholder")}
             className={inputCls}
           />
         </div>
@@ -165,7 +172,7 @@ export default function AddPlatformLocation() {
         className="mt-4 flex items-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
       >
         {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-        {saving ? "Creating…" : "Create location"}
+        {saving ? t("creating") : t("createLocation")}
       </button>
     </form>
   );

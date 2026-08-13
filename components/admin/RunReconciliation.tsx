@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Loader2, RefreshCw } from "lucide-react";
 
 export default function RunReconciliation() {
+  const t = useTranslations("adminActions");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,12 +19,12 @@ export default function RunReconciliation() {
       const res = await fetch("/api/admin/finance/reconcile", { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Reconciliation failed.");
+        setError(data.error ?? t("reconciliationFailed"));
         return;
       }
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -40,7 +43,7 @@ export default function RunReconciliation() {
         ) : (
           <RefreshCw className="h-4 w-4" />
         )}
-        {busy ? "Checking…" : "Run check"}
+        {busy ? t("checking") : t("runCheck")}
       </button>
     </div>
   );

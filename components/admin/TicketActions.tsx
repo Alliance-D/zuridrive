@@ -8,6 +8,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle } from "lucide-react";
 
@@ -22,6 +23,8 @@ export default function TicketActions({
   status: string;
   isAssignedToMe: boolean;
 }) {
+  const t = useTranslations("adminActions");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [busy, setBusy] = useState<Action | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,12 +40,12 @@ export default function TicketActions({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "That didn't work.");
+        setError(data.error ?? t("didntWork"));
         return;
       }
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(null);
     }
@@ -55,23 +58,23 @@ export default function TicketActions({
       <div className="flex flex-wrap gap-2">
         {!isAssignedToMe && !closed && (
           <Button onClick={() => run("ASSIGN_TO_ME")} busy={busy === "ASSIGN_TO_ME"}>
-            Assign to me
+            {t("assignToMe")}
           </Button>
         )}
 
         {status !== "RESOLVED" && !closed && (
           <Button onClick={() => run("RESOLVE")} busy={busy === "RESOLVE"}>
-            Mark resolved
+            {t("markResolved")}
           </Button>
         )}
 
         {closed ? (
           <Button onClick={() => run("REOPEN")} busy={busy === "REOPEN"}>
-            Reopen
+            {t("reopen")}
           </Button>
         ) : (
           <Button onClick={() => run("CLOSE")} busy={busy === "CLOSE"} subtle>
-            Close
+            {t("close")}
           </Button>
         )}
       </div>

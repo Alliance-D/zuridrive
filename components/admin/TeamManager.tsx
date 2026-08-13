@@ -9,6 +9,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -21,53 +22,54 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
+// Keys, not text — module scope has no translator.
 export const MODULES = [
   {
     id: "USER_MANAGER",
-    label: "User Manager",
-    description: "View, suspend and delete clients and owners.",
+    labelKey: "moduleUserManager",
+    descKey: "modUserManagerDesc",
   },
   {
     id: "FLEET_MANAGER",
-    label: "Fleet Manager",
-    description: "Approve, feature and suspend car listings.",
+    labelKey: "moduleFleetManager",
+    descKey: "modFleetManagerDesc",
   },
   {
     id: "BOOKING_MANAGER",
-    label: "Booking Manager",
-    description: "View bookings, review disputes, intervene on trips.",
+    labelKey: "moduleBookingManager",
+    descKey: "modBookingManagerDesc",
   },
   {
     id: "FINANCE_MANAGER",
-    label: "Finance Manager",
-    description: "Confirm payments and approve payouts.",
+    labelKey: "moduleFinanceManager",
+    descKey: "modFinanceManagerDesc",
     sensitive: true,
   },
   {
     id: "DEPOSIT_MANAGER",
-    label: "Deposit Manager",
-    description: "Release or withhold deposits, and resolve disputes.",
+    labelKey: "moduleDepositManager",
+    descKey: "modDepositManagerDesc",
     sensitive: true,
   },
   {
     id: "CONTENT_MODERATOR",
-    label: "Content Moderator",
-    description: "Moderate reviews and approve owner locations.",
+    labelKey: "moduleContentModerator",
+    descKey: "modContentModeratorDesc",
   },
   {
     id: "COMMUNICATIONS",
-    label: "Communications",
-    description: "Send SMS and in-app broadcasts.",
+    labelKey: "moduleCommunications",
+    descKey: "modCommunicationsDesc",
   },
   {
     id: "ANALYTICS_VIEWER",
-    label: "Analytics Viewer",
-    description: "Read-only access to reports and analytics.",
+    labelKey: "moduleAnalyticsViewer",
+    descKey: "modAnalyticsViewerDesc",
   },
   {
     id: "SUPPORT_AGENT",
-    label: "Support Agent",
-    description: "Answer support tickets and manage the queue.",
+    labelKey: "moduleSupportAgent",
+    descKey: "modSupportAgentDesc",
   },
 ] as const;
 
@@ -84,6 +86,7 @@ export interface TeamMember {
 }
 
 export default function TeamManager({ members }: { members: TeamMember[] }) {
+  const t = useTranslations("adminForms");
   const router = useRouter();
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -104,7 +107,7 @@ export default function TeamManager({ members }: { members: TeamMember[] }) {
           className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
         >
           <UserPlus className="h-4 w-4" />
-          Add an admin
+          {t("addAnAdmin")}
         </button>
       )}
 
@@ -142,6 +145,8 @@ function CreateForm({
   onDone: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations("adminForms");
+  const tc = useTranslations("common");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -169,12 +174,12 @@ function CreateForm({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Could not create this admin.");
+        setError(data.error ?? t("couldNotCreateAdmin"));
         return;
       }
       onDone();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -185,10 +190,10 @@ function CreateForm({
 
   return (
     <section className="rounded-2xl bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold text-ink">New admin</h2>
+      <h2 className="mb-3 text-sm font-semibold text-ink">{t("newAdmin")}</h2>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Field label="Full name">
+        <Field label={t("fullName")}>
           <input
             className={input}
             value={name}
@@ -196,16 +201,16 @@ function CreateForm({
             autoFocus
           />
         </Field>
-        <Field label="Phone number">
+        <Field label={t("phoneNumber")}>
           <input
             className={input}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="078 123 4567"
+            placeholder={t("phonePlaceholder")}
             inputMode="tel"
           />
         </Field>
-        <Field label="Email (optional)">
+        <Field label={t("emailOptional")}>
           <input
             className={input}
             value={email}
@@ -266,6 +271,8 @@ function MemberRow({
   onEdit: () => void;
   onDone: () => void;
 }) {
+  const t = useTranslations("adminForms");
+  const tc = useTranslations("common");
   const [selected, setSelected] = useState<ModuleId[]>(
     member.roleModules as ModuleId[],
   );
@@ -285,13 +292,13 @@ function MemberRow({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Action failed.");
+        setError(data.error ?? tc("genericError"));
         return;
       }
       setMode(null);
       onDone();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -316,7 +323,7 @@ function MemberRow({
           {!editing && (
             <div className="mt-1.5 flex flex-wrap gap-1">
               {member.roleModules.length === 0 ? (
-                <span className="text-[11px] text-ink-faint">No modules</span>
+                <span className="text-[11px] text-ink-faint">{t("noModules")}</span>
               ) : (
                 member.roleModules.map((r) => {
                   const mod = MODULES.find((m) => m.id === r);
@@ -329,7 +336,7 @@ function MemberRow({
                           : "bg-sand text-ink-muted"
                       }`}
                     >
-                      {mod?.label ?? r}
+                      {mod ? t(mod.labelKey) : r}
                     </span>
                   );
                 })
@@ -352,7 +359,7 @@ function MemberRow({
               className="flex items-center gap-1 rounded-lg border border-sand-dark px-2.5 py-1.5 text-[11px] font-semibold text-success hover:border-success"
             >
               <RotateCcw className="h-3 w-3" />
-              Reinstate
+              {t("reinstate")}
             </button>
           ) : (
             <button
@@ -360,7 +367,7 @@ function MemberRow({
               className="flex items-center gap-1 rounded-lg border border-sand-dark px-2.5 py-1.5 text-[11px] font-semibold text-warning-dark hover:border-warning-dark"
             >
               <Ban className="h-3 w-3" />
-              Suspend
+              {t("suspend")}
             </button>
           )}
           <button
@@ -405,7 +412,7 @@ function MemberRow({
           <input
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Why are you suspending this admin?"
+            placeholder={t("whySuspendAdmin")}
             autoFocus
             className={input}
           />
@@ -415,7 +422,7 @@ function MemberRow({
               disabled={busy || reason.trim().length < 5}
               className="rounded-lg bg-warning-dark px-3 py-1.5 text-[11px] font-semibold text-white disabled:opacity-50"
             >
-              Confirm suspend
+              {t("confirmSuspend")}
             </button>
             <button
               onClick={() => setMode(null)}
@@ -468,6 +475,7 @@ function ModulePicker({
   selected: ModuleId[];
   onToggle: (id: ModuleId) => void;
 }) {
+  const t = useTranslations("adminForms");
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {MODULES.map((m) => {
@@ -494,16 +502,16 @@ function ModulePicker({
             <span className="min-w-0">
               <span className="flex items-center gap-1.5">
                 <span className="text-xs font-semibold text-ink">
-                  {m.label}
+                  {t(m.labelKey)}
                 </span>
                 {sensitive && (
                   <span className="rounded-full bg-warning-tint px-1.5 text-[9px] font-bold text-warning-dark">
-                    MONEY
+                    {t("money")}
                   </span>
                 )}
               </span>
               <span className="block text-[11px] text-ink-soft">
-                {m.description}
+                {t(m.descKey)}
               </span>
             </span>
           </button>

@@ -9,6 +9,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -23,14 +24,15 @@ import {
 type Audience = "ALL" | "CLIENTS" | "OWNERS" | "ACTIVE_OWNERS";
 type Channel = "IN_APP" | "SMS" | "BOTH";
 
-const AUDIENCES: { id: Audience; label: string; description: string }[] = [
-  { id: "ALL", label: "Everyone", description: "All clients and owners" },
-  { id: "CLIENTS", label: "Clients", description: "People who rent cars" },
-  { id: "OWNERS", label: "Owners", description: "Everyone with an owner account" },
+// Keys, not text — module scope has no translator.
+const AUDIENCES: { id: Audience; labelKey: string; descKey: string }[] = [
+  { id: "ALL", labelKey: "audienceEveryone", descKey: "audEveryoneDesc" },
+  { id: "CLIENTS", labelKey: "audienceClients", descKey: "audClientsDesc" },
+  { id: "OWNERS", labelKey: "audienceOwners", descKey: "audOwnersDesc" },
   {
     id: "ACTIVE_OWNERS",
-    label: "Active owners",
-    description: "Owners with at least one live car",
+    labelKey: "audienceActiveOwners",
+    descKey: "audActiveOwnersDesc",
   },
 ];
 
@@ -42,6 +44,8 @@ export default function BroadcastForm({
 }: {
   audienceSizes: Record<string, number>;
 }) {
+  const t = useTranslations("adminForms");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [audience, setAudience] = useState<Audience>("ALL");
   const [channel, setChannel] = useState<Channel>("IN_APP");
@@ -79,7 +83,7 @@ export default function BroadcastForm({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "The broadcast failed.");
+        setError(data.error ?? t("broadcastFailed"));
         setConfirming(false);
         return;
       }
@@ -89,7 +93,7 @@ export default function BroadcastForm({
       setConfirming(false);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
       setConfirming(false);
     } finally {
       setBusy(false);
@@ -102,22 +106,22 @@ export default function BroadcastForm({
         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success-bg">
           <CheckCircle2 className="h-5 w-5 text-success" />
         </div>
-        <h2 className="text-base font-semibold text-ink">Broadcast sent</h2>
+        <h2 className="text-base font-semibold text-ink">{t("broadcastSent")}</h2>
         <p className="mt-1 text-sm text-ink-soft">
           Reached {result.recipients} people.
         </p>
         <dl className="mx-auto mt-3 flex max-w-xs justify-center gap-4 text-xs">
           <div>
-            <dt className="text-ink-faint">In-app</dt>
+            <dt className="text-ink-faint">{t("inApp")}</dt>
             <dd className="font-semibold text-ink">{result.inAppSent}</dd>
           </div>
           <div>
-            <dt className="text-ink-faint">SMS sent</dt>
+            <dt className="text-ink-faint">{t("smsSent")}</dt>
             <dd className="font-semibold text-ink">{result.smsSent}</dd>
           </div>
           {result.smsFailed > 0 && (
             <div>
-              <dt className="text-ink-faint">SMS failed</dt>
+              <dt className="text-ink-faint">{t("smsFailed")}</dt>
               <dd className="font-semibold text-danger-strong">{result.smsFailed}</dd>
             </div>
           )}
@@ -126,7 +130,7 @@ export default function BroadcastForm({
           onClick={() => setResult(null)}
           className="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
         >
-          Send another
+          {t("sendAnother")}
         </button>
       </div>
     );
@@ -137,7 +141,7 @@ export default function BroadcastForm({
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-ink">
           <Users className="h-4 w-4" />
-          Who gets this?
+          {t("whoGetsThis")}
         </h2>
         <div className="grid gap-2 sm:grid-cols-2">
           {AUDIENCES.map((a) => {
@@ -157,10 +161,10 @@ export default function BroadcastForm({
                   <span
                     className={`block text-sm font-semibold ${on ? "text-brand" : "text-ink"}`}
                   >
-                    {a.label}
+                    {t(a.labelKey)}
                   </span>
                   <span className="block text-[11px] text-ink-soft">
-                    {a.description}
+                    {t(a.descKey)}
                   </span>
                 </span>
                 <span className="shrink-0 rounded-full bg-sand px-2 py-0.5 text-[11px] font-bold text-ink-muted">
@@ -177,9 +181,9 @@ export default function BroadcastForm({
         <div className="grid grid-cols-3 gap-2">
           {(
             [
-              { id: "IN_APP", label: "In-app only", icon: Bell },
-              { id: "SMS", label: "SMS only", icon: Smartphone },
-              { id: "BOTH", label: "Both", icon: Send },
+              { id: "IN_APP", labelKey: "channelInApp", icon: Bell },
+              { id: "SMS", labelKey: "channelSms", icon: Smartphone },
+              { id: "BOTH", labelKey: "channelBoth", icon: Send },
             ] as const
           ).map((c) => {
             const Icon = c.icon;
@@ -201,7 +205,7 @@ export default function BroadcastForm({
                 <span
                   className={`text-xs font-semibold ${on ? "text-brand" : "text-ink-muted"}`}
                 >
-                  {c.label}
+                  {t(c.labelKey)}
                 </span>
               </button>
             );
@@ -223,25 +227,26 @@ export default function BroadcastForm({
         <h2 className="mb-3 text-sm font-semibold text-ink">Message</h2>
 
         <label className="mb-1 block text-xs font-medium text-ink-muted">
-          Title <span className="text-ink-faint">(in-app only)</span>
+          {t("title")}{" "}
+          <span className="text-ink-faint">{t("titleInAppOnly")}</span>
         </label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={120}
-          placeholder="Scheduled maintenance this Sunday"
+          placeholder={t("titlePlaceholder")}
           className="mb-3 w-full rounded-lg border border-sand-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
 
         <label className="mb-1 block text-xs font-medium text-ink-muted">
-          Message
+          {t("message")}
         </label>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={4}
           maxLength={700}
-          placeholder="Keep it short and specific — people act on clear messages."
+          placeholder={t("messagePlaceholder")}
           className="w-full rounded-lg border border-sand-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
         <div className="mt-1 flex justify-between text-[11px] text-ink-faint">
@@ -298,7 +303,7 @@ export default function BroadcastForm({
           className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
         >
           <Send className="h-4 w-4" />
-          Review and send
+          {t("reviewAndSend")}
         </button>
       )}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Check, X, Loader2, Upload, ShieldAlert } from "lucide-react";
 
@@ -21,6 +22,8 @@ export default function PayoutActions({
   requiresSuperAdmin: boolean;
   viewerIsSuperAdmin: boolean;
 }) {
+  const t = useTranslations("adminActions");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [mode, setMode] = useState<null | "paid" | "fail">(null);
   const [reason, setReason] = useState("");
@@ -41,13 +44,13 @@ export default function PayoutActions({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Action failed.");
+        setError(data.error ?? t("actionFailed"));
         return;
       }
       setMode(null);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -65,12 +68,12 @@ export default function PayoutActions({
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Upload failed.");
+        setError(data.error ?? t("uploadFailed"));
         return;
       }
       setProofUrl(data.url);
     } catch {
-      setError("Upload failed. Please retry.");
+      setError(t("uploadRetry"));
     } finally {
       setUploading(false);
     }
@@ -87,7 +90,7 @@ export default function PayoutActions({
     return (
       <span className="flex items-center gap-1.5 text-[11px] text-warning-dark">
         <ShieldAlert className="h-3.5 w-3.5" />
-        Needs Super Admin approval
+        {t("needsSuperAdmin")}
       </span>
     );
   }
@@ -101,7 +104,11 @@ export default function PayoutActions({
           ) : (
             <Upload className="h-3 w-3" />
           )}
-          {proofUrl ? "Proof attached ✓" : uploading ? "Uploading…" : "Attach transfer proof"}
+          {proofUrl
+            ? t("proofAttached")
+            : uploading
+              ? tc("uploading")
+              : t("attachTransferProof")}
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -112,7 +119,7 @@ export default function PayoutActions({
         <input
           value={reference}
           onChange={(e) => setReference(e.target.value)}
-          placeholder="Transfer reference (optional)"
+          placeholder={t("transferReference")}
           className="w-full rounded-lg border border-sand-dark px-2 py-1.5 text-xs"
         />
         {error && <p className="text-[11px] text-danger-strong">{error}</p>}
@@ -126,7 +133,7 @@ export default function PayoutActions({
               })
             }
             disabled={busy || !proofUrl}
-            title={!proofUrl ? "Attach proof of transfer first" : undefined}
+            title={!proofUrl ? t("attachProofFirst") : undefined}
             className="flex items-center gap-1 rounded-lg bg-brand px-2.5 py-1.5 text-[11px] font-semibold text-white disabled:opacity-50"
           >
             {busy && <Loader2 className="h-3 w-3 animate-spin" />}
@@ -150,12 +157,12 @@ export default function PayoutActions({
         <input
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="What went wrong?"
+          placeholder={t("whatWentWrong")}
           autoFocus
           className="w-full rounded-lg border border-sand-dark px-2 py-1.5 text-xs"
         />
         <p className="text-[10px] text-ink-faint">
-          The owner is told, and their balance becomes available again.
+          {t("ownerToldBalanceBack")}
         </p>
         {error && <p className="text-[11px] text-danger-strong">{error}</p>}
         <div className="flex gap-1.5">
@@ -197,7 +204,7 @@ export default function PayoutActions({
           className="flex items-center gap-1 rounded-lg bg-brand px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-brand-dark"
         >
           <Check className="h-3 w-3" />
-          Mark paid
+          {t("markPaid")}
         </button>
       )}
       <button
@@ -205,7 +212,7 @@ export default function PayoutActions({
         className="flex items-center gap-1 rounded-lg border border-danger-soft px-2 py-1.5 text-[11px] font-semibold text-danger-strong hover:bg-danger-tint"
       >
         <X className="h-3 w-3" />
-        Fail
+        {t("fail")}
       </button>
       {error && <span className="text-[11px] text-danger-strong">{error}</span>}
     </div>

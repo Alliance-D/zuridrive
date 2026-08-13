@@ -10,6 +10,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle, Check, X } from "lucide-react";
 
@@ -23,6 +24,8 @@ export default function SubscriptionActions({
   /** Super Admin only — grants the plan with no payment. */
   canOverride: boolean;
 }) {
+  const t = useTranslations("adminActions");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [mode, setMode] = useState<"idle" | "reject" | "override">("idle");
   const [reason, setReason] = useState("");
@@ -40,14 +43,14 @@ export default function SubscriptionActions({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "That didn't work.");
+        setError(data.error ?? t("didntWork"));
         return;
       }
       setMode("idle");
       setReason("");
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(null);
     }
@@ -64,7 +67,7 @@ export default function SubscriptionActions({
           autoFocus
           placeholder={
             isReject
-              ? "Why can't this be confirmed? The owner sees this."
+              ? t("whyNotConfirmed")
               : `Why is ${planName} being granted without payment?`
           }
           className="w-full rounded-lg border border-sand-dark px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand/20"
@@ -80,7 +83,7 @@ export default function SubscriptionActions({
             className="flex items-center gap-1 rounded-lg bg-brand px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
           >
             {busy && <Loader2 className="h-3 w-3 animate-spin" />}
-            {isReject ? "Reject" : "Grant"}
+            {isReject ? t("reject") : t("grant")}
           </button>
           <button
             onClick={() => {
@@ -133,7 +136,7 @@ export default function SubscriptionActions({
             disabled={busy !== null}
             className="text-[11px] font-semibold text-warning-dark hover:underline"
           >
-            Grant free
+            {t("grantFree")}
           </button>
         )}
       </div>

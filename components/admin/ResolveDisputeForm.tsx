@@ -9,6 +9,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { formatRWF } from "@/lib/currency";
 import {
@@ -28,32 +29,32 @@ type Outcome =
 
 const OPTIONS: {
   id: Outcome;
-  label: string;
-  description: string;
+  labelKey: string;
+  descKey: string;
   icon: React.ElementType;
 }[] = [
   {
     id: "RESOLVED_FOR_CLIENT",
-    label: "For the client",
-    description: "Full deposit returned to the client.",
+    labelKey: "outcomeForClient",
+    descKey: "outForClientDesc",
     icon: UserCheck,
   },
   {
     id: "RESOLVED_FOR_OWNER",
-    label: "For the owner",
-    description: "Full deposit awarded to the owner.",
+    labelKey: "outcomeForOwner",
+    descKey: "outForOwnerDesc",
     icon: Building2,
   },
   {
     id: "SPLIT",
-    label: "Split it",
-    description: "Divide the deposit between both parties.",
+    labelKey: "outcomeSplit",
+    descKey: "outSplitDesc",
     icon: SplitSquareHorizontal,
   },
   {
     id: "DISMISSED",
-    label: "Dismiss",
-    description: "No valid claim — deposit returned to the client.",
+    labelKey: "outcomeDismiss",
+    descKey: "outDismissDesc",
     icon: XCircle,
   },
 ];
@@ -68,6 +69,8 @@ export default function ResolveDisputeForm({
   /** False when the deposit was never actually paid. */
   depositCollected: boolean;
 }) {
+  const t = useTranslations("adminForms");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [notes, setNotes] = useState("");
@@ -102,12 +105,12 @@ export default function ResolveDisputeForm({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Could not resolve this dispute.");
+        setError(data.error ?? t("couldNotResolve"));
         return;
       }
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -128,7 +131,7 @@ export default function ResolveDisputeForm({
   return (
     <div className="space-y-4">
       <div>
-        <p className="mb-2 text-xs font-medium text-ink-muted">Outcome</p>
+        <p className="mb-2 text-xs font-medium text-ink-muted">{t("outcome")}</p>
         <div className="grid gap-2 sm:grid-cols-2">
           {OPTIONS.map((o) => {
             const Icon = o.icon;
@@ -155,10 +158,10 @@ export default function ResolveDisputeForm({
                       selected ? "text-brand" : "text-ink"
                     }`}
                   >
-                    {o.label}
+                    {t(o.labelKey)}
                   </span>
                   <span className="block text-[11px] text-ink-soft">
-                    {o.description}
+                    {t(o.descKey)}
                   </span>
                 </span>
               </button>
@@ -171,7 +174,7 @@ export default function ResolveDisputeForm({
       {outcome === "SPLIT" && depositAmount > 0 && (
         <div className="rounded-xl bg-bone p-3">
           <label className="mb-1 block text-xs font-medium text-ink-muted">
-            Amount returned to the client
+            {t("amountToClient")}
           </label>
           <div className="relative max-w-xs">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
@@ -190,19 +193,19 @@ export default function ResolveDisputeForm({
 
           <div className="mt-3 space-y-1 border-t border-sand-dark pt-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-ink-soft">To client</span>
+              <span className="text-ink-soft">{t("toClient")}</span>
               <span className="font-semibold text-ink">
                 {formatRWF(Math.max(0, Math.min(clientRefund, depositAmount)))}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-ink-soft">To owner</span>
+              <span className="text-ink-soft">{t("toOwner")}</span>
               <span className="font-semibold text-ink">
                 {formatRWF(Math.max(0, ownerAward))}
               </span>
             </div>
             <div className="flex justify-between border-t border-sand-dark pt-1">
-              <span className="font-semibold text-ink">Deposit total</span>
+              <span className="font-semibold text-ink">{t("depositTotal")}</span>
               <span className="font-bold text-brand">
                 {formatRWF(depositAmount)}
               </span>
@@ -220,14 +223,14 @@ export default function ResolveDisputeForm({
 
       <div>
         <label className="mb-1 block text-xs font-medium text-ink-muted">
-          Your decision and reasoning
+          {t("yourDecision")}
         </label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
           maxLength={2000}
-          placeholder="Explain what the evidence shows and why you reached this outcome. Both parties will see this."
+          placeholder={t("decisionPlaceholder")}
           className="w-full rounded-lg border border-sand-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
         <p className="mt-1 text-[11px] text-ink-faint">

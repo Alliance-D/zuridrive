@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Check, X, Loader2, ExternalLink } from "lucide-react";
 
@@ -17,6 +18,8 @@ export default function PaymentActions({
   paymentId: string;
   proofUrl: string | null;
 }) {
+  const t = useTranslations("adminActions");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [mode, setMode] = useState<null | "void">(null);
   const [reason, setReason] = useState("");
@@ -34,13 +37,13 @@ export default function PaymentActions({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Action failed.");
+        setError(data.error ?? t("actionFailed"));
         return;
       }
       setMode(null);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setBusy(false);
     }
@@ -52,7 +55,7 @@ export default function PaymentActions({
         <input
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Why is this being rejected?"
+          placeholder={t("whyRejected")}
           autoFocus
           className="w-full rounded-lg border border-sand-dark px-2 py-1.5 text-xs"
         />

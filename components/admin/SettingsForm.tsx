@@ -11,6 +11,7 @@
  */
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { formatRWF } from "@/lib/currency";
 import { Loader2, Check, AlertCircle, AlertTriangle } from "lucide-react";
@@ -34,6 +35,8 @@ export default function SettingsForm({
   initial: SettingsValues;
   limits: Record<string, { min: number; max: number }>;
 }) {
+  const t = useTranslations("adminForms");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [form, setForm] = useState({
     commissionRatePercent: String(initial.commissionRatePercent),
@@ -79,13 +82,13 @@ export default function SettingsForm({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Could not save settings.");
+        setError(data.error ?? t("couldNotSaveSettings"));
         return;
       }
       setSaved(true);
       router.refresh();
     } catch {
-      setError("Network problem. Please retry.");
+      setError(tc("networkRetry"));
     } finally {
       setSaving(false);
     }
@@ -95,7 +98,7 @@ export default function SettingsForm({
     <div className="space-y-4">
       {/* Finance */}
       <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="mb-1 text-sm font-semibold text-ink">Finance</h2>
+        <h2 className="mb-1 text-sm font-semibold text-ink">{t("finance")}</h2>
         <p className="mb-3 text-xs text-ink-soft">
           These affect how much the platform earns and when a payout needs
           extra sign-off.
@@ -103,7 +106,7 @@ export default function SettingsForm({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field
-            label="Commission rate (%)"
+            label={t("commissionRate")}
             hint={`Between ${limits.commissionRatePercent.min}% and ${limits.commissionRatePercent.max}%`}
           >
             <input
@@ -117,7 +120,7 @@ export default function SettingsForm({
           </Field>
 
           <Field
-            label="Large payout threshold (RWF)"
+            label={t("largePayoutThreshold")}
             hint={
               Number(form.largePayoutThreshold) > 0
                 ? `${formatRWF(Number(form.largePayoutThreshold))} and above needs Super Admin approval`
@@ -144,9 +147,9 @@ export default function SettingsForm({
                 to {form.commissionRatePercent || "0"}%
               </p>
               <p className="mt-0.5">
-                This applies to <strong>new bookings only</strong>. Every existing
-                booking keeps the rate it was created with, so past earnings and
-                payouts are unaffected.
+                {t.rich("commissionChangeNote", {
+                  b: (chunks) => <strong>{chunks}</strong>,
+                })}
               </p>
             </div>
           </div>
@@ -155,7 +158,7 @@ export default function SettingsForm({
 
       {/* Fleet */}
       <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-ink">Fleet</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink">{t("fleet")}</h2>
         <button
           type="button"
           onClick={() => set("autoPublishListings", !form.autoPublishListings)}
@@ -174,12 +177,12 @@ export default function SettingsForm({
           </span>
           <span>
             <span className="block text-sm font-medium text-ink">
-              Auto-publish new listings
+              {t("autoPublish")}
             </span>
             <span className="block text-xs text-ink-soft">
               {form.autoPublishListings
-                ? "New cars go live immediately without Fleet Manager review."
-                : "New cars wait for a Fleet Manager to approve them."}
+                ? t("autoPublishOn")
+                : t("autoPublishOff")}
             </span>
           </span>
         </button>
@@ -191,7 +194,7 @@ export default function SettingsForm({
 
         <div className="mt-4 max-w-xs border-t border-sand pt-4">
           <Field
-            label="Free-tier listing allowance"
+            label={t("freeTierAllowance")}
             hint="Cars an owner can list without an active plan — also what a lapsed owner falls back to."
           >
             <input
@@ -209,17 +212,17 @@ export default function SettingsForm({
       {/* Cancellation policy */}
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="mb-1 text-sm font-semibold text-ink">
-          Cancellation policy
+          {t("cancellationPolicy")}
         </h2>
         <p className="mb-3 text-xs text-ink-soft">
-          Applies only when a <strong>client</strong> cancels close to pickup on
-          a deposit that was actually collected. An owner who pulls out never
-          keeps anything, and the client can always dispute the fee.
+          {t.rich("cancellationNote", {
+            b: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field
-            label="Fee window (hours before pickup)"
+            label={t("feeWindow")}
             hint={
               Number(form.lateCancellationWindowHours) === 0
                 ? "Zero — no cancellation is ever treated as late."
@@ -240,7 +243,7 @@ export default function SettingsForm({
           </Field>
 
           <Field
-            label="Fee (% of the deposit)"
+            label={t("feePercent")}
             hint={`Between ${limits.lateCancellationFeePercent.min}% and ${limits.lateCancellationFeePercent.max}%`}
           >
             <input
@@ -296,12 +299,12 @@ export default function SettingsForm({
           Timers &amp; retention
         </h2>
         <p className="mb-3 text-xs text-ink-soft">
-          Used by the scheduled jobs. Changes take effect on the next run.
+          {t("scheduledJobsNote")}
         </p>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <Field
-            label="Photo retention (days)"
+            label={t("photoRetention")}
             hint={`${limits.photoRetentionDays.min}–${limits.photoRetentionDays.max} days after a trip ends`}
           >
             <input
@@ -315,7 +318,7 @@ export default function SettingsForm({
           </Field>
 
           <Field
-            label="Owner confirmation (hours)"
+            label={t("ownerConfirmHours")}
             hint="Before a booking auto-confirms"
           >
             <input
@@ -329,7 +332,7 @@ export default function SettingsForm({
           </Field>
 
           <Field
-            label="Auto-complete (hours)"
+            label={t("autoCompleteHours")}
             hint="After a one-sided return confirmation"
           >
             <input
@@ -363,7 +366,7 @@ export default function SettingsForm({
         {saved && (
           <span className="flex items-center gap-1 text-sm text-success">
             <Check className="h-4 w-4" />
-            Saved
+            {tc("saved")}
           </span>
         )}
       </div>
