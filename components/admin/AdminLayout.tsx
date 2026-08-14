@@ -136,7 +136,7 @@ export default function AdminLayout({
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="rounded-lg p-1.5 hover:bg-white/10"
-              aria-label="Sign out"
+              aria-label={t("signOut")}
             >
               <LogOut className="h-4 w-4" />
             </button>

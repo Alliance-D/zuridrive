@@ -52,9 +52,9 @@ export default async function Footer() {
             <FooterLinks links={[
               { label: t("browseCars"), href: ROUTES.cars },
               { label: t("howItWorks"), href: ROUTES.howItWorks },
-              { label: "Pricing & Deposits", href: `${ROUTES.howItWorks}#pricing` },
-              { label: "Fuel Policies", href: `${ROUTES.howItWorks}#fuel` },
-              { label: "Sign Up", href: ROUTES.signup },
+              { label: t("pricingDeposits"), href: `${ROUTES.howItWorks}#pricing` },
+              { label: t("fuelPolicies"), href: `${ROUTES.howItWorks}#fuel` },
+              { label: t("signUp"), href: ROUTES.signup },
             ]} />
           </div>
 

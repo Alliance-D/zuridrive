@@ -10,7 +10,8 @@
     "profile": "Umwirondoro",
     "signOut": "Sohoka",
     "account": "Konti",
-    "backToZuriDrive": "Subira kuri ZuriDrive"
+    "backToZuriDrive": "Subira kuri ZuriDrive",
+    "fuelPolicies": "Amabwiriza ya lisansi"
   },
   "cars": {
     "title": "Imodoka zose zihari",
@@ -51,7 +52,8 @@
     "fuelFullToFullDesc": "Garura imodoka ifite tanki yuzuye, nk'uko wayakiriye.",
     "fuelSameLevelDesc": "Garura imodoka ifite lisansi ingana n'iyo wayifatanye.",
     "fuelFreeTankDesc": "Nyir'imodoka atanga tanki yuzuye. Garura ufite lisansi iyo ari yo yose — nta mafaranga.",
-    "fuelOwnerHandlesDesc": "Lisansi mubyumvikanaho ubwanyu na nyir'imodoka. Mubaze ibisobanuro."
+    "fuelOwnerHandlesDesc": "Lisansi mubyumvikanaho ubwanyu na nyir'imodoka. Mubaze ibisobanuro.",
+    "browseCars": "Reba imodoka"
   },
   "carDetail": {
     "pricing": "Ibiciro",
@@ -206,7 +208,10 @@
     "cookies": "Cookies",
     "browseCars": "Reba imodoka",
     "howItWorks": "Uko bikora",
-    "listYourCar": "Andikisha imodoka yawe"
+    "listYourCar": "Andikisha imodoka yawe",
+    "fuelPolicies": "Amabwiriza ya lisansi",
+    "pricingDeposits": "Ibiciro n'ingwate",
+    "signUp": "Iyandikishe"
   },
   "language": {
     "label": "Ururimi",
@@ -2220,5 +2225,60 @@
     "insuranceNotePre": "Ukomeza kugira ubwishingizi bwawe kandi ugakomeza kuba nyir'imodoka. Reba",
     "termsLink": "amasezerano",
     "insuranceNotePost": "kugira ngo umenye icyo buri ruhande rushinzwe."
+  },
+  "howItWorks": {
+    "eyebrow": "Ishusho yuzuye",
+    "heroTitle": "Ibyo ugomba kumenya byose kuri ZuriDrive",
+    "heroSub": "Waba ukodesha imodoka cyangwa uyandika, twubatse ZuriDrive kugira ngo ibe inyuze mu mucyo, ifite umutekano kandi yoroshye.",
+    "tabRenters": "Ku bakode",
+    "tabOwners": "Ku ba nyir'imodoka",
+    "rentersHeading": "Gukodesha imodoka mu ntambwe 5",
+    "r1Title": "Shakisha uhitemo",
+    "r1Body": "Shakisha imodoka ukurikije aho uzayifatira, amatariki, n'ubwoko bw'ubukode (ku munsi, ku cyumweru cyangwa ku kwezi). Shungura ukurikije icyiciro cy'imodoka, uburyo bwo guhindura vitesi, urwego rw'ibiciro, n'aho ukeneye umushoferi. Imodoka zerekanwe by'umwihariko n'izemejwe ziza mbere.",
+    "r2Title": "Hitamo imodoka yawe",
+    "r2Body": "Buri modoka yerekana ibiciro byose birambuye — ku munsi mu mujyi, hanze y'umujyi, ku cyumweru no ku kwezi. Uzabona amabwiriza ya lisansi, ingwate, ahantu bafata imodoka, n'ikimenyetso cy'igihe nyirayo amara asubiza.",
+    "r3Title": "Andika amakuru yawe",
+    "r3Body": "Abasanzwe baza basanga amakuru yabo yuzuye. Abaza bwa mbere bandika amazina na nimero ya telefoni bagahitamo ijambobanga. Konti yawe ifungurwa mu gihe ukodesha — nta ntambwe yihariye yo kwiyandikisha.",
+    "r4Title": "Ishyura mu mutekano",
+    "r4Body": "Hitamo MTN Mobile Money (ubutumwa bwa USSD buza kuri telefoni yawe) cyangwa kwohereza kuri banki (ushyireho icyemezo, abashinzwe imari bakabyemeza). Ubukode bwawe bwemezwa gusa iyo ubwishyu bwakiriwe burundu — ntabwo bwemezwa gusa kubera ko bwatangijwe.",
+    "r5Title": "Fata imodoka utware",
+    "r5Body": "Nyir'imodoka yemeza mu masaha 2 (cyangwa bikemezwa mu buryo bwikora). Mwembi mushyiraho amafoto y'uko imodoka imeze mbere y'urugendo, harimo n'igipimo cya lisansi. Garura imodoka, ushyireho amafoto yo nyuma, maze ingwate yawe igasubizwa mu buryo bwikora.",
+    "depositCardTitle": "Ku byerekeye ingwate",
+    "depositCardIntro": "Ingwate y'ibyangiritse itandukanye rwose n'amafaranga y'ubukode, kandi nta na rimwe ifatwaho amafaranga y'urubuga.",
+    "fuelCardTitle": "Amabwiriza ya lisansi",
+    "fuelCardBody": "Buri modoka ifite amabwiriza ya lisansi asobanutse: Iruzuye uyigarure yuzuye, Urwego rumwe, Tanki y'ubuntu, cyangwa Nyirayo ni we ubyishyura. Ayo mabwiriza agaragazwa neza ku rupapuro rw'imodoka n'urw'ubukode — nta gutungurwa.",
+    "pickupCardTitle": "Aho bafata imodoka",
+    "pickupCardBody": "Hitamo mu hantu hemejwe n'urubuga (ibibuga by'indege, hoteri), ahantu nyir'imodoka yihitiyemo, cyangwa usobanure aho uri. Amakarita ahora ari ubushake — ntabwo agomba ku gahato.",
+    "browseCars": "Reba imodoka zihari",
+    "ownersHeading": "Tangira kwinjiza ku modoka yawe",
+    "o1Title": "Uzuza umwirondoro wawe",
+    "o1Body": "Tegura umwirondoro wa nyir'imodoka ushyiramo amazina na telefoni, hanyuma wongereho aho wishyurirwa — MTN MoMo cyangwa konti ya banki. Aho wishyurirwa harakenewe mbere y'uko wandika imodoka. Hanyuma uhitemo gahunda yawe: Basic, Pro cyangwa Premium.",
+    "o2Title": "Andikisha imodoka yawe",
+    "o2Body": "Ifishi y'intambwe 5 igutwara mu: amakuru y'ibanze, amafoto (3–10), ibiciro by'ibihe byose, kalendari y'iminsi iboneka, n'ahantu bafata imodoka. Bika nk'umushinga ugaruke igihe cyose. Umushinga wibikwa buri masegonda 60.",
+    "o3Title": "Emera ubukode",
+    "o3Body": "Wakira SMS igihe ubusabe bwo gukodesha bugeze. Emera cyangwa wange mu masaha 2 — nutagira icyo usubiza, bwemezwa mu buryo bwikora (ni byiza ku kimenyetso cy'igihe usubiza). Shyiraho amabwiriza yawe yo guhagarika.",
+    "o4Title": "Andika buri rugendo",
+    "o4Body": "Wowe n'umukode mwembi mushyiraho amafoto y'uko imodoka imeze mbere na nyuma ya buri rugendo — hanze, imbere, n'igipimo cya lisansi. Amafoto abikwa iminsi 3 nyuma yo kurangiza, hanyuma agasibwa mu buryo bwikora.",
+    "o5Title": "Saba kwishyurwa",
+    "o5Body": "Urugendo rumaze kurangira, saba kwishyurwa uhereye ku ncamake yawe. Abashinzwe imari boherereza amafaranga kuri MoMo cyangwa banki mu masaha 24 kandi bagashyiraho icyemezo. Ukomeza kubona 80% ku buri bukode.",
+    "honestBreakdown": "Ukuri ku mibare",
+    "row1Label": "Ubukode bw'ibanze + umushoferi",
+    "row1Note": "Hafatwaho icy'urubuga",
+    "row1Pct": "80% ni ibyawe",
+    "row2Label": "Amafaranga yo kuzana imodoka",
+    "row2Note": "Nta cy'urubuga gifatwaho",
+    "row2Pct": "100% ni ibyawe",
+    "row3Label": "Ingwate y'ibyangiritse",
+    "row3Note": "Nta na rimwe ifatwaho",
+    "row3Pct": "100% ni iby'umukode",
+    "listToday": "Andikisha imodoka yawe uyu munsi",
+    "seePlans": "Reba gahunda z'ukwezi",
+    "protectionsHeading": "Uburinzi kuri bose",
+    "reviewsCardTitle": "Ibitekerezo byemejwe gusa",
+    "reviewsCardBody": "Abakiliya barangije ubukode kuri iyo modoka nyayo ni bo bonyine bashobora gutanga igitekerezo. Amanota areba isuku, ubwuzu, agaciro, n'itumanaho rya nyir'imodoka.",
+    "disputeCardTitle": "Gukemura impaka",
+    "disputeCardBody": "Uruhande urwo ari rwo rwose rushobora gutanga impaka. Ikipe yacu isuzuma amafoto y'uko imodoka yari imeze n'inyandiko z'igipimo cya lisansi maze igakemura mu masaha 48. Ingwate ibikwa kugeza bikemutse.",
+    "photoCardTitle": "Kwandika amafoto",
+    "photoCardBody": "Amafoto yo mbere na nyuma y'urugendo arakenewe ku mpande zombi. Amafoto y'uko imodoka imeze abikwa iminsi 3 nyuma y'urugendo rwarangiye, cyangwa kugeza impaka zikemutse burundu."
   }
 }

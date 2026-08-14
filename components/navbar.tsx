@@ -30,6 +30,7 @@ const DARK_HERO_PAGES = ["/"];
 
 export default function Navbar() {
   const t = useTranslations("nav");
+  const tc = useTranslations("cars");
   const { data: session, status } = useSession();
   const pathname = usePathname();
 
@@ -190,7 +191,7 @@ export default function Navbar() {
                     color: "var(--color-text)",
                   } : {}}
                 >
-                  Browse Cars
+                  {tc("browseCars")}
                 </Link>
               </>
             )}
