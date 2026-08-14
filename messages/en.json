@@ -8,10 +8,10 @@
     "myDashboard": "My Dashboard",
     "myFleet": "My Fleet",
     "profile": "Profile",
-    "signOut": "Sign out",
     "account": "Account",
     "backToZuriDrive": "Back to ZuriDrive",
-    "fuelPolicies": "Fuel Policies"
+    "fuelPolicies": "Fuel Policies",
+    "signOut": "Sign out"
   },
   "cars": {
     "title": "All Available Cars",
@@ -927,7 +927,9 @@
     "answeredLate": "answered {count}h late",
     "answeredEarly": "answered {count}h early",
     "pastTarget": "{count}h past target",
-    "closedReopen": "Closed. Reopen it to reply."
+    "closedReopen": "Closed. Reopen it to reply.",
+    "signOut": "Sign out",
+    "voided": "voided"
   },
   "common": {
     "cancel": "Cancel",
@@ -941,7 +943,8 @@
     "networkRetry": "Network problem. Please retry.",
     "all": "All",
     "dragFilesHere": "Drag files here or click to browse",
-    "chooseFiles": "Choose files"
+    "chooseFiles": "Choose files",
+    "genericError": "Something went wrong. Please try again."
   },
   "payout": {
     "inProgress": "You have a payout in progress. We'll text you once it's been sent.",
@@ -1046,7 +1049,10 @@
     "send": "Send",
     "uploadFailed": "Upload failed.",
     "uploadRetry": "Upload failed. Please retry.",
-    "openError": "We couldn't open your ticket."
+    "openError": "We couldn't open your ticket.",
+    "yourReply": "Your reply",
+    "writeReply": "Write a reply…",
+    "sendReply": "Send reply"
   },
   "home": {
     "statCars": "Cars available",
@@ -1796,12 +1802,6 @@
     "whatWouldYouTell": "What would you tell a friend about this car and owner?",
     "backToBooking": "Back to booking",
     "leaveAReview": "Leave a review"
-  },
-  "support": {
-    "yourReply": "Your reply",
-    "writeReply": "Write a reply…",
-    "sendReply": "Send reply",
-    "sending": "Sending…"
   },
   "photos": {
     "photosSubmitted": "Photos submitted",

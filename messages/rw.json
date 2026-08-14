@@ -8,10 +8,10 @@
     "myDashboard": "Ahanjye",
     "myFleet": "Imodoka zanjye",
     "profile": "Umwirondoro",
-    "signOut": "Sohoka",
     "account": "Konti",
     "backToZuriDrive": "Subira kuri ZuriDrive",
-    "fuelPolicies": "Amabwiriza ya lisansi"
+    "fuelPolicies": "Amabwiriza ya lisansi",
+    "signOut": "Sohoka"
   },
   "cars": {
     "title": "Imodoka zose zihari",
@@ -927,7 +927,9 @@
     "answeredLate": "cyasubijwe amasaha {count} nyuma y'igihe",
     "answeredEarly": "cyasubijwe amasaha {count} mbere y'igihe",
     "pastTarget": "amasaha {count} arenze igihe",
-    "closedReopen": "Cyarafunzwe. Kifungure kugira ngo usubize."
+    "closedReopen": "Cyarafunzwe. Kifungure kugira ngo usubize.",
+    "signOut": "Sohoka",
+    "voided": "byavanyweho"
   },
   "common": {
     "cancel": "Reka",
@@ -941,7 +943,8 @@
     "networkRetry": "Hari ikibazo cy'umurongo. Ongera ugerageze.",
     "all": "Byose",
     "dragFilesHere": "Kurura dosiye hano cyangwa ukande ushakishe",
-    "chooseFiles": "Hitamo dosiye"
+    "chooseFiles": "Hitamo dosiye",
+    "genericError": "Hari ikitagenze neza. Ongera ugerageze."
   },
   "payout": {
     "inProgress": "Ufite ubwishyu buri mu nzira. Tuzakwoherereza ubutumwa igihe buzaba bwoherejwe.",
@@ -1046,7 +1049,10 @@
     "send": "Ohereza",
     "uploadFailed": "Gushyiraho byanze.",
     "uploadRetry": "Gushyiraho byanze. Ongera ugerageze.",
-    "openError": "Ntitwashoboye gufungura ikibazo cyawe."
+    "openError": "Ntitwashoboye gufungura ikibazo cyawe.",
+    "yourReply": "Igisubizo cyawe",
+    "writeReply": "Andika igisubizo…",
+    "sendReply": "Ohereza igisubizo"
   },
   "home": {
     "statCars": "Imodoka zihari",
@@ -1796,12 +1802,6 @@
     "whatWouldYouTell": "Ni iki wabwira inshuti ku modoka na nyirayo?",
     "backToBooking": "Subira ku bukode",
     "leaveAReview": "Tanga igitekerezo"
-  },
-  "support": {
-    "yourReply": "Igisubizo cyawe",
-    "writeReply": "Andika igisubizo…",
-    "sendReply": "Ohereza igisubizo",
-    "sending": "Biroherezwa…"
   },
   "photos": {
     "photosSubmitted": "Amafoto yoherejwe",
