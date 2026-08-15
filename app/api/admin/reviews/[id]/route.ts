@@ -112,6 +112,9 @@ export async function POST(
         userId: review.clientId,
         type: 'ADMIN_BROADCAST',
         title: 'Your review was removed',
+        titleKey: 'reviewRemovedTitle',
+        bodyKey: 'reviewRemovedBody',
+        params: { car: carName, reason: parsed.data.reason },
         body: `Your review of the ${carName} was removed for breaking our content rules. ${parsed.data.reason}`,
       })
 

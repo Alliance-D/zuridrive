@@ -80,6 +80,9 @@ export async function PATCH(
         type: 'SUPPORT_TICKET_REPLY',
         title: `Marked resolved — ${ticket.reference}`,
         body: `${ticket.subject} — reply on the ticket if it isn’t sorted.`,
+        titleKey: 'ticketResolvedTitle',
+        bodyKey: 'ticketResolvedBody',
+        params: { reference: ticket.reference, subject: ticket.subject },
         actionUrl: `/owner/support/${ticket.id}`,
       })
     }

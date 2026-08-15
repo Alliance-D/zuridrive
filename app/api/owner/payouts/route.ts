@@ -152,6 +152,7 @@ export async function POST(req: NextRequest) {
     await notifyAdminsWithModule('FINANCE_MANAGER', {
       type: 'PAYOUT_REQUESTED',
       title: 'New payout request',
+      titleKey: 'newPayoutTitle',
       body: `${formatRWF(payout.netAmount)} requested across ${items.length} trip${
         items.length === 1 ? '' : 's'
       }.${payout.requiresSuperAdminApproval ? ' Requires Super Admin sign-off.' : ''}`,

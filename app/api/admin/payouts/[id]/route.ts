@@ -145,6 +145,9 @@ export async function POST(
         userId: ownerUser.id,
         type: 'PAYOUT_PROCESSED',
         title: 'Payout approved',
+      titleKey: 'payoutApprovedTitle',
+      bodyKey: 'payoutApprovedBody',
+      params: { amount: formatRWF(payout.netAmount) },
         body: `Your ${formatRWF(payout.netAmount)} payout has been approved and is being processed.`,
         actionUrl: '/owner/payouts',
       })
@@ -193,6 +196,9 @@ export async function POST(
         userId: ownerUser.id,
         type: 'PAYOUT_PROCESSED',
         title: 'Payout sent',
+      titleKey: 'payoutSentTitle',
+      bodyKey: 'payoutSentBody',
+      params: { amount: formatRWF(payout.netAmount) },
         body: `${formatRWF(payout.netAmount)} is on its way to you.`,
         actionUrl: '/owner/payouts',
       })

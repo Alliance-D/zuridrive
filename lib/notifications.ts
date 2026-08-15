@@ -17,13 +17,35 @@ import {
 export { NotificationChannel };
 export type { NotificationType };
 
+/**
+ * Values interpolated into a notification message.
+ *
+ * This is where text a person actually wrote belongs — an admin's rejection
+ * reason, the notes on a resolved dispute. The surrounding sentence is
+ * translated; their words are passed through as written, because translating
+ * them would put words in their mouth.
+ */
+export type NotificationParams = Record<string, string | number>;
+
 export interface CreateNotificationData {
   userId: string;
   type: NotificationType;
+  /**
+   * Rendered English. Still required: it is what an SMS sends, and what the
+   * in-app list falls back to for rows written before keys existed.
+   */
   title: string;
   /** Notification body. `message` is accepted as an alias. */
   body?: string;
   message?: string;
+  /**
+   * Keys under the `notification` namespace in messages/*.json. When present
+   * the in-app list renders these instead of title/body, so the same row reads
+   * in whichever language the reader is browsing.
+   */
+  titleKey?: string;
+  bodyKey?: string;
+  params?: NotificationParams;
   /** Where clicking the notification should take the user. */
   actionUrl?: string;
   channel?: NotificationChannel;
@@ -41,6 +63,9 @@ export async function createNotification(
         channel: data.channel ?? NotificationChannel.IN_APP,
         title: data.title,
         body: data.body ?? data.message ?? "",
+        titleKey: data.titleKey ?? null,
+        bodyKey: data.bodyKey ?? null,
+        params: data.params ?? Prisma.JsonNull,
         actionUrl: data.actionUrl ?? null,
         metadata: data.metadata ?? Prisma.JsonNull,
       },
@@ -64,6 +89,9 @@ export async function notifyAdminsWithModule(
     type: NotificationType;
     title: string;
     body: string;
+    titleKey?: string;
+    bodyKey?: string;
+    params?: NotificationParams;
     actionUrl?: string;
     metadata?: Prisma.InputJsonValue;
   },
@@ -92,6 +120,9 @@ export async function notifyAdminsWithModule(
         channel: NotificationChannel.IN_APP,
         title: payload.title,
         body: payload.body,
+        titleKey: payload.titleKey ?? null,
+        bodyKey: payload.bodyKey ?? null,
+        params: payload.params ?? Prisma.JsonNull,
         actionUrl: payload.actionUrl ?? null,
         metadata: payload.metadata ?? Prisma.JsonNull,
       })),

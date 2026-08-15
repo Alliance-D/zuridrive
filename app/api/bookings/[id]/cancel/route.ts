@@ -271,6 +271,12 @@ export async function POST(
         type: 'BOOKING_CANCELLED',
         title: 'Booking cancelled by the client',
         body: `${booking.reference} — ${parsed.data.reason}`,
+        titleKey: 'cancelledByClientTitle',
+        bodyKey: 'cancelledWithReasonBody',
+        params: {
+          reference: booking.reference,
+          reason: parsed.data.reason,
+        },
         actionUrl: `/owner/bookings/${booking.id}`,
       })
     } else {
@@ -287,6 +293,12 @@ export async function POST(
         type: 'BOOKING_CANCELLED',
         title: 'Booking cancelled by the owner',
         body: `${booking.reference} — ${parsed.data.reason}`,
+        titleKey: 'cancelledByOwnerTitle',
+        bodyKey: 'cancelledWithReasonBody',
+        params: {
+          reference: booking.reference,
+          reason: parsed.data.reason,
+        },
         actionUrl: `/dashboard/bookings/${booking.id}`,
       })
     }

@@ -100,6 +100,26 @@ for (const file of ROOTS.flatMap((r) => walk(r))) {
   }
 }
 
+// Notification keys are passed to createNotification as plain strings, not
+// through t(), so the scan above never sees them. They fail the same silent
+// way, so check them against the `notification` namespace here.
+for (const file of ROOTS.flatMap((r) => walk(r))) {
+  const src = readFileSync(file, "utf8");
+  // Scoped to files that actually write notifications. `titleKey` is also an
+  // ordinary prop name elsewhere — EmptyState takes one that resolves against
+  // `dashboard` — and checking those against `notification` reports nonsense.
+  if (!/createNotification|notifyAdminsWithModule/.test(src)) continue;
+  if (!/titleKey|bodyKey/.test(src)) continue;
+  for (const m of src.matchAll(/\b(?:titleKey|bodyKey):\s*["'`]([\w.]+)["'`]/g)) {
+    const full = `notification.${m[1]}`;
+    for (const loc of LOCALES) {
+      if (typeof resolve(messages[loc], full) !== "string") {
+        missing.push({ file, key: full, locale: loc });
+      }
+    }
+  }
+}
+
 if (dynamic.length) {
   console.log(`\n${dynamic.length} dynamic key(s) — not statically checkable:`);
   for (const d of dynamic) console.log(`  ${d.file}  ${d.ns}.${d.expr}`);

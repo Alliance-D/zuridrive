@@ -129,6 +129,9 @@ export async function POST(
         type: 'ADMIN_BROADCAST',
         title: 'Your listing is live',
         body: `${carName} has been approved and is now visible to clients.`,
+        titleKey: 'listingLiveTitle',
+        bodyKey: 'listingLiveBody',
+        params: { car: carName },
         actionUrl: '/owner/fleet',
       })
 
@@ -157,6 +160,9 @@ export async function POST(
         type: 'ADMIN_BROADCAST',
         title: 'Listing needs changes',
         body: `${carName} wasn't approved. ${parsed.data.reason}`,
+        titleKey: 'listingNeedsChangesTitle',
+        bodyKey: 'listingNeedsChangesBody',
+        params: { car: carName, reason: parsed.data.reason },
         actionUrl: `/owner/fleet/${car.id}/edit`,
       })
 
@@ -229,6 +235,9 @@ export async function POST(
         type: 'ADMIN_BROADCAST',
         title: 'Listing reinstated',
         body: `${carName} is live again.`,
+        titleKey: 'listingReinstatedTitle',
+        bodyKey: 'listingReinstatedBody',
+        params: { car: carName },
         actionUrl: '/owner/fleet',
       })
 

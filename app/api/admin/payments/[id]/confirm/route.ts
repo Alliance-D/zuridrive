@@ -211,6 +211,12 @@ export async function POST(
       userId: payment.booking.clientId,
       type: 'BANK_TRANSFER_PENDING',
       title: 'Problem with your payment',
+      titleKey: 'paymentProblemTitle',
+      bodyKey: 'paymentProblemBody',
+      params: {
+        reference: payment.booking.reference,
+        reason: parsed.data.reason,
+      },
       body: `We couldn't verify your payment for ${payment.booking.reference}. ${parsed.data.reason}`,
       actionUrl: `/dashboard/bookings/${payment.booking.id}`,
     })

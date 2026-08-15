@@ -230,6 +230,9 @@ export async function POST(
           type: 'BOOKING_CANCELLED',
           title: 'Booking cancelled',
           body: reason,
+          titleKey: 'bookingCancelledTitle',
+          bodyKey: 'bookingCancelledBody',
+          params: { reason },
           actionUrl: `/dashboard/bookings/${booking.id}`,
         }),
         createNotification({
@@ -237,6 +240,9 @@ export async function POST(
           type: 'BOOKING_CANCELLED',
           title: 'Booking cancelled',
           body: reason,
+          titleKey: 'bookingCancelledTitle',
+          bodyKey: 'bookingCancelledBody',
+          params: { reason },
           actionUrl: `/owner/bookings/${booking.id}`,
         }),
       ])

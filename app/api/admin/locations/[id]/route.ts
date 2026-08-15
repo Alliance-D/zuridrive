@@ -97,6 +97,9 @@ export async function POST(
         userId: ownerUserId,
         type: 'ADMIN_BROADCAST',
         title: 'Pickup point approved',
+      titleKey: 'pickupApprovedTitle',
+      bodyKey: 'pickupApprovedBody',
+      params: { location: location.name, car: carName },
         body: `"${location.name}" is now available for clients booking your ${carName}.`,
         actionUrl: '/owner/locations',
       })
@@ -130,6 +133,9 @@ export async function POST(
       userId: ownerUserId,
       type: 'ADMIN_BROADCAST',
       title: 'Pickup point not approved',
+      titleKey: 'pickupRejectedTitle',
+      bodyKey: 'pickupRejectedBody',
+      params: { location: location.name, reason: parsed.data.reason },
       body: `"${location.name}" wasn't approved. ${parsed.data.reason}`,
       actionUrl: '/owner/locations',
     })

@@ -272,6 +272,9 @@ export async function POST(
         type: 'DISPUTE_RESOLVED',
         title: 'Dispute resolved',
         body: notes,
+        titleKey: 'disputeResolvedTitle',
+        bodyKey: 'disputeResolvedBody',
+        params: { notes },
         actionUrl: `/dashboard/bookings/${dispute.booking.id}`,
       }),
       createNotification({
@@ -279,6 +282,9 @@ export async function POST(
         type: 'DISPUTE_RESOLVED',
         title: 'Dispute resolved',
         body: notes,
+        titleKey: 'disputeResolvedTitle',
+        bodyKey: 'disputeResolvedBody',
+        params: { notes },
         actionUrl: `/owner/bookings/${dispute.booking.id}`,
       }),
     ])

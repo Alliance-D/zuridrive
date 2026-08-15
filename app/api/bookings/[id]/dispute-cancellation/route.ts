@@ -131,6 +131,12 @@ export async function POST(
     await notifyAdminsWithModule('DEPOSIT_MANAGER', {
       type: 'DISPUTE_OPENED',
       title: 'Cancellation fee disputed',
+      titleKey: 'feeDisputedTitle',
+      bodyKey: 'feeDisputedBody',
+      params: {
+        amount: formatRWF(feeCharged),
+        reference: booking.reference,
+      },
       body: `A client is challenging a ${formatRWF(feeCharged)} fee on ${booking.reference}. Resolving for the client returns the full deposit.`,
       actionUrl: `/admin/disputes/${dispute.id}`,
       metadata: { bookingId: booking.id, feeCharged },

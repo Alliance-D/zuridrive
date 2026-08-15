@@ -182,6 +182,12 @@ export async function POST(req: NextRequest) {
       type: 'BANK_TRANSFER_PENDING',
       title: 'Subscription payment proof uploaded',
       body: `${purchase.planName} — ${formatRWF(purchase.priceMonthly)} — awaiting confirmation`,
+      titleKey: 'subscriptionProofTitle',
+      bodyKey: 'subscriptionProofBody',
+      params: {
+        plan: purchase.planName,
+        amount: formatRWF(purchase.priceMonthly),
+      },
       actionUrl: '/admin/finance/subscriptions',
       metadata: { subscriptionId: purchase.id },
     })

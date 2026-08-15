@@ -163,6 +163,20 @@ export async function PATCH(
         type: 'PAYMENT_CONFIRMED',
         title: `${activation.planName} is active`,
         body: `Renews ${activation.expiresAt.toLocaleDateString('en-RW')}.${relistNote}`,
+        titleKey: 'planActiveTitle',
+        // The note is a separate key rather than a param, because the
+        // sentence pluralises differently in each language.
+        bodyKey:
+          activation.relisted > 0
+            ? 'planActiveRelistedBody'
+            : activation.unlisted > 0
+              ? 'planActiveUnlistedBody'
+              : 'planActiveBody',
+        params: {
+          plan: activation.planName,
+          date: activation.expiresAt.toISOString(),
+          count: activation.relisted > 0 ? activation.relisted : activation.unlisted,
+        },
         actionUrl: '/owner/subscription',
       })
 
@@ -210,6 +224,9 @@ export async function PATCH(
         userId: ownerUser.id,
         type: 'PAYMENT_CONFIRMED',
         title: 'We couldn’t confirm your subscription payment',
+      titleKey: 'planPaymentFailedTitle',
+      bodyKey: 'planPaymentFailedBody',
+      params: { plan: subscription.plan.name, reason: parsed.data.reason },
         body: `${subscription.plan.name} — ${parsed.data.reason}`,
         actionUrl: '/owner/subscription',
       })
@@ -250,6 +267,14 @@ export async function PATCH(
         change.unlisted > 0
           ? `${parsed.data.reason} — ${change.unlisted} car${change.unlisted === 1 ? '' : 's'} unlisted. Cars with bookings stay live.`
           : parsed.data.reason,
+      titleKey: 'planEndedTitle',
+      bodyKey:
+        change.unlisted > 0 ? 'planEndedWithUnlistedBody' : 'planEndedBody',
+      params: {
+        plan: subscription.plan.name,
+        reason: parsed.data.reason,
+        count: change.unlisted,
+      },
       actionUrl: '/owner/subscription',
     })
 

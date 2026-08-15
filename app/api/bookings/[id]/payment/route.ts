@@ -220,6 +220,12 @@ export async function POST(
         type: 'BANK_TRANSFER_PENDING',
         title: 'Bank transfer proof uploaded',
         body: `Booking ${booking.reference} — ${formatRWF(totalChargedNow)} — awaiting confirmation`,
+        titleKey: 'bankProofTitle',
+        bodyKey: 'bankProofBody',
+        params: {
+          reference: booking.reference,
+          amount: formatRWF(totalChargedNow),
+        },
         actionUrl: '/admin/finance/payments',
         metadata: { bookingId: booking.id, paymentId: payment.id },
       })

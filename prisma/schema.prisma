@@ -1094,8 +1094,20 @@ model Notification {
   user      User                @relation(fields: [userId], references: [id])
   type      NotificationType
   channel   NotificationChannel
+  /// Rendered English. Kept as the fallback for rows written before
+  /// titleKey/bodyKey existed, and as what an SMS sends — SMS has no request
+  /// locale to render against.
   title     String
   body      String
+  /// Message keys under the `notification` namespace, with their values in
+  /// `params`. The in-app renderer prefers these and falls back to title/body.
+  ///
+  /// Text a person actually wrote — an admin's rejection reason, dispute
+  /// notes — travels inside `params`, never inside the key. Translating it
+  /// would put words in their mouth.
+  titleKey  String?
+  bodyKey   String?
+  params    Json?
   isRead    Boolean             @default(false)
   readAt    DateTime?
   // Optional deep link — e.g. "/dashboard/bookings/clxxx"

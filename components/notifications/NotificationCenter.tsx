@@ -30,8 +30,17 @@ import {
 export interface NotificationItem {
   id: string;
   type: NotificationType;
+  /** Rendered English, written when the row was created. */
   title: string;
   body: string;
+  /**
+   * Message keys under the `notification` namespace. Rows written before these
+   * existed have null here and fall back to title/body, which is why old
+   * notifications stay in English rather than showing a raw key.
+   */
+  titleKey: string | null;
+  bodyKey: string | null;
+  params: Record<string, string | number> | null;
   actionUrl: string | null;
   isRead: boolean;
   createdAt: string;
@@ -71,6 +80,24 @@ function timeAgo(
   return formatDate(iso, locale);
 }
 
+/** Matches an ISO-8601 instant, which is the only date shape we write. */
+const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/;
+
+/**
+ * Params arrive as JSON, so a date is a string by the time it gets here, and
+ * ICU's `{date, date, long}` needs a real Date to format per locale. Reviving
+ * them here is what keeps "Renews 14 September 2026" from being frozen into
+ * whatever the server's locale was at write time.
+ */
+function revive(params: Record<string, string | number> | null) {
+  if (!params) return {};
+  const out: Record<string, string | number | Date> = {};
+  for (const [k, v] of Object.entries(params)) {
+    out[k] = typeof v === "string" && ISO_INSTANT.test(v) ? new Date(v) : v;
+  }
+  return out;
+}
+
 export default function NotificationCenter({
   initial,
   unreadCount,
@@ -79,6 +106,7 @@ export default function NotificationCenter({
   unreadCount: number;
 }) {
   const t = useTranslations("notificationCentre");
+  const tn = useTranslations("notification");
   const tc = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
@@ -88,6 +116,26 @@ export default function NotificationCenter({
   const [busy, setBusy] = useState(false);
 
   const shown = filter === "unread" ? items.filter((n) => !n.isRead) : items;
+
+  /**
+   * Prefer the key; fall back to the English stored on the row.
+   *
+   * A key that is missing from the message files must not blank the
+   * notification — the stored text is always a truthful thing to show, so a
+   * lookup failure degrades to English rather than to nothing.
+   */
+  function render(
+    key: string | null,
+    fallback: string,
+    params: Record<string, string | number> | null,
+  ) {
+    if (!key) return fallback;
+    try {
+      return tn(key as never, revive(params) as never);
+    } catch {
+      return fallback;
+    }
+  }
 
   async function markRead(id: string) {
     // Optimistic — the row is already visibly read to the user.
@@ -217,13 +265,15 @@ export default function NotificationCenter({
                           : "font-semibold text-ink"
                       }`}
                     >
-                      {n.title}
+                      {render(n.titleKey, n.title, n.params)}
                     </p>
                     <span className="shrink-0 text-[11px] text-ink-faint">
                       {timeAgo(n.createdAt, t, locale)}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-xs text-ink-soft">{n.body}</p>
+                  <p className="mt-0.5 text-xs text-ink-soft">
+                    {render(n.bodyKey, n.body, n.params)}
+                  </p>
                 </div>
 
                 {!n.isRead && (

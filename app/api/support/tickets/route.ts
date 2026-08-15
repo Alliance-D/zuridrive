@@ -138,6 +138,11 @@ export async function POST(req: NextRequest) {
         ? `Priority ticket — ${ticket.reference}`
         : `New ticket — ${ticket.reference}`,
       body: subject,
+      titleKey: priority.isPriority
+        ? 'newPriorityTicketTitle'
+        : 'newTicketTitle',
+      bodyKey: 'ticketSubjectBody',
+      params: { reference: ticket.reference, subject },
       actionUrl: `/admin/support/${ticket.id}`,
       metadata: { ticketId: ticket.id, isPriority: priority.isPriority },
     })

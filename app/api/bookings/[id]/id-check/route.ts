@@ -137,6 +137,12 @@ export async function POST(
       userId: booking.clientId,
       type: 'BOOKING_REJECTED',
       title: 'A problem with your documents at handover',
+      titleKey: 'documentProblemTitle',
+      bodyKey: 'cancelledWithReasonBody',
+      params: {
+        reference: booking.reference,
+        reason: parsed.data.reason,
+      },
       body: `${booking.reference} — ${parsed.data.reason}`,
       actionUrl: `/dashboard/bookings/${booking.id}`,
     })

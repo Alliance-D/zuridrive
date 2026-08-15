@@ -258,6 +258,9 @@ export async function POST(req: NextRequest) {
       await notifyAdminsWithModule('FLEET_MANAGER', {
         type: 'ADMIN_BROADCAST',
         title: 'New car listing awaiting approval',
+      titleKey: 'newListingTitle',
+      bodyKey: 'newListingBody',
+      params: { car: `${car.year} ${car.make} ${car.model}` },
         body: `${car.year} ${car.make} ${car.model} was submitted for review.`,
         actionUrl: '/admin/fleet',
         metadata: { carId: car.id },

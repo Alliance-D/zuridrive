@@ -254,6 +254,13 @@ export async function settleSubscriptionPayment(
     type: "PAYMENT_CONFIRMED",
     title: `${activation.planName} is active`,
     body: `Renews ${activation.expiresAt.toLocaleDateString("en-RW")}.${relistNote}`,
+    titleKey: "planActiveTitle",
+    bodyKey: activation.relisted > 0 ? "planActiveRelistedBody" : "planActiveBody",
+    params: {
+      plan: activation.planName,
+      date: activation.expiresAt.toISOString(),
+      count: activation.relisted,
+    },
     actionUrl: "/owner/subscription",
   });
 

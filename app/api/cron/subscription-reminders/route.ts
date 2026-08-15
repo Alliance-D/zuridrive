@@ -79,6 +79,12 @@ export async function GET(req: NextRequest) {
       type: 'SUBSCRIPTION_RENEWING',
       title: 'Subscription renewing soon',
       body: `Your ${sub.plan.name} plan renews on ${sub.expiresAt.toLocaleDateString('en-RW')}.`,
+      titleKey: 'renewingSoonTitle',
+      bodyKey: 'renewingSoonBody',
+      params: {
+        plan: sub.plan.name,
+        date: sub.expiresAt.toISOString(),
+      },
       actionUrl: '/owner/subscription',
     })
 
@@ -125,6 +131,16 @@ export async function GET(req: NextRequest) {
       userId: user.id,
       type: 'SUBSCRIPTION_EXPIRED',
       title: 'Subscription expired',
+      titleKey: 'subscriptionExpiredTitle',
+      bodyKey:
+        unlisted > 0
+          ? 'subscriptionLapsedUnlistedBody'
+          : 'subscriptionLapsedLiveBody',
+      params: {
+        plan: sub.plan.name,
+        count: unlisted,
+        protectedCount: protectedByBooking,
+      },
       body: unlisted > 0
         ? `Your ${sub.plan.name} plan has lapsed. ${unlisted} car${unlisted === 1 ? ' was' : 's were'} unlisted to fit the free tier${protectedByBooking > 0 ? `, though ${protectedByBooking} with bookings stayed live` : ''}. Renewing puts them straight back.`
         : `Your ${sub.plan.name} plan has lapsed. Your cars stay live, but you've dropped to standard search placement and can't list new ones until you renew.`,

@@ -118,6 +118,9 @@ export async function POST(
         type: 'SUPPORT_TICKET_REPLY',
         title: `Support replied — ${ticket.reference}`,
         body: ticket.subject,
+        titleKey: 'supportRepliedTitle',
+        bodyKey: 'ticketSubjectBody',
+        params: { reference: ticket.reference, subject: ticket.subject },
         actionUrl: `/owner/support/${ticket.id}`,
       })
     } else {
@@ -125,6 +128,11 @@ export async function POST(
         type: 'SUPPORT_TICKET_REPLY',
         title: `${ticket.isPriority ? 'Priority reply' : 'Reply'} — ${ticket.reference}`,
         body: ticket.subject,
+        titleKey: ticket.isPriority
+          ? 'ticketPriorityReplyTitle'
+          : 'ticketReplyTitle',
+        bodyKey: 'ticketSubjectBody',
+        params: { reference: ticket.reference, subject: ticket.subject },
         actionUrl: `/admin/support/${ticket.id}`,
         metadata: { ticketId: ticket.id },
       })

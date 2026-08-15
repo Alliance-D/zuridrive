@@ -124,6 +124,14 @@ export async function POST(req: NextRequest) {
       type: 'DEPOSIT_WITHHELD',
       title: `${TYPE_LABEL[parsed.data.type]} raised`,
       body: `${formatRWF(parsed.data.amount)} on booking ${booking.reference}. ${parsed.data.description}`,
+      titleKey: 'chargeRaisedTitle',
+      bodyKey: 'chargeRaisedBody',
+      params: {
+        chargeType: TYPE_LABEL[parsed.data.type],
+        amount: formatRWF(parsed.data.amount),
+        reference: booking.reference,
+        description: parsed.data.description,
+      },
       actionUrl: `/dashboard/bookings/${booking.id}`,
     })
 
@@ -209,6 +217,13 @@ export async function PATCH(req: NextRequest) {
         userId: charge.booking.clientId,
         type: 'DEPOSIT_RELEASED',
         title: 'Charge waived',
+        titleKey: 'chargeWaivedTitle',
+        bodyKey: 'chargeWaivedBody',
+        params: {
+          amount: formatRWF(charge.amount),
+          reference: charge.booking.reference,
+          reason: parsed.data.reason,
+        },
         body: `The ${formatRWF(charge.amount)} charge on ${charge.booking.reference} has been waived. ${parsed.data.reason}`,
         actionUrl: `/dashboard/bookings/${charge.booking.id}`,
       })
