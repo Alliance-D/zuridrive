@@ -505,7 +505,7 @@ export function BookingWizard({
                     <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
                       <div className="flex items-center gap-2 mb-2">
                         <Fuel size={16} className="text-accent" />
-                        <p className="text-sm font-medium text-stone-700">Fuel Policy</p>
+                        <p className="text-sm font-medium text-stone-700">{t("fuelPolicy")}</p>
                       </div>
                       <FuelPolicyBadge
                         type={car.fuelPolicy.type as 'FULL_TO_FULL' | 'SAME_LEVEL' | 'FREE_TANK' | 'OWNER_HANDLES'}

@@ -6,7 +6,7 @@
 // =============================================================================
 
 import { notFound } from "next/navigation";
-import { getEnumLabeller } from "@/lib/enum-labels";
+import { getEnumLabeller, type EnumLabeller } from "@/lib/enum-labels";
 import { getTranslations } from "next-intl/server";
 import { ownerDisplayName } from "@/lib/owner-identity"
 import { getDepositCopy } from "@/lib/deposit-copy";
@@ -123,7 +123,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             <div className="mb-6">
               {car.isFeatured && (
                 <span className="badge badge-gold mb-3 inline-flex">
-                  ★ Featured Listing
+                  ★ {t("featuredListing")}
                 </span>
               )}
               <h1 className="mb-3 font-display text-fluid-3xl font-normal leading-[1.1] tracking-[-0.03em] text-ink">
@@ -236,7 +236,12 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {fuelPolicy && (
               <section className="mb-8">
                 <SectionHeading>{t("fuelPolicy")}</SectionHeading>
-                <FuelPolicyCard policy={fuelPolicy.type} refuelingFee={fuelPolicy.refuelingFee} />
+                <FuelPolicyCard
+                  policy={fuelPolicy.type}
+                  refuelingFee={fuelPolicy.refuelingFee}
+                  label={label}
+                  t={t}
+                />
               </section>
             )}
 
@@ -254,11 +259,11 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                   </div>
                   <div>
                     <p className="mb-1 text-fluid-base font-bold">
-                      {formatRWF(pricing.depositAmount)} deposit required
+                      {t("depositRequired", { amount: formatRWF(pricing.depositAmount) })}
                     </p>
                     <p className="text-fluid-sm leading-[1.6] text-ink-soft">
-                      {td(getDepositCopy().explanationKey)}
-                      The deposit is separate from your rental payment.
+                      {td(getDepositCopy().explanationKey)}{" "}
+                      {t("depositSeparate")}
                     </p>
                   </div>
                 </div>
@@ -290,7 +295,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                         )}
                         {loc.deliveryFee && loc.deliveryFee > 0 && (
                           <p className="mt-1 text-fluid-xs font-semibold text-brand">
-                            + {formatRWF(loc.deliveryFee)} delivery fee
+                            {t("deliveryFeeAdd", { amount: formatRWF(loc.deliveryFee) })}
                           </p>
                         )}
                       </div>
@@ -313,10 +318,10 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                     {ownerDisplayName(car.owner)}
                   </p>
                   <div className="flex flex-wrap gap-4">
-                    <OwnerStat icon={<Car size={13} />} label={`${car.owner.cars.length} car${car.owner.cars.length !== 1 ? "s" : ""} listed`} />
-                    <OwnerStat icon={<Calendar size={13} />} label={`Member since ${ownerMemberSince}`} />
+                    <OwnerStat icon={<Car size={13} />} label={t("carsListed", { count: car.owner.cars.length })} />
+                    <OwnerStat icon={<Calendar size={13} />} label={t("memberSince", { year: ownerMemberSince })} />
                     {car.owner.avgResponseTimeMinutes && (
-                      <OwnerStat icon={<Clock size={13} />} label={`Responds in ~${car.owner.avgResponseTimeMinutes}min`} />
+                      <OwnerStat icon={<Clock size={13} />} label={t("respondsIn", { minutes: car.owner.avgResponseTimeMinutes })} />
                     )}
                   </div>
                 </div>
@@ -376,43 +381,47 @@ function PricingRow({
   );
 }
 
-function FuelPolicyCard({ policy, refuelingFee }: { policy: string; refuelingFee: number | null }) {
-  const policies: Record<string, { emoji: string; label: string; description: string; className: string }> = {
-    FULL_TO_FULL: {
-      emoji: "",
-      label: "Full to Full",
-      description: `Pick up with a full tank. Return with a full tank.${refuelingFee ? ` A refueling fee of ${formatRWF(refuelingFee)} applies if returned below full.` : ""}`,
-      className: "fuel-badge-full-to-full",
-    },
-    SAME_LEVEL: {
-      emoji: "",
-      label: "Same Level",
-      description: "Return the car at the same fuel level you picked it up at.",
-      className: "fuel-badge-same-level",
-    },
-    FREE_TANK: {
-      emoji: "",
-      label: "Free Tank",
-      description: "Owner provides a full tank. Return at any fuel level — no charges.",
-      className: "fuel-badge-free-tank",
-    },
-    OWNER_HANDLES: {
-      emoji: "",
-      label: "Owner Handles Fuel",
-      description: "Fuel is managed separately between you and the owner. Ask for details.",
-      className: "fuel-badge-owner-handles",
-    },
+/**
+ * The label comes from the enum labeller and the description from the
+ * carDetail namespace, rather than the table of English literals this used to
+ * hold. Both are passed in because this is a module-level function.
+ */
+function FuelPolicyCard({
+  policy,
+  refuelingFee,
+  label,
+  t,
+}: {
+  policy: string;
+  refuelingFee: number | null;
+  label: EnumLabeller;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  const DESCRIPTION: Record<string, string> = {
+    FULL_TO_FULL: refuelingFee
+      ? t("fuelFullToFullFee", { amount: formatRWF(refuelingFee) })
+      : t("fuelFullToFull"),
+    SAME_LEVEL: t("fuelSameLevel"),
+    FREE_TANK: t("fuelFreeTank"),
+    OWNER_HANDLES: t("fuelOwnerHandles"),
   };
 
-  const info = policies[policy] ?? policies.OWNER_HANDLES;
+  const CLASS_NAME: Record<string, string> = {
+    FULL_TO_FULL: "fuel-badge-full-to-full",
+    SAME_LEVEL: "fuel-badge-same-level",
+    FREE_TANK: "fuel-badge-free-tank",
+    OWNER_HANDLES: "fuel-badge-owner-handles",
+  };
+
+  const key = policy in DESCRIPTION ? policy : "OWNER_HANDLES";
 
   return (
     <div className="flex items-start gap-4 rounded-3xl border border-sand-light bg-white p-5">
-      <span className={`fuel-badge ${info.className} shrink-0`}>
-        {info.emoji} {info.label}
+      <span className={`fuel-badge ${CLASS_NAME[key]} shrink-0`}>
+        {label("fuelPolicy", key)}
       </span>
       <p className="text-fluid-sm leading-[1.65] text-ink-soft">
-        {info.description}
+        {DESCRIPTION[key]}
       </p>
     </div>
   );
@@ -441,7 +450,7 @@ async function BookingWidget({ car, locale }: { locale: string; car: Parameters<
             <span className="font-display text-fluid-2xl font-semibold tracking-[-0.02em] text-brand">
               {formatRWF(pricing.perDayInCity)}
             </span>
-            <span className="ml-1 text-fluid-sm text-ink-soft">/day</span>
+            <span className="ml-1 text-fluid-sm text-ink-soft">{t("perDaySuffix")}</span>
           </>
         ) : null}
       </div>
@@ -456,9 +465,9 @@ async function BookingWidget({ car, locale }: { locale: string; car: Parameters<
 
       {/* Quick facts */}
       <div className="mt-5 flex flex-col gap-3 border-t border-sand-light pt-5">
-        <QuickFact icon={<Shield size={14} />} text="Payment secured via MTN MoMo or bank transfer" />
-        <QuickFact icon={<Clock size={14} />} text="Owner confirms within 2 hours or auto-confirmed" />
-        <QuickFact icon={<ChevronRight size={14} />} text="Deposit held separately, returned after trip" />
+        <QuickFact icon={<Shield size={14} />} text={t("quickPayment")} />
+        <QuickFact icon={<Clock size={14} />} text={t("quickConfirm")} />
+        <QuickFact icon={<ChevronRight size={14} />} text={t("quickDeposit")} />
       </div>
     </div>
   );

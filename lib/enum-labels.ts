@@ -62,3 +62,6 @@ export async function getEnumLabeller(locale: string) {
     }
   };
 }
+
+/** What getEnumLabeller returns, for components that take it as a prop. */
+export type EnumLabeller = Awaited<ReturnType<typeof getEnumLabeller>>;

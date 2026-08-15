@@ -44,6 +44,27 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
   const td = useTranslations('deposit')
   const hasDates = form.startDate && form.endDate
 
+  /**
+   * "3 days × RWF 25,000 (in-city)" assembled in the reader's language. The
+   * scope suffix is its own key rather than a word slotted into a sentence,
+   * because it carries a leading space and parentheses that differ per locale.
+   */
+  function baseRateDetail(d: NonNullable<typeof pricing>['baseRateDetail']) {
+    const scope =
+      d.scope === 'OUTSIDE_CITY'
+        ? t('scopeOutsideCity')
+        : d.scope === 'IN_CITY'
+          ? t('scopeInCity')
+          : ''
+    const key =
+      d.unit === 'WEEK'
+        ? 'baseRateWeek'
+        : d.unit === 'MONTH'
+          ? 'baseRateMonth'
+          : 'baseRateDay'
+    return t(key, { count: d.count, rate: formatRWF(d.rate), scope })
+  }
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
       {/* Header */}
@@ -74,14 +95,17 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
           <>
             {/* Base rate */}
             <LineItem
-              label={`Base rate (${pricing.baseRateLabel})`}
+              label={t('baseRateLine', { detail: baseRateDetail(pricing.baseRateDetail) })}
               value={formatRWF(pricing.baseAmount)}
             />
 
             {/* Driver surcharge */}
             {pricing.driverSurchargeTotal > 0 && (
               <LineItem
-                label={`Driver (${pricing.driverSurchargeLabel})`}
+                label={t('driverLine', {
+                  count: pricing.driverSurcharge?.count ?? 0,
+                  rate: formatRWF(pricing.driverSurcharge?.rate ?? 0),
+                })}
                 value={formatRWF(pricing.driverSurchargeTotal)}
               />
             )}
@@ -89,7 +113,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
             {/* Delivery fee */}
             {pricing.deliveryFee > 0 && (
               <LineItem
-                label="Delivery fee"
+                label={t('deliveryFee')}
                 value={formatRWF(pricing.deliveryFee)}
               />
             )}
@@ -141,7 +165,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
       <div className="border-t border-stone-100 px-5 py-3">
         <div className="flex items-center gap-1.5 text-stone-400">
           <Info size={12} />
-          <span className="text-xs">{depositCopy.heldBy === 'owner' ? 'Paid directly to the owner at handover' : 'Secure payment via MTN MoMo or bank transfer'}</span>
+          <span className="text-xs">{depositCopy.heldBy === 'owner' ? t('paidAtHandover') : t('paidSecurely')}</span>
         </div>
       </div>
     </div>

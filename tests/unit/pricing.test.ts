@@ -249,15 +249,34 @@ describe("the totals always reconcile", () => {
   });
 });
 
-describe("labels", () => {
+describe("rate detail", () => {
+  // Structured rather than a formatted sentence: the sentence is built in the
+  // reader's language by PriceBreakdown, and this function has no locale.
   it("describes what was charged", () => {
     const p = price({ startDate: day(1), endDate: day(4) });
-    expect(p.baseRateLabel).toContain("3 day");
-    expect(p.baseRateLabel).toContain("45,000");
+    expect(p.baseRateDetail).toEqual({
+      unit: "DAY",
+      count: 3,
+      rate: 45_000,
+      scope: "IN_CITY",
+    });
+  });
+
+  it("drops the city distinction on a monthly rate", () => {
+    const p = price({
+      startDate: day(1),
+      endDate: day(31),
+      rentalType: "PER_MONTH",
+    });
+    expect(p.baseRateDetail.unit).toBe("MONTH");
+    expect(p.baseRateDetail.scope).toBeNull();
   });
 
   it("names the driver surcharge only when there is one", () => {
-    expect(price({ withDriver: true }).driverSurchargeLabel).toContain("15,000");
-    expect(price({ withDriver: false }).driverSurchargeLabel).toBeNull();
+    expect(price({ withDriver: true }).driverSurcharge).toEqual({
+      count: 3,
+      rate: 15_000,
+    });
+    expect(price({ withDriver: false }).driverSurcharge).toBeNull();
   });
 });

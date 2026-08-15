@@ -42,12 +42,22 @@ export interface PricingBreakdown {
   durationMonths: number
 
   // Rates applied
-  baseRateLabel: string           // e.g. "3 days × RWF 25,000"
+  /**
+   * The parts of "3 days × RWF 25,000 (in-city)", not the sentence. The
+   * sentence has to be built in the reader's language, and this function is
+   * called from API routes and cron with no locale to hand.
+   */
+  baseRateDetail: {
+    unit: 'DAY' | 'WEEK' | 'MONTH'
+    count: number
+    rate: number
+    scope: 'IN_CITY' | 'OUTSIDE_CITY' | null
+  }
   baseRate: number                // rate per unit
   baseAmount: number              // total base
 
   // Driver
-  driverSurchargeLabel: string | null
+  driverSurcharge: { count: number; rate: number } | null
   driverSurchargePerDay: number
   driverSurchargeTotal: number
 
@@ -98,7 +108,7 @@ export function calculateBookingPrice(input: PricingInput): PricingBreakdown {
 
   let baseRate = 0
   let baseAmount = 0
-  let baseRateLabel = ''
+  let baseRateDetail: PricingBreakdown['baseRateDetail']
 
   // --- Determine base rate based on rental type and scope ---
   if (rentalType === 'PER_DAY') {
@@ -106,27 +116,25 @@ export function calculateBookingPrice(input: PricingInput): PricingBreakdown {
       ? pricingMatrix.perDayOutsideCity
       : pricingMatrix.perDayInCity
     baseAmount = baseRate * durationDays
-    const scopeLabel = tripScope === 'OUTSIDE_CITY' ? 'outside city' : 'in-city'
-    baseRateLabel = `${durationDays} day${durationDays > 1 ? 's' : ''} × RWF ${baseRate.toLocaleString()} (${scopeLabel})`
+    baseRateDetail = { unit: 'DAY', count: durationDays, rate: baseRate, scope: tripScope }
   } else if (rentalType === 'PER_WEEK') {
     baseRate = tripScope === 'OUTSIDE_CITY'
       ? pricingMatrix.perWeekOutsideCity
       : pricingMatrix.perWeekInCity
     baseAmount = baseRate * durationWeeks
-    const scopeLabel = tripScope === 'OUTSIDE_CITY' ? 'outside city' : 'in-city'
-    baseRateLabel = `${durationWeeks} week${durationWeeks > 1 ? 's' : ''} × RWF ${baseRate.toLocaleString()} (${scopeLabel})`
+    baseRateDetail = { unit: 'WEEK', count: durationWeeks, rate: baseRate, scope: tripScope }
   } else {
     // MONTH — flat rate, no city distinction, client goes anywhere
     baseRate = pricingMatrix.perMonth
     baseAmount = baseRate * durationMonths
-    baseRateLabel = `${durationMonths} month${durationMonths > 1 ? 's' : ''} × RWF ${baseRate.toLocaleString()}`
+    baseRateDetail = { unit: 'MONTH', count: durationMonths, rate: baseRate, scope: null }
   }
 
   // --- Driver surcharge (per day always, even on weekly/monthly bookings) ---
   const driverSurchargePerDay = pricingMatrix.driverSurchargePerDay
   const driverSurchargeTotal = withDriver ? driverSurchargePerDay * durationDays : 0
-  const driverSurchargeLabel = withDriver
-    ? `${durationDays} day${durationDays > 1 ? 's' : ''} × RWF ${driverSurchargePerDay.toLocaleString()}`
+  const driverSurcharge = withDriver
+    ? { count: durationDays, rate: driverSurchargePerDay }
     : null
 
   // --- Commissionable subtotal: base + driver ONLY ---
@@ -147,10 +155,10 @@ export function calculateBookingPrice(input: PricingInput): PricingBreakdown {
     durationDays,
     durationWeeks,
     durationMonths,
-    baseRateLabel,
+    baseRateDetail,
     baseRate,
     baseAmount,
-    driverSurchargeLabel,
+    driverSurcharge,
     driverSurchargePerDay,
     driverSurchargeTotal,
     deliveryFee,

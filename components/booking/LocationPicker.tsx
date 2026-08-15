@@ -194,7 +194,7 @@ export function LocationPicker({
             <textarea
               value={customText}
               onChange={(e) => onCustomText(e.target.value)}
-              placeholder="e.g. In front of Chic Restaurant, Kacyiru — near the roundabout"
+              placeholder={t("phCustomLocation")}
               rows={3}
               className="
                 w-full px-4 py-3 rounded-xl border border-stone-200 text-stone-900 text-sm

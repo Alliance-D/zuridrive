@@ -260,8 +260,8 @@ export function ConditionPhotoUploader({
           <div className="w-20 h-20 rounded-full bg-brand flex items-center justify-center mx-auto mb-4">
             <Check size={36} className="text-white" strokeWidth={2.5} />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Photos Submitted</h2>
-          <p className="text-stone-400">Returning to your booking...</p>
+          <h2 className="text-2xl font-bold text-white mb-2">{t("submittedTitle")}</h2>
+          <p className="text-stone-400">{t("returningToBooking")}</p>
         </motion.div>
       </div>
     )
@@ -287,7 +287,7 @@ export function ConditionPhotoUploader({
           {/* Progress bar */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-stone-400">
-              <span>{uploadedRequired} of {requiredSteps.length} required photos</span>
+              <span>{t("requiredProgress", { done: uploadedRequired, total: requiredSteps.length })}</span>
               <span>
                 {t('stepOf', {
                   current: currentStepIndex + 1,
@@ -479,8 +479,8 @@ export function ConditionPhotoUploader({
                     <div className="w-16 h-16 rounded-full bg-stone-800 border border-stone-700 flex items-center justify-center mx-auto mb-4">
                       <Upload size={24} className="text-stone-400" />
                     </div>
-                    <p className="text-white font-semibold mb-1">Tap to upload photo</p>
-                    <p className="text-stone-500 text-sm">or drag & drop · JPG, PNG, WebP · max 10MB</p>
+                    <p className="text-white font-semibold mb-1">{t("tapToUpload")}</p>
+                    <p className="text-stone-500 text-sm">{t("uploadHint")}</p>
                   </div>
                 )}
                 <input
@@ -565,7 +565,7 @@ export function ConditionPhotoUploader({
 
         {/* ── Overview: all steps ── */}
         <div className="border-t border-stone-800 pt-4 space-y-2">
-          <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-3">All Photos</p>
+          <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-3">{t("allPhotos")}</p>
           {effectiveSteps.map((step, i) => {
             const uploaded = !!uploads[step.id]?.url
             return (

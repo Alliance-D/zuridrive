@@ -202,7 +202,7 @@ export default function Navbar() {
           {/* ---------------------------------------------------------------- */}
           <button
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            aria-label="Toggle menu"
+            aria-label={t("toggleMenu")}
             className={`hide-desktop cursor-pointer border-none bg-none p-2 ${
               isTransparent ? "text-white" : "text-ink"
             }`}

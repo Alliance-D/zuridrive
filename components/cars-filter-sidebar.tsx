@@ -180,7 +180,7 @@ export function CarsFilterSidebar({
         <div className="space-y-3">
           <div>
             <label htmlFor="priceMin" className="text-sm text-ink-soft">
-              From {filters.priceMin.toLocaleString()} RWF
+              {t("priceFrom", { amount: filters.priceMin.toLocaleString() })}
             </label>
             <input
               id="priceMin"
@@ -202,7 +202,7 @@ export function CarsFilterSidebar({
           </div>
           <div>
             <label htmlFor="priceMax" className="text-sm text-ink-soft">
-              Up to {filters.priceMax.toLocaleString()} RWF
+              {t("priceUpTo", { amount: filters.priceMax.toLocaleString() })}
               {filters.priceMax >= PRICE_CEILING ? "+" : ""}
             </label>
             <input

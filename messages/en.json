@@ -11,7 +11,8 @@
     "account": "Account",
     "backToZuriDrive": "Back to ZuriDrive",
     "fuelPolicies": "Fuel Policies",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "toggleMenu": "Toggle menu"
   },
   "cars": {
     "title": "All Available Cars",
@@ -53,7 +54,9 @@
     "fuelSameLevelDesc": "Return the car at the same fuel level you picked it up at.",
     "fuelFreeTankDesc": "Owner provides a full tank. Return at any fuel level — no charges.",
     "fuelOwnerHandlesDesc": "Fuel is managed separately between you and the owner. Ask for details.",
-    "browseCars": "Browse Cars"
+    "browseCars": "Browse Cars",
+    "priceFrom": "From {amount} RWF",
+    "priceUpTo": "Up to {amount} RWF"
   },
   "carDetail": {
     "pricing": "Pricing",
@@ -85,7 +88,18 @@
     "specTransmission": "Transmission",
     "passengers": "{count} passengers",
     "perMonthSuffix": "/month",
-    "perDaySuffix": "/day"
+    "perDaySuffix": "/day",
+    "featuredListing": "Featured Listing",
+    "depositSeparate": "The deposit is separate from your rental payment.",
+    "deliveryFeeAdd": "+ {amount} delivery fee",
+    "quickPayment": "Payment secured via MTN MoMo or bank transfer",
+    "quickConfirm": "Owner confirms within 2 hours or auto-confirmed",
+    "quickDeposit": "Deposit held separately, returned after trip",
+    "fuelFullToFull": "Pick up with a full tank. Return with a full tank.",
+    "fuelFullToFullFee": "Pick up with a full tank. Return with a full tank. A refueling fee of {amount} applies if returned below full.",
+    "fuelSameLevel": "Return the car at the same fuel level you picked it up at.",
+    "fuelFreeTank": "Owner provides a full tank. Return at any fuel level — no charges.",
+    "fuelOwnerHandles": "Fuel is managed separately between you and the owner. Ask for details."
   },
   "booking": {
     "configure": "Configure",
@@ -165,7 +179,25 @@
     "depositPrefix": "Deposit: {amount}.",
     "momoHowItWorks": "After you click “Confirm & Pay”, a USSD prompt will be sent to your phone. Approve it to complete your booking.",
     "bankHowItWorks": "Transfer the exact amount to the account below. Upload your proof of payment on the next screen. Our finance team will confirm within a few hours.",
-    "useBookingReference": "Use your booking reference (shown after this step)"
+    "useBookingReference": "Use your booking reference (shown after this step)",
+    "baseRateLine": "Base rate ({detail})",
+    "baseRateDay": "{count, plural, =1 {# day} other {# days}} × {rate}{scope}",
+    "baseRateWeek": "{count, plural, =1 {# week} other {# weeks}} × {rate}{scope}",
+    "baseRateMonth": "{count, plural, =1 {# month} other {# months}} × {rate}",
+    "scopeInCity": " (in-city)",
+    "scopeOutsideCity": " (outside city)",
+    "driverLine": "Driver ({count, plural, =1 {# day} other {# days}} × {rate})",
+    "deliveryFee": "Delivery fee",
+    "paidAtHandover": "Paid directly to the owner at handover",
+    "paidSecurely": "Secure payment via MTN MoMo or bank transfer",
+    "accountAutoTitle": "Your account will be created automatically",
+    "accountAutoBody": "After booking, we'll send an SMS with your login details. No password needed — just your phone number.",
+    "phNationalId": "As on your national ID",
+    "phPhone": "07X XXX XXXX",
+    "phEmail": "For booking confirmation email",
+    "minBookingDays": "Minimum booking: {count, plural, =1 {# day} other {# days}}",
+    "phCustomLocation": "e.g. In front of Chic Restaurant, Kacyiru — near the roundabout",
+    "fuelPolicy": "Fuel Policy"
   },
   "deposit": {
     "labelPlatform": "Refundable deposit",
@@ -1805,14 +1837,14 @@
   },
   "photos": {
     "photosSubmitted": "Photos submitted",
-    "returningToBooking": "Returning to your booking…",
+    "returningToBooking": "Returning to your booking...",
     "uploaded": "Uploaded",
     "uploading": "Uploading…",
     "tapToUpload": "Tap to upload photo",
     "notesOptional": "Notes (optional)",
     "previous": "Previous",
     "next": "Next",
-    "allPhotos": "All photos",
+    "allPhotos": "All Photos",
     "required": "Required",
     "preview": "Preview",
     "angleFront": "Front of car",
@@ -1835,7 +1867,12 @@
     "before": "Before",
     "after": "After",
     "uploadNow": "Upload now",
-    "postTripNeeded": "Post-trip photos are needed to complete your trip and release the deposit."
+    "postTripNeeded": "Post-trip photos are needed to complete your trip and release the deposit.",
+    "submittedTitle": "Photos Submitted",
+    "requiredProgress": "{done} of {total} required photos",
+    "uploadHint": "or drag & drop · JPG, PNG, WebP · max 10MB",
+    "notUploaded": "{label}: Not uploaded",
+    "conditionPhoto": "Condition photo"
   },
   "carForm": {
     "stepBasics": "Basics",

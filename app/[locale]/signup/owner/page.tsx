@@ -17,7 +17,7 @@ export default function OwnerSignupPage() {
   return (
     <div className="min-h-screen bg-bone">
       <Navbar />
-      <div className="flex justify-center px-4 py-10">
+      <div className="flex justify-center px-4 pb-10 pt-[calc(var(--nav-height)_+_2.5rem)]">
         <SignupForm role="OWNER" />
       </div>
     </div>

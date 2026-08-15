@@ -152,7 +152,7 @@ export function DateRangePicker({
       {minBookingDays > 1 && (
         <div className="flex items-center gap-2 text-stone-500">
           <AlertCircle size={13} />
-          <span className="text-xs">Minimum booking: {minBookingDays} days</span>
+          <span className="text-xs">{t("minBookingDays", { count: minBookingDays })}</span>
         </div>
       )}
     </div>

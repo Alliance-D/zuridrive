@@ -102,7 +102,7 @@ export default async function BecomeAnOwnerPage({
       <Navbar />
 
       {/* Hero — light, so the nav renders its dark variant over it. */}
-      <section className="border-b border-sand-dark bg-sand/40 px-4 py-16 text-center">
+      <section className="border-b border-sand-dark bg-sand/40 px-4 pb-16 pt-[calc(var(--nav-height)_+_4rem)] text-center">
         <h1 className="mx-auto max-w-3xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
           {t("heroTitle")}
         </h1>

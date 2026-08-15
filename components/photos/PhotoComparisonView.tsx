@@ -189,6 +189,7 @@ function PhotoSlot({
   phaseColor: 'blue' | 'amber'
   onZoom: (url: string) => void
 }) {
+  const t = useTranslations("photos");
   const colorMap = {
     blue: { badge: 'bg-blue-100 text-blue-700 border-blue-200', border: 'border-blue-200' },
     amber: { badge: 'bg-amber-100 text-amber-700 border-amber-200', border: 'border-amber-200' },
@@ -199,7 +200,7 @@ function PhotoSlot({
     return (
       <div className={`aspect-[4/3] rounded-xl border-2 border-dashed ${colors.border} bg-stone-50 flex flex-col items-center justify-center gap-1`}>
         <Camera size={16} className="text-stone-300" />
-        <p className="text-xs text-stone-300">{label}: Not uploaded</p>
+        <p className="text-xs text-stone-300">{t("notUploaded", { label })}</p>
       </div>
     )
   }

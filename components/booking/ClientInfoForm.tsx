@@ -43,7 +43,7 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
           icon={User}
           value={form.clientName}
           onChange={(v) => onChange('clientName', v)}
-          placeholder="As on your national ID"
+          placeholder={t('phNationalId')}
           error={errors.clientName}
           locked={isLoggedIn && !!form.clientName}
         />
@@ -53,7 +53,7 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
           icon={Phone}
           value={form.clientPhone}
           onChange={(v) => onChange('clientPhone', v)}
-          placeholder="07X XXX XXXX"
+          placeholder={t('phPhone')}
           type="tel"
           error={errors.clientPhone}
           locked={isLoggedIn && !!form.clientPhone}
@@ -64,7 +64,7 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
           icon={Mail}
           value={form.clientEmail}
           onChange={(v) => onChange('clientEmail', v)}
-          placeholder="For booking confirmation email"
+          placeholder={t('phEmail')}
           type="email"
           error={errors.clientEmail}
         />
@@ -109,9 +109,9 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
       {/* Guest account creation notice */}
       {!isLoggedIn && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
-          <p className="text-sm text-blue-800 font-medium">Your account will be created automatically</p>
+          <p className="text-sm text-blue-800 font-medium">{t('accountAutoTitle')}</p>
           <p className="text-xs text-blue-600 mt-0.5">
-            After booking, we&apos;ll send an SMS with your login details. No password needed — just your phone number.
+            {t('accountAutoBody')}
           </p>
         </div>
       )}

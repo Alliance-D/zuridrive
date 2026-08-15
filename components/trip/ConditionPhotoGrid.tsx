@@ -149,6 +149,8 @@ function PhotoGrid({
   photos: ConditionPhoto[]
   onZoom: (url: string) => void
 }) {
+  const t = useTranslations('trip')
+
   return (
     <div className="grid grid-cols-3 gap-2">
       {photos.map((photo) => (
@@ -160,7 +162,7 @@ function PhotoGrid({
           <Image
             loader={cloudinaryLoader}
             src={photo.url}
-            alt="Condition photo"
+            alt={t("conditionPhotoAlt")}
             fill
             sizes="(max-width: 768px) 33vw, 200px"
             className="object-cover transition-transform group-hover:scale-105"
