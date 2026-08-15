@@ -146,7 +146,9 @@ export async function POST(req: NextRequest) {
           to: r.phone,
           userId: r.id,
           type: NotificationType.ADMIN_BROADCAST,
-          message: `ZuriDrive: ${body}`,
+          messageKey: 'broadcast',
+          // The admin wrote this in one language; it is not ours to translate.
+          params: { body },
         })
         if (res.success) smsSent++
         else smsFailed++

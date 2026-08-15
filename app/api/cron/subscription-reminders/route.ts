@@ -70,7 +70,12 @@ export async function GET(req: NextRequest) {
         to: user.phone,
         type: NotificationType.SUBSCRIPTION_RENEWING,
         userId: user.id,
-        message: `ZuriDrive: Your ${sub.plan.name} subscription (${formatRWF(sub.plan.priceMonthly)}/month) renews in ${daysLeft} day${daysLeft === 1 ? '' : 's'}. Make sure your payment method is up to date.`,
+        messageKey: 'subscriptionRenewing',
+        params: {
+          plan: sub.plan.name,
+          price: formatRWF(sub.plan.priceMonthly),
+          days: daysLeft,
+        },
       })
     }
 
@@ -121,9 +126,10 @@ export async function GET(req: NextRequest) {
         to: user.phone,
         type: NotificationType.SUBSCRIPTION_EXPIRED,
         userId: user.id,
-        message: unlisted > 0
-          ? `ZuriDrive: Your ${sub.plan.name} subscription has expired. ${unlisted} of your cars have been unlisted, but any car with a booking stays live. Renew to put them all back.`
-          : `ZuriDrive: Your ${sub.plan.name} subscription has expired. Your cars stay listed, but you've lost priority placement and can't add new ones until you renew.`,
+        messageKey: unlisted > 0
+          ? 'subscriptionExpiredUnlisted'
+          : 'subscriptionExpiredLive',
+        params: { plan: sub.plan.name, count: unlisted },
       })
     }
 

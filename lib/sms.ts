@@ -7,11 +7,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { NotificationType } from "@prisma/client";
-import { BOOKING_SMS_TEMPLATES } from "@/lib/sms-templates";
-
-// Booking-flow message templates. Re-exported here so callers only ever need
-// `import { sendSms, SMS_TEMPLATES } from "@/lib/sms"`.
-export const SMS_TEMPLATES = BOOKING_SMS_TEMPLATES;
+import { renderSms, type SmsKey, type SmsParams } from "@/lib/sms-i18n";
 
 // Africa's Talking API base URL
 const AT_BASE_URL = "https://api.africastalking.com/version1";
@@ -47,7 +43,23 @@ interface SendSmsOptions {
   // `to` is an accepted alias — booking/cron routes call it that way.
   phone?: string;
   to?: string;
-  message: string;         // SMS body
+  /**
+   * Message key in the `sms` namespace, rendered in the recipient's language.
+   * Prefer this over `message` — see the locale note on sendSms.
+   */
+  messageKey?: SmsKey;
+  params?: SmsParams;
+  /**
+   * Pre-rendered body. Only for text that is already in the reader's language
+   * because a person typed it that way — an admin broadcast, for instance.
+   */
+  message?: string;
+  /**
+   * Overrides the recipient's stored locale. Used where the language is a
+   * property of the moment rather than the account — signup, where the account
+   * does not exist yet and the choice is whatever the browser is showing.
+   */
+  locale?: string;
   type?: NotificationType; // For logging — defaults to ADMIN_BROADCAST
   userId?: string;         // Optional — link log to user record
 }
@@ -155,7 +167,10 @@ async function sendRawSms(
 export async function sendSms({
   phone,
   to,
+  messageKey,
+  params,
   message,
+  locale,
   type = NotificationType.ADMIN_BROADCAST,
   userId,
 }: SendSmsOptions): Promise<SendSmsResult> {
@@ -168,11 +183,43 @@ export async function sendSms({
     return { success: false, error: "No recipient phone number" };
   }
 
+  // ---------------------------------------------------------------------------
+  // Language.
+  //
+  // Resolved here rather than at the call site on purpose. There are 40-odd
+  // places that send SMS and only one of them needs to be forgotten for a
+  // Kinyarwanda reader to get English — so no call site is trusted to pass it.
+  // The recipient is looked up by userId when there is one and by phone when
+  // there isn't, since plenty of callers only have a number off a relation.
+  // ---------------------------------------------------------------------------
+  let body = message;
+
+  if (messageKey) {
+    let readerLocale = locale ?? null;
+
+    if (!readerLocale) {
+      const reader = await prisma.user.findFirst({
+        where: userId ? { id: userId } : { phone: recipientPhone },
+        select: { locale: true },
+      });
+      readerLocale = reader?.locale ?? null;
+    }
+
+    body = renderSms(messageKey, params ?? {}, readerLocale);
+  }
+
+  if (!body) {
+    console.error(
+      `[SMS] Nothing to send to ${recipientPhone} (key: ${messageKey ?? "none"})`,
+    );
+    return { success: false, error: "Empty message body" };
+  }
+
   let recipient: ATRecipient | null = null;
   let errorMessage: string | undefined;
 
   try {
-    recipient = await sendRawSms(recipientPhone, message);
+    recipient = await sendRawSms(recipientPhone, body);
   } catch (error) {
     errorMessage = error instanceof Error ? error.message : "Unknown SMS error";
     console.error(`[SMS] Failed to send to ${recipientPhone}:`, errorMessage);
@@ -185,7 +232,9 @@ export async function sendSms({
       userId: userId ?? null,
       phone: recipientPhone,
       type,
-      message,
+      // The rendered text, in the language it went out in. The audit
+      // trail has to show what the recipient actually received.
+      message: body,
       messageId: recipient?.messageId ?? null,
       status: recipient?.status ?? errorMessage ?? "UNKNOWN",
       cost: recipient?.cost ?? null,
@@ -226,186 +275,17 @@ export function generateOtp(): string {
 export async function sendOtpSms(
   phone: string,
   otp: string,
-  userId?: string
+  userId?: string,
+  locale?: string,
 ): Promise<SendSmsResult> {
-  const message =
-    `Your ZuriDrive verification code is: ${otp}\n` +
-    `Valid for ${process.env.OTP_EXPIRY_MINUTES ?? 5} minutes. Do not share this code.`;
-
   return sendSms({
     phone,
-    message,
+    messageKey: "otp",
+    params: { code: otp, minutes: Number(process.env.OTP_EXPIRY_MINUTES ?? 5) },
+    // Signup sends this before the account exists, so there is no stored
+    // locale to read — the caller passes whatever language the page is in.
+    locale,
     type: "OTP",
     userId,
-  });
-}
-
-// =============================================================================
-// NOTIFICATION SMS TEMPLATES
-// Each notification type has a dedicated function with typed parameters
-// Templates are kept short — SMS has a 160 character limit per segment
-// =============================================================================
-
-export async function sendBookingRequestSms(
-  ownerPhone: string,
-  clientName: string,
-  carName: string,
-  bookingRef: string,
-  ownerId: string
-) {
-  return sendSms({
-    phone: ownerPhone,
-    message: `ZuriDrive: New booking request from ${clientName} for ${carName}. Ref: ${bookingRef}. Log in to accept within 2 hours.`,
-    type: "BOOKING_REQUEST",
-    userId: ownerId,
-  });
-}
-
-export async function sendBookingConfirmedSms(
-  clientPhone: string,
-  carName: string,
-  bookingRef: string,
-  startDate: string,
-  clientId: string
-) {
-  return sendSms({
-    phone: clientPhone,
-    message: `ZuriDrive: Your booking for ${carName} is confirmed! Ref: ${bookingRef}. Trip starts ${startDate}. We'll remind you the day before.`,
-    type: "BOOKING_CONFIRMED",
-    userId: clientId,
-  });
-}
-
-export async function sendBookingRejectedSms(
-  clientPhone: string,
-  carName: string,
-  bookingRef: string,
-  clientId: string
-) {
-  return sendSms({
-    phone: clientPhone,
-    message: `ZuriDrive: Unfortunately your booking for ${carName} (Ref: ${bookingRef}) was declined by the owner. Please browse other cars on ZuriDrive.`,
-    type: "BOOKING_REJECTED",
-    userId: clientId,
-  });
-}
-
-export async function sendPaymentConfirmedSms(
-  phone: string,
-  amount: string,
-  bookingRef: string,
-  userId: string
-) {
-  return sendSms({
-    phone,
-    message: `ZuriDrive: Payment of ${amount} confirmed for booking ${bookingRef}. Awaiting owner confirmation. We'll SMS you when ready.`,
-    type: "PAYMENT_CONFIRMED",
-    userId,
-  });
-}
-
-export async function sendTripStartingTomorrowSms(
-  phone: string,
-  carName: string,
-  pickupInfo: string,
-  userId: string
-) {
-  return sendSms({
-    phone,
-    message: `ZuriDrive: Reminder — your trip in ${carName} starts tomorrow. Pickup: ${pickupInfo}. Log in to upload pre-trip photos before you go.`,
-    type: "TRIP_STARTING_TOMORROW",
-    userId,
-  });
-}
-
-export async function sendTripCompletedSms(
-  clientPhone: string,
-  carName: string,
-  bookingRef: string,
-  clientId: string
-) {
-  return sendSms({
-    phone: clientPhone,
-    message: `ZuriDrive: Trip completed! Thanks for renting ${carName} (Ref: ${bookingRef}). Your deposit will be released shortly. Please leave a review!`,
-    type: "TRIP_COMPLETED",
-    userId: clientId,
-  });
-}
-
-export async function sendDepositReleasedSms(
-  clientPhone: string,
-  amount: string,
-  clientId: string
-) {
-  return sendSms({
-    phone: clientPhone,
-    message: `ZuriDrive: Your deposit of ${amount} has been released and is on its way back to you. Thank you for using ZuriDrive!`,
-    type: "DEPOSIT_RELEASED",
-    userId: clientId,
-  });
-}
-
-export async function sendDisputeOpenedSms(
-  phone: string,
-  bookingRef: string,
-  userId: string
-) {
-  return sendSms({
-    phone,
-    message: `ZuriDrive: A dispute has been opened for booking ${bookingRef}. Our team will review and contact you within 24 hours.`,
-    type: "DISPUTE_OPENED",
-    userId,
-  });
-}
-
-export async function sendPayoutProcessedSms(
-  ownerPhone: string,
-  amount: string,
-  ownerId: string
-) {
-  return sendSms({
-    phone: ownerPhone,
-    message: `ZuriDrive: Your payout of ${amount} has been processed! Check your ZuriDrive dashboard for proof of transfer.`,
-    type: "PAYOUT_PROCESSED",
-    userId: ownerId,
-  });
-}
-
-export async function sendSubscriptionRenewingSms(
-  ownerPhone: string,
-  planName: string,
-  amount: string,
-  daysUntil: number,
-  ownerId: string
-) {
-  return sendSms({
-    phone: ownerPhone,
-    message: `ZuriDrive: Your ${planName} subscription renews in ${daysUntil} day(s) for ${amount}. Log in to manage your subscription.`,
-    type: "SUBSCRIPTION_RENEWING",
-    userId: ownerId,
-  });
-}
-
-export async function sendConditionPhotosDeletingSms(
-  phone: string,
-  bookingRef: string,
-  userId: string
-) {
-  return sendSms({
-    phone,
-    message: `ZuriDrive: Trip photos for booking ${bookingRef} will be deleted in 24 hours. Download them now from your dashboard if you need them.`,
-    type: "CONDITION_PHOTOS_DELETING",
-    userId,
-  });
-}
-
-export async function sendGuestAccountCreatedSms(
-  phone: string,
-  loginUrl: string
-) {
-  return sendSms({
-    phone,
-    message: `ZuriDrive: Your account has been created. Log in here: ${loginUrl} — use your phone number to sign in. Welcome to ZuriDrive!`,
-    type: "ACCOUNT_CREATED",
   });
 }

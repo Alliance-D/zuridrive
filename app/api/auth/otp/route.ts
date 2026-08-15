@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateOtp, sendOtpSms } from "@/lib/sms";
+import { localeFromRequest } from "@/lib/locale-cookie";
 import { normalizeRwandaPhone } from "@/lib/phone";
 import { z } from "zod";
 
@@ -128,6 +129,9 @@ export async function POST(req: NextRequest) {
           phone: normalizedPhone,
           name: name ?? null,
           role: "CLIENT", // All new signups are clients
+          // This account is created purely to receive an OTP, so the
+          // language it is created in is the language that code arrives in.
+          locale: localeFromRequest(req),
         },
       });
     }

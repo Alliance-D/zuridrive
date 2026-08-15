@@ -33,6 +33,15 @@ export default function LanguageSwitcher({ dark = false }: { dark?: boolean }) {
     document.cookie = `${LOCALE_COOKIE}=${next};path=/;max-age=31536000;samesite=lax`;
     setOpen(false);
 
+    // Also store it against the account, so SMS goes out in this language.
+    // Deliberately not awaited: the language change must not wait on a write,
+    // and a failure here costs the SMS language, not the switch.
+    void fetch("/api/me/locale", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale: next }),
+    }).catch(() => {});
+
     // pathname includes the current locale segment; swap it in place.
     const rest = pathname.replace(new RegExp(`^/(${routing.locales.join("|")})`), "");
     startTransition(() => router.replace(`/${next}${rest || ""}`));

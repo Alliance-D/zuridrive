@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { sendSms, SMS_TEMPLATES } from '@/lib/sms'
+import { sendSms } from '@/lib/sms'
 import { setRetentionOnCompletion } from '@/lib/photos/retention'
 
 const CRON_SECRET = process.env.CRON_SECRET!
@@ -65,12 +65,13 @@ export async function GET(req: NextRequest) {
     if (booking.client.phone) {
       await sendSms({
         to: booking.client.phone,
-        message: SMS_TEMPLATES.bookingAutoConfirmed({
-          clientName: booking.client.name ?? 'there',
-          bookingRef: booking.reference,
-          carName,
-          startDate: booking.startDate.toLocaleDateString('en-RW'),
-        }),
+        messageKey: 'bookingAutoConfirmed',
+        params: {
+          client: booking.client.name ?? 'there',
+          reference: booking.reference,
+          car: carName,
+          start: booking.startDate,
+        },
       })
     }
 
@@ -78,7 +79,8 @@ export async function GET(req: NextRequest) {
     if (booking.car.owner.user.phone) {
       await sendSms({
         to: booking.car.owner.user.phone,
-        message: `ZuriDrive: Booking ${booking.reference} for your ${carName} was auto-confirmed because you didn't respond within 2 hours. Please check your dashboard.`,
+        messageKey: 'autoConfirmedOwner',
+        params: { reference: booking.reference, car: carName },
       })
     }
 

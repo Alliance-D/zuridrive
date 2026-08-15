@@ -252,10 +252,6 @@ export async function POST(
     })
 
     // ── Tell the other party ──────────────────────────────────────────────
-    const refundNote =
-      refundAmount > 0
-        ? ` Your payment of ${formatRWF(refundAmount)} will be returned within 1-3 business days.`
-        : ''
 
     if (isClient) {
       if (ownerUser.phone) {
@@ -263,7 +259,13 @@ export async function POST(
           to: ownerUser.phone,
           type: NotificationType.BOOKING_CANCELLED,
           userId: ownerUser.id,
-          message: `ZuriDrive: ${booking.client.name ?? 'The client'} cancelled booking ${booking.reference} for your ${carName}. Reason: ${parsed.data.reason}`,
+          messageKey: 'cancelledByClientToOwner',
+          params: {
+            client: booking.client.name ?? 'The client',
+            reference: booking.reference,
+            car: carName,
+            reason: parsed.data.reason,
+          },
         })
       }
       await createNotification({
@@ -285,7 +287,15 @@ export async function POST(
           to: booking.client.phone,
           type: NotificationType.BOOKING_CANCELLED,
           userId: booking.client.id,
-          message: `ZuriDrive: The owner cancelled booking ${booking.reference} for the ${carName}. Reason: ${parsed.data.reason}${refundNote}`,
+          messageKey: refundAmount > 0
+            ? 'cancelledByOwnerToClientRefund'
+            : 'cancelledByOwnerToClient',
+          params: {
+            reference: booking.reference,
+            car: carName,
+            reason: parsed.data.reason,
+            amount: formatRWF(refundAmount),
+          },
         })
       }
       await createNotification({

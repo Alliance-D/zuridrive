@@ -303,6 +303,13 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  /// Preferred language, written when someone picks one in the switcher or the
+  /// prompt bar. Pages get their locale from the URL, so this exists for the
+  /// messages sent when there is no request to read it from — SMS, and cron
+  /// jobs in particular. Defaults to English rather than null so a send never
+  /// has to decide what "no preference" means.
+  locale String @default("en")
+
   // Auth: OTP flow
   otpCode        String?
   otpExpiresAt   DateTime?

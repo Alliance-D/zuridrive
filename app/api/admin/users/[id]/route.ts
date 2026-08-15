@@ -135,7 +135,8 @@ export async function POST(
           to: user.phone,
           type: NotificationType.ADMIN_BROADCAST,
           userId: user.id,
-          message: `ZuriDrive: Your account has been suspended. ${parsed.data.reason} Contact support if you believe this is a mistake.`,
+          messageKey: 'accountSuspended',
+          params: { reason: parsed.data.reason },
         })
       }
 

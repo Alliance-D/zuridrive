@@ -58,14 +58,16 @@ export async function GET(req: NextRequest) {
     if (booking.client.phone) {
       await sendSms({
         to: booking.client.phone,
-        message: `ZuriDrive: Your trip with ${carName} is now active! (${booking.reference}). Remember to take pre-trip condition photos before driving. Have a great trip!`,
+        messageKey: 'tripActiveClient',
+        params: { car: carName, reference: booking.reference },
       })
     }
 
     if (booking.car.owner.user.phone) {
       await sendSms({
         to: booking.car.owner.user.phone,
-        message: `ZuriDrive: Booking ${booking.reference} for ${carName} is now active. The client's trip has started.`,
+        messageKey: 'tripActiveOwner',
+        params: { reference: booking.reference, car: carName },
       })
     }
 
@@ -103,14 +105,20 @@ export async function GET(req: NextRequest) {
     if (booking.client.phone) {
       await sendSms({
         to: booking.client.phone,
-        message: `ZuriDrive: Reminder — your ${carName} trip starts tomorrow! Pickup: ${pickup}. Ref: ${booking.reference}. Don't forget to take condition photos at pickup.`,
+        messageKey: 'tripTomorrowClient',
+        params: { car: carName, pickup, reference: booking.reference },
       })
     }
 
     if (booking.car.owner.user.phone) {
       await sendSms({
         to: booking.car.owner.user.phone,
-        message: `ZuriDrive: Reminder — your ${carName} is being picked up tomorrow. Booking: ${booking.reference}. Client: ${booking.client.name}.`,
+        messageKey: 'tripTomorrowOwner',
+        params: {
+          car: carName,
+          reference: booking.reference,
+          client: booking.client.name ?? '',
+        },
       })
     }
 

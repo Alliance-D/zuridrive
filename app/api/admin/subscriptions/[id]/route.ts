@@ -185,7 +185,18 @@ export async function PATCH(
           to: ownerUser.phone,
           type: NotificationType.PAYMENT_CONFIRMED,
           userId: ownerUser.id,
-          message: `ZuriDrive: Your ${activation.planName} plan is active until ${activation.expiresAt.toLocaleDateString('en-RW')}.${relistNote}`,
+          messageKey:
+            activation.relisted > 0
+              ? 'planActiveRelisted'
+              : activation.unlisted > 0
+                ? 'planActiveUnlisted'
+                : 'planActive',
+          params: {
+            plan: activation.planName,
+            date: activation.expiresAt,
+            count:
+              activation.relisted > 0 ? activation.relisted : activation.unlisted,
+          },
         })
       }
 

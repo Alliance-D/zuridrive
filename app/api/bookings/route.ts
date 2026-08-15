@@ -26,7 +26,8 @@ import { checkCarAvailability } from '@/lib/booking/availability'
 import { calculateBookingPrice } from '@/lib/booking/pricing'
 import { getPlatformSettings } from '@/lib/platform-settings'
 import { paymentsEnabled } from '@/lib/payments'
-import { sendSms, SMS_TEMPLATES } from '@/lib/sms'
+import { sendSms } from '@/lib/sms'
+import { localeFromRequest } from '@/lib/locale-cookie'
 import { formatRWF } from '@/lib/currency'
 import { NotificationType } from '@prisma/client'
 import { z } from 'zod'
@@ -210,6 +211,8 @@ export async function POST(req: NextRequest) {
             name: data.clientName,
             role: 'CLIENT',
             passwordHash: tempPasswordHash,
+            // A guest booking still gets SMS - in the language they booked in.
+            locale: localeFromRequest(req),
           },
         })
         userId = newUser.id
@@ -357,14 +360,15 @@ export async function POST(req: NextRequest) {
         to: car.owner.user.phone,
         type: NotificationType.BOOKING_REQUEST,
         userId: car.owner.user.id,
-        message: SMS_TEMPLATES.newBookingRequest({
-          ownerName: car.owner.user.name ?? 'Owner',
-          bookingRef: bookingReference,
-          carName: `${car.make} ${car.model}`,
-          startDate: startDate.toLocaleDateString('en-RW'),
-          endDate: endDate.toLocaleDateString('en-RW'),
-          totalAmount: formatRWF(pricing.subtotalBeforeDeposit),
-        }),
+        messageKey: 'newBookingRequest',
+        params: {
+          owner: car.owner.user.name ?? 'Owner',
+          car: `${car.make} ${car.model}`,
+          start: startDate,
+          end: endDate,
+          amount: formatRWF(pricing.subtotalBeforeDeposit),
+          reference: bookingReference,
+        },
       })
     }
 

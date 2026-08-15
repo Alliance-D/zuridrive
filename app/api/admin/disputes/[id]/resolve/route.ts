@@ -247,10 +247,14 @@ export async function POST(
         to: dispute.booking.client.phone,
         type: NotificationType.DISPUTE_RESOLVED,
         userId: dispute.booking.clientId,
-        message:
+        messageKey:
           clientRefundAmount > 0
-            ? `ZuriDrive: The dispute on booking ${dispute.booking.reference} has been resolved. ${formatRWF(clientRefundAmount)} of your deposit is being returned. It should reflect within 1-3 business days.`
-            : `ZuriDrive: The dispute on booking ${dispute.booking.reference} has been resolved. Your deposit was awarded to the owner. Contact support if you'd like to discuss this.`,
+            ? 'disputeResolvedClientRefund'
+            : 'disputeResolvedClientNone',
+        params: {
+          reference: dispute.booking.reference,
+          amount: formatRWF(clientRefundAmount),
+        },
       })
     }
 
@@ -259,10 +263,15 @@ export async function POST(
         to: ownerUser.phone,
         type: NotificationType.DISPUTE_RESOLVED,
         userId: ownerUser.id,
-        message:
+        messageKey:
           ownerAwardAmount > 0
-            ? `ZuriDrive: The dispute on ${carName} (${dispute.booking.reference}) has been resolved in your favour. ${formatRWF(ownerAwardAmount)} has been awarded to you.`
-            : `ZuriDrive: The dispute on ${carName} (${dispute.booking.reference}) has been resolved. The deposit was returned to the client.`,
+            ? 'disputeResolvedOwnerAward'
+            : 'disputeResolvedOwnerNone',
+        params: {
+          car: carName,
+          reference: dispute.booking.reference,
+          amount: formatRWF(ownerAwardAmount),
+        },
       })
     }
 

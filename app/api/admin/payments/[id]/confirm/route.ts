@@ -19,7 +19,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { requireModuleAccess } from '@/lib/api-guard'
 import { logAdminAction } from '@/lib/admin-logger'
-import { sendSms, SMS_TEMPLATES } from '@/lib/sms'
+import { sendSms } from '@/lib/sms'
 import { createNotification } from '@/lib/notifications'
 import { activateDeposit, voidPendingDeposit } from '@/lib/finance/deposits'
 import { formatRWF } from '@/lib/currency'
@@ -147,12 +147,12 @@ export async function POST(
           to: payment.booking.client.phone,
           type: NotificationType.PAYMENT_CONFIRMED,
           userId: payment.booking.clientId,
-          message: SMS_TEMPLATES.paymentConfirmed({
-            clientName: payment.booking.client.name ?? 'there',
-            bookingRef: payment.booking.reference,
-            carName,
-            totalPaid: formatRWF(payment.totalAmount),
-          }),
+          messageKey: 'paymentConfirmed',
+          params: {
+            amount: formatRWF(payment.totalAmount),
+            car: carName,
+            reference: payment.booking.reference,
+          },
         })
       }
 
@@ -162,14 +162,15 @@ export async function POST(
           to: ownerUser.phone,
           type: NotificationType.BOOKING_REQUEST,
           userId: ownerUser.id,
-          message: SMS_TEMPLATES.newBookingRequest({
-            ownerName: ownerUser.name ?? 'Owner',
-            bookingRef: payment.booking.reference,
-            carName,
-            startDate: payment.booking.startDate.toLocaleDateString('en-RW'),
-            endDate: payment.booking.endDate.toLocaleDateString('en-RW'),
-            totalAmount: formatRWF(payment.booking.subtotal),
-          }),
+          messageKey: 'newBookingRequest',
+          params: {
+            owner: ownerUser.name ?? 'Owner',
+            car: carName,
+            start: payment.booking.startDate,
+            end: payment.booking.endDate,
+            amount: formatRWF(payment.booking.subtotal),
+            reference: payment.booking.reference,
+          },
         })
       }
 

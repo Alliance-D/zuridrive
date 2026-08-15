@@ -165,9 +165,8 @@ export async function POST(req: NextRequest) {
       to: phone,
       type: NotificationType.ACCOUNT_CREATED,
       userId: user.id,
-      message: `ZuriDrive: You've been given admin access. Sign in at ${
-        process.env.NEXTAUTH_URL ?? 'zuridrive.rw'
-      }/login with this phone number — we'll text you a code.`,
+      messageKey: 'adminAccessGranted',
+      params: { url: process.env.NEXTAUTH_URL ?? 'zuridrive.rw' },
     })
 
     return NextResponse.json(

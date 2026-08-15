@@ -16,6 +16,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { localeFromRequest } from '@/lib/locale-cookie'
 import { prisma } from '@/lib/db'
 import { normalizeRwandaPhone } from '@/lib/phone'
 import { hashPassword } from '@/lib/auth'
@@ -76,6 +77,7 @@ export async function POST(req: NextRequest) {
         email: parsed.data.email?.toLowerCase().trim() ?? null,
         passwordHash: await hashPassword(parsed.data.password),
         role: 'CLIENT',
+        locale: localeFromRequest(req),
         // Unverified until they prove the number. Not a barrier to signing in.
         phoneVerifiedAt: null,
       },

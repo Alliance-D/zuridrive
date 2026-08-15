@@ -145,7 +145,11 @@ export async function POST(
       if (client.phone) {
         await sendSms({
           to: client.phone,
-          message: `ZuriDrive: Your deposit of ${formatRWF(deposit.amount)} for booking ${deposit.booking.reference} has been released. It will reflect in your account within 1-3 business days.`,
+          messageKey: 'depositReleased',
+          params: {
+            amount: formatRWF(deposit.amount),
+            reference: deposit.booking.reference,
+          },
         })
       }
 
@@ -215,14 +219,24 @@ export async function POST(
       if (client.phone) {
         await sendSms({
           to: client.phone,
-          message: `ZuriDrive: ${formatRWF(withholdAmount)} of your deposit for booking ${deposit.booking.reference} has been withheld. ${formatRWF(returnAmount)} will be returned within 1-3 business days. Reason: ${reason}`,
+          messageKey: 'depositPartialWithheldClient',
+          params: {
+            withheld: formatRWF(withholdAmount),
+            reference: deposit.booking.reference,
+            returned: formatRWF(returnAmount),
+            reason,
+          },
         })
       }
       // SMS owner
       if (ownerUser.phone) {
         await sendSms({
           to: ownerUser.phone,
-          message: `ZuriDrive: A deposit deduction of ${formatRWF(withholdAmount)} has been approved for booking ${deposit.booking.reference}. Contact support for details.`,
+          messageKey: 'depositDeductionOwner',
+          params: {
+            amount: formatRWF(withholdAmount),
+            reference: deposit.booking.reference,
+          },
         })
       }
 
@@ -270,7 +284,12 @@ export async function POST(
       if (client.phone) {
         await sendSms({
           to: client.phone,
-          message: `ZuriDrive: Your full deposit of ${formatRWF(deposit.amount)} for booking ${deposit.booking.reference} has been withheld. Reason: ${reason}. Contact support if you wish to dispute this.`,
+          messageKey: 'depositFullWithheld',
+          params: {
+            amount: formatRWF(deposit.amount),
+            reference: deposit.booking.reference,
+            reason,
+          },
         })
       }
 

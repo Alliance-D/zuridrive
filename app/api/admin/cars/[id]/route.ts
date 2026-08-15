@@ -121,7 +121,8 @@ export async function POST(
           to: ownerUser.phone,
           type: NotificationType.ADMIN_BROADCAST,
           userId: ownerUser.id,
-          message: `ZuriDrive: Your ${carName} is now live and can be booked. Manage it from your fleet page.`,
+          messageKey: 'listingLive',
+          params: { car: carName },
         })
       }
       await createNotification({
@@ -207,7 +208,8 @@ export async function POST(
           to: ownerUser.phone,
           type: NotificationType.ADMIN_BROADCAST,
           userId: ownerUser.id,
-          message: `ZuriDrive: Your ${carName} listing has been suspended. ${parsed.data.reason} Contact support if you'd like to discuss this.`,
+          messageKey: 'listingSuspended',
+          params: { car: carName, reason: parsed.data.reason },
         })
       }
 

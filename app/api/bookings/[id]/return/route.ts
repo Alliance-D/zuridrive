@@ -22,7 +22,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { sendSms, SMS_TEMPLATES } from '@/lib/sms'
+import { sendSms } from '@/lib/sms'
 import { logAdminAction } from '@/lib/admin-logger'
 import { formatRWF } from '@/lib/currency'
 import { setRetentionOnCompletion } from '@/lib/photos/retention'
@@ -192,6 +192,9 @@ export async function POST(
               channel: 'IN_APP',
               title: 'How was your trip?',
               body: `Your ${carName} trip is complete. Leave a review to help other renters.`,
+              titleKey: 'reviewReminderTitle',
+              bodyKey: 'reviewReminderBody',
+              params: { car: carName },
               actionUrl: `/dashboard/bookings/${booking.id}/review`,
               metadata: { bookingId: booking.id },
             },
@@ -205,13 +208,19 @@ export async function POST(
         if (booking.client.phone) {
           await sendSms({
             to: booking.client.phone,
-            message: `ZuriDrive: Your trip with ${carName} is complete! Ref: ${booking.reference}. Your deposit of ${formatRWF(booking.deposit?.amount ?? 0)} has been released. Please leave a review on your dashboard.`,
+            messageKey: 'tripCompleteClient',
+          params: {
+            car: carName,
+            reference: booking.reference,
+            amount: formatRWF(booking.deposit?.amount ?? 0),
+          },
           })
         }
         if (booking.car.owner.user.phone) {
           await sendSms({
             to: booking.car.owner.user.phone,
-            message: `ZuriDrive: ${carName} booking ${booking.reference} completed. Your earnings will be available for payout request from your dashboard.`,
+            messageKey: 'tripCompleteOwner',
+          params: { car: carName, reference: booking.reference },
           })
         }
 
@@ -236,7 +245,12 @@ export async function POST(
         if (otherPhone) {
           await sendSms({
             to: otherPhone,
-            message: `ZuriDrive: The ${actorRole} has confirmed return of ${carName} (${booking.reference}). Please log in and confirm the return to release the deposit.`,
+            messageKey: 'returnConfirmedByOther',
+          params: {
+            role: actorRole,
+            car: carName,
+            reference: booking.reference,
+          },
           })
         }
 
@@ -252,6 +266,9 @@ export async function POST(
             channel: 'IN_APP',
             title: 'Please confirm car return',
             body: `The ${actorRole} has confirmed return of ${carName}. Your confirmation is needed to release the deposit.`,
+            titleKey: 'confirmReturnTitle',
+            bodyKey: 'confirmReturnBody',
+            params: { role: actorRole, car: carName },
             actionUrl: `/dashboard/bookings/${booking.id}`,
             metadata: { bookingId: booking.id },
           },
@@ -312,6 +329,14 @@ export async function POST(
               channel: 'IN_APP' as const,
               title: `Dispute opened on booking ${booking.reference}`,
               body: `${isClient ? 'Client' : 'Owner'} reported: ${category} — ${description.slice(0, 100)}`,
+              titleKey: 'disputeOpenedAdminTitle',
+              bodyKey: 'disputeOpenedAdminBody',
+              params: {
+                reference: booking.reference,
+                role: isClient ? 'client' : 'owner',
+                category,
+                description: description.slice(0, 100),
+              },
               actionUrl: `/admin/disputes`,
             })),
           })
@@ -322,13 +347,15 @@ export async function POST(
       if (booking.client.phone) {
         await sendSms({
           to: booking.client.phone,
-          message: `ZuriDrive: A dispute has been opened on booking ${booking.reference} (${carName}). Our team will review and contact you within 24 hours. The deposit is held pending resolution.`,
+          messageKey: 'disputeOpenedClient',
+          params: { reference: booking.reference, car: carName },
         })
       }
       if (booking.car.owner.user.phone) {
         await sendSms({
           to: booking.car.owner.user.phone,
-          message: `ZuriDrive: A dispute has been opened on booking ${booking.reference} (${carName}). Our team will review and contact you within 24 hours.`,
+          messageKey: 'disputeOpenedOwner',
+          params: { reference: booking.reference, car: carName },
         })
       }
 

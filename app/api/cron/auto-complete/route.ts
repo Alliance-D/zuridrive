@@ -107,6 +107,9 @@ export async function GET(req: NextRequest) {
           channel: 'IN_APP',
           title: 'How was your trip?',
           body: `Your trip with ${booking.car.make} ${booking.car.model} is complete. Leave a review!`,
+          titleKey: 'reviewReminderTitle',
+          bodyKey: 'reviewReminderBody',
+          params: { car: `${booking.car.make} ${booking.car.model}` },
           actionUrl: `/dashboard/bookings/${booking.id}/review`,
           metadata: { bookingId: booking.id },
         },
@@ -122,13 +125,21 @@ export async function GET(req: NextRequest) {
     if (booking.client.phone) {
       await sendSms({
         to: booking.client.phone,
-        message: `ZuriDrive: Your ${carName} trip (${booking.reference}) is now marked complete. ${depositAmount > 0 ? `Your deposit of ${formatRWF(depositAmount)} has been released. ` : ''}Please leave a review on your dashboard.`,
+        messageKey: depositAmount > 0
+          ? 'autoCompleteClientDeposit'
+          : 'autoCompleteClient',
+        params: {
+          car: carName,
+          reference: booking.reference,
+          amount: formatRWF(depositAmount),
+        },
       })
     }
     if (booking.car.owner.user.phone) {
       await sendSms({
         to: booking.car.owner.user.phone,
-        message: `ZuriDrive: Booking ${booking.reference} (${carName}) has been auto-completed. Your earnings are available for payout request.`,
+        messageKey: 'autoCompleteOwner',
+        params: { reference: booking.reference, car: carName },
       })
     }
 
@@ -164,13 +175,16 @@ export async function GET(req: NextRequest) {
 
   for (const booking of photoDeletionBookings) {
     const carName = `${booking.car.make} ${booking.car.model}`
-    const message = `ZuriDrive: Condition photos for your ${carName} trip (${booking.reference}) will be deleted in 24 hours. Download them from your dashboard if you need them.`
+    const photoWarning = {
+      messageKey: 'photosDeleting',
+      params: { car: carName, reference: booking.reference },
+    } as const
 
     if (booking.client.phone) {
-      await sendSms({ to: booking.client.phone, message })
+      await sendSms({ to: booking.client.phone, ...photoWarning })
     }
     if (booking.car.owner.user.phone) {
-      await sendSms({ to: booking.car.owner.user.phone, message })
+      await sendSms({ to: booking.car.owner.user.phone, ...photoWarning })
     }
 
     await db.booking.update({

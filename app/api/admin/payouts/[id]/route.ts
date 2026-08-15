@@ -186,9 +186,11 @@ export async function POST(
           to: ownerUser.phone,
           type: NotificationType.PAYOUT_PROCESSED,
           userId: ownerUser.id,
-          message: `ZuriDrive: Your payout of ${formatRWF(payout.netAmount)} has been sent to your ${
-            payout.method === 'MTN_MOMO' ? 'MoMo account' : 'bank account'
-          }. It should reflect within 1-3 business days.`,
+          messageKey: 'payoutSent',
+          params: {
+            amount: formatRWF(payout.netAmount),
+            method: payout.method,
+          },
         })
       }
 
@@ -232,7 +234,11 @@ export async function POST(
         to: ownerUser.phone,
         type: NotificationType.PAYOUT_PROCESSED,
         userId: ownerUser.id,
-        message: `ZuriDrive: We couldn't complete your ${formatRWF(payout.netAmount)} payout. ${parsed.data.reason} Your earnings are still available — please check your payout details and try again.`,
+        messageKey: 'payoutFailed',
+        params: {
+          amount: formatRWF(payout.netAmount),
+          reason: parsed.data.reason,
+        },
       })
     }
 

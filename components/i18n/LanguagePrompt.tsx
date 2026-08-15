@@ -58,6 +58,15 @@ export default function LanguagePrompt() {
 
   function remember(choice: Locale) {
     document.cookie = `${LOCALE_COOKIE}=${choice};path=/;max-age=31536000;samesite=lax`;
+
+    // Store it against the account too, so SMS follows. Both buttons come
+    // through here — keeping the current language is as much a preference as
+    // switching, and SMS should honour it either way.
+    void fetch("/api/me/locale", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale: choice }),
+    }).catch(() => {});
   }
 
   if (!suggest) return null;

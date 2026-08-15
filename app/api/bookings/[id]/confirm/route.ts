@@ -19,7 +19,7 @@ import { db } from '@/lib/db'
 import { requireRole } from '@/lib/api-guard'
 import { getPhoneVerification } from '@/lib/phone-verification'
 import { logAdminAction } from '@/lib/admin-logger'
-import { sendSms, SMS_TEMPLATES } from '@/lib/sms'
+import { sendSms } from '@/lib/sms'
 import { formatRWF } from '@/lib/currency'
 import { z } from 'zod'
 
@@ -111,13 +111,14 @@ export async function POST(
       if (booking.client.phone) {
         await sendSms({
           to: booking.client.phone,
-          message: SMS_TEMPLATES.bookingConfirmedByOwner({
-            clientName: booking.client.name ?? 'there',
-            bookingRef: booking.reference,
-            carName,
-            startDate: booking.startDate.toLocaleDateString('en-RW'),
-            ownerName: booking.car.owner.user.name ?? 'your owner',
-          }),
+          messageKey: 'bookingConfirmedByOwner',
+          params: {
+            client: booking.client.name ?? 'there',
+            owner: booking.car.owner.user.name ?? 'your owner',
+            car: carName,
+            start: booking.startDate,
+            reference: booking.reference,
+          },
         })
       }
 
@@ -180,12 +181,18 @@ export async function POST(
       if (booking.client.phone) {
         await sendSms({
           to: booking.client.phone,
-          message: SMS_TEMPLATES.bookingRejectedByOwner({
-            clientName: booking.client.name ?? 'there',
-            bookingRef: booking.reference,
-            carName,
-            reason: rejectReason ?? 'The owner was unable to accept this booking.',
-          }),
+          // A reason the owner typed goes through verbatim; the no-reason
+          // case is our sentence, so it gets its own key rather than an
+          // English default spliced into a translated frame.
+          messageKey: rejectReason
+            ? 'bookingRejectedByOwner'
+            : 'bookingRejectedByOwnerNoReason',
+          params: {
+            client: booking.client.name ?? 'there',
+            car: carName,
+            reference: booking.reference,
+            reason: rejectReason ?? '',
+          },
         })
       }
 

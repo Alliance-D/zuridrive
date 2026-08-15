@@ -108,7 +108,27 @@ for (const file of ROOTS.flatMap((r) => walk(r))) {
   // Scoped to files that actually write notifications. `titleKey` is also an
   // ordinary prop name elsewhere — EmptyState takes one that resolves against
   // `dashboard` — and checking those against `notification` reports nonsense.
-  if (!/createNotification|notifyAdminsWithModule/.test(src)) continue;
+  // `notification.create` is here because some routes write the row directly
+  // through Prisma rather than through createNotification, and those were
+  // exactly the ones that stayed English longest — nothing was looking at them.
+  if (
+    !/createNotification|notifyAdminsWithModule|sendSms|sendOtpSms|notification\.create/.test(
+      src,
+    )
+  )
+    continue;
+
+  // sendSms takes `messageKey` against the `sms` namespace, the same way
+  // createNotification takes titleKey/bodyKey against `notification`.
+  for (const m of src.matchAll(/\bmessageKey:\s*["'`]([\w.]+)["'`]/g)) {
+    const full = `sms.${m[1]}`;
+    for (const loc of LOCALES) {
+      if (typeof resolve(messages[loc], full) !== "string") {
+        missing.push({ file, key: full, locale: loc });
+      }
+    }
+  }
+
   if (!/titleKey|bodyKey/.test(src)) continue;
   for (const m of src.matchAll(/\b(?:titleKey|bodyKey):\s*["'`]([\w.]+)["'`]/g)) {
     const full = `notification.${m[1]}`;

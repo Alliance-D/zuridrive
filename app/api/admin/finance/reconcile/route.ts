@@ -59,6 +59,12 @@ export async function POST(_req: NextRequest) {
             channel: NotificationChannel.IN_APP,
             title: 'Reconciliation mismatch',
             body: `The books are off by ${formatRWF(result.discrepancyAmount)}. ${result.notes[0] ?? ''}`,
+            titleKey: 'reconciliationMismatchTitle',
+            bodyKey: 'reconciliationMismatchBody',
+            params: {
+              amount: formatRWF(result.discrepancyAmount),
+              note: result.notes[0] ?? '',
+            } as Prisma.InputJsonValue,
             actionUrl: '/admin/finance/reports',
             metadata: { logId: log.id } as Prisma.InputJsonValue,
           })),

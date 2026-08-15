@@ -202,17 +202,25 @@ export async function POST(
         },
       })
 
-      const refundNote =
+      const depositReturned =
         booking.deposit && booking.deposit.status === 'HELD'
-          ? ` Your deposit of ${formatRWF(booking.deposit.amount)} will be returned within 1-3 business days.`
-          : ''
+          ? booking.deposit.amount
+          : 0
 
       if (booking.client.phone) {
         await sendSms({
           to: booking.client.phone,
           type: NotificationType.BOOKING_CANCELLED,
           userId: booking.client.id,
-          message: `ZuriDrive: Your booking ${booking.reference} for ${carName} has been cancelled by our team. ${reason}${refundNote}`,
+          messageKey: depositReturned > 0
+            ? 'adminCancelledClientRefund'
+            : 'adminCancelledClient',
+          params: {
+            reference: booking.reference,
+            car: carName,
+            reason,
+            amount: formatRWF(depositReturned),
+          },
         })
       }
       if (ownerUser.phone) {
@@ -220,7 +228,8 @@ export async function POST(
           to: ownerUser.phone,
           type: NotificationType.BOOKING_CANCELLED,
           userId: ownerUser.id,
-          message: `ZuriDrive: Booking ${booking.reference} for your ${carName} has been cancelled by our team. ${reason}`,
+          messageKey: 'adminCancelledOwner',
+          params: { reference: booking.reference, car: carName, reason },
         })
       }
 

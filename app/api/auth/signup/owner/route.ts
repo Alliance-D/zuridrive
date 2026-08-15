@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateOtp, sendOtpSms } from "@/lib/sms";
+import { localeFromRequest } from "@/lib/locale-cookie";
 import { z } from "zod";
 
 const ownerSignupSchema = z.object({
@@ -98,6 +99,8 @@ export async function POST(req: NextRequest) {
           name,
           email: email?.toLowerCase() ?? null,
           role: "OWNER",
+          // The OTP below is the first thing this account receives.
+          locale: localeFromRequest(req),
         },
       });
 

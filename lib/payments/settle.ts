@@ -27,7 +27,7 @@ import { prisma } from "@/lib/db";
 import { getPaymentProvider } from "@/lib/payments";
 import { activateDeposit } from "@/lib/finance/deposits";
 import { activateSubscription } from "@/lib/subscriptions/checkout";
-import { sendSms, SMS_TEMPLATES } from "@/lib/sms";
+import { sendSms } from "@/lib/sms";
 import { createNotification } from "@/lib/notifications";
 import { formatRWF } from "@/lib/currency";
 import { NotificationType } from "@prisma/client";
@@ -269,7 +269,13 @@ export async function settleSubscriptionPayment(
       to: user.phone,
       type: NotificationType.PAYMENT_CONFIRMED,
       userId: user.id,
-      message: `ZuriDrive: Your ${activation.planName} plan is active until ${activation.expiresAt.toLocaleDateString("en-RW")}.${relistNote}`,
+      messageKey:
+      activation.relisted > 0 ? "planActiveRelisted" : "planActive",
+    params: {
+      plan: activation.planName,
+      date: activation.expiresAt,
+      count: activation.relisted,
+    },
     });
   }
 
@@ -308,26 +314,27 @@ async function notifyBookingPaid(
     if (booking.client.phone) {
       await sendSms({
         to: booking.client.phone,
-        message: SMS_TEMPLATES.paymentConfirmed({
-          clientName: booking.client.name ?? "there",
-          bookingRef: booking.reference,
-          carName,
-          totalPaid: formatRWF(totalPaid),
-        }),
+        messageKey: "paymentConfirmed",
+        params: {
+          amount: formatRWF(totalPaid),
+          car: carName,
+          reference: booking.reference,
+        },
       });
     }
 
     if (ownerUser.phone) {
       await sendSms({
         to: ownerUser.phone,
-        message: SMS_TEMPLATES.newBookingRequest({
-          ownerName: ownerUser.name ?? "Owner",
-          bookingRef: booking.reference,
-          carName,
-          startDate: booking.startDate.toLocaleDateString("en-RW"),
-          endDate: booking.endDate.toLocaleDateString("en-RW"),
-          totalAmount: formatRWF(totalPaid),
-        }),
+        messageKey: "newBookingRequest",
+        params: {
+          owner: ownerUser.name ?? "Owner",
+          car: carName,
+          start: booking.startDate,
+          end: booking.endDate,
+          amount: formatRWF(totalPaid),
+          reference: booking.reference,
+        },
       });
     }
   } catch (error) {

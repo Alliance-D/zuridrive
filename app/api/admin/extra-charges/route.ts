@@ -308,7 +308,15 @@ export async function PATCH(req: NextRequest) {
         to: charge.booking.client.phone,
         type: NotificationType.DEPOSIT_WITHHELD,
         userId: charge.booking.clientId,
-        message: `ZuriDrive: ${formatRWF(collected)} has been deducted from your deposit for booking ${charge.booking.reference}. ${charge.description}${remainingToClient > 0 ? ` The remaining ${formatRWF(remainingToClient)} will be returned.` : ''}`,
+        messageKey: remainingToClient > 0
+          ? 'depositDeductedRemainder'
+          : 'depositDeducted',
+        params: {
+          amount: formatRWF(collected),
+          reference: charge.booking.reference,
+          description: charge.description,
+          remaining: formatRWF(remainingToClient),
+        },
       })
     }
 
