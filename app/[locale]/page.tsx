@@ -122,6 +122,20 @@ async function getStats() {
   }
 }
 
+/** Pickup neighbourhoods offered in the hero search. */
+async function getNeighborhoods() {
+  try {
+    return await prisma.neighborhood.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    });
+  } catch (error) {
+    console.error("[home] Could not read neighbourhoods", error);
+    return [];
+  }
+}
+
 /**
  * What cars actually list for, per day.
  *
@@ -171,11 +185,12 @@ export default async function HomePage({
   // Banner first — the main grid excludes whatever it takes, so no car
   // appears twice on the page.
   const bannerCars = await getBannerCars();
-  const [cars, stats, priceRange, settings] = await Promise.all([
+  const [cars, stats, priceRange, settings, neighborhoods] = await Promise.all([
     getHomepageCars(bannerCars.map((c) => c.id)),
     getStats(),
     getListedPriceRange(),
     getPlatformSettings(),
+    getNeighborhoods(),
   ]);
 
   // The owner's share is the inverse of the commission, which an admin can
@@ -246,7 +261,7 @@ export default async function HomePage({
 
           {/* Search widget — the main action */}
           <div className="animate-[slideUp_0.7s_ease_0.3s_both]">
-            <HeroSearch />
+            <HeroSearch neighborhoods={neighborhoods} />
           </div>
         </div>
       </section>

@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import type { CarCategory, TransmissionType } from "@prisma/client";
 import { SlidersHorizontal } from "lucide-react";
+import { OCCUPYING_BOOKING_STATUSES } from "@/lib/booking/availability";
 
 export const metadata: Metadata = {
   title: "Browse Cars",
@@ -88,6 +89,67 @@ async function getCars(filters: FilterParams) {
       };
     }
 
+    // Location and dates each need their own OR, so they are collected as
+    // separate AND clauses rather than both writing to where.OR — the second
+    // would silently overwrite the first, which is how a filter ends up looking
+    // applied and doing nothing.
+    const and: Record<string, unknown>[] = [];
+
+    // Pickup neighbourhood. A car qualifies if it has an approved pickup point
+    // there, or if the owner delivers anywhere — a delivered car is genuinely
+    // available in that neighbourhood, so excluding it would hide real options.
+    if (filters.location) {
+      and.push({
+        OR: [
+          {
+            locations: {
+              some: { neighborhoodId: filters.location, isApproved: true },
+            },
+          },
+          { deliverAnywhere: true },
+        ],
+      });
+    }
+
+    // Dates. The definition of "occupied" is lib/booking/availability.ts, and
+    // it has to stay the same one: a car that search offers and the booking
+    // endpoint then rejects is worse than a car that never appeared.
+    if (filters.from && filters.to) {
+      const start = new Date(filters.from);
+      const end = new Date(filters.to);
+
+      if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= end) {
+        and.push({
+          bookings: {
+            none: {
+              status: { in: [...OCCUPYING_BOOKING_STATUSES] },
+              startDate: { lte: end },
+              endDate: { gte: start },
+            },
+          },
+        });
+        and.push({
+          availability: {
+            none: { startDate: { lte: end }, endDate: { gte: start } },
+          },
+        });
+
+        // A car whose minimum stay is longer than the requested trip cannot be
+        // booked for it, so it does not belong in the results.
+        const requestedDays = Math.ceil(
+          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        and.push({
+          OR: [
+            { minBookingDays: null },
+            { minBookingDays: { lte: Math.max(requestedDays, 1) } },
+          ],
+        });
+      }
+    }
+
+    if (and.length > 0) where.AND = and;
+
     const page = filters.page ?? 1;
     const skip = (page - 1) * PAGE_SIZE;
 
@@ -125,6 +187,20 @@ interface CarsPageProps {
 export default async function CarsPage({ params, searchParams }: CarsPageProps) {
   const t = await getTranslations({ locale: params.locale, namespace: "cars" });
   const filters = parseFilters(searchParams);
+
+  // filters.location is a neighbourhood id. The heading needs its name, and a
+  // stale or invented id should simply read as no location rather than
+  // printing a cuid at the top of the page.
+  const locationName = filters.location
+    ? (
+        await prisma.neighborhood
+          .findUnique({
+            where: { id: filters.location },
+            select: { name: true },
+          })
+          .catch(() => null)
+      )?.name ?? null
+    : null;
   const { cars, total, totalPages } = await getCars(filters);
   const currentPage = filters.page ?? 1;
 
@@ -144,8 +220,8 @@ export default async function CarsPage({ params, searchParams }: CarsPageProps) 
           </h1>
           <p className="text-fluid-sm text-ink-soft">
             {t("found", { count: total })}{" "}
-            {filters.location
-              ? t("near", { location: filters.location })
+            {locationName
+              ? t("near", { location: locationName })
               : t("acrossRwanda")}
           </p>
         </div>

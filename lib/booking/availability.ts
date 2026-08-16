@@ -8,6 +8,21 @@
 
 import { db } from '@/lib/db'
 
+/**
+ * Booking states that actually occupy the car.
+ *
+ * Exported because search filters on the same thing. Two copies of this list
+ * would drift, and the way it fails is that search offers a car the booking
+ * endpoint then refuses - the visitor picks dates, gets a result, and is told
+ * no at the last step.
+ */
+export const OCCUPYING_BOOKING_STATUSES = [
+  'PAYMENT_CONFIRMED',
+  'AWAITING_OWNER_CONFIRMATION',
+  'CONFIRMED',
+  'ACTIVE',
+] as const
+
 export interface AvailabilityCheckResult {
   available: boolean
   reason?: 'OWNER_BLOCKED' | 'BOOKING_CONFLICT' | 'BELOW_MINIMUM_DURATION'
@@ -66,14 +81,7 @@ export async function checkCarAvailability(
     where: {
       carId,
       // Only statuses that actually occupy the car
-      status: {
-        in: [
-          'PAYMENT_CONFIRMED',
-          'AWAITING_OWNER_CONFIRMATION',
-          'CONFIRMED',
-          'ACTIVE',
-        ],
-      },
+      status: { in: [...OCCUPYING_BOOKING_STATUSES] },
       startDate: { lte: endDate },
       endDate: { gte: startDate },
     },
@@ -105,9 +113,7 @@ export async function getBlockedDates(
     db.booking.findMany({
       where: {
         carId,
-        status: {
-          in: ['PAYMENT_CONFIRMED', 'AWAITING_OWNER_CONFIRMATION', 'CONFIRMED', 'ACTIVE'],
-        },
+        status: { in: [...OCCUPYING_BOOKING_STATUSES] },
       },
       select: { startDate: true, endDate: true },
     }),

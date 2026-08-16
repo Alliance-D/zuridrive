@@ -23,7 +23,22 @@ const FIELD =
 const FIELD_ICON =
   "pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50";
 
-export default function HeroSearch() {
+export interface Neighborhood {
+  id: string;
+  name: string;
+}
+
+/**
+ * The pickup field was a free-text box whose value was put in the URL and then
+ * ignored by the results page. Typed text cannot be matched against anything —
+ * pickup points are rows with ids — so it is a picker of real neighbourhoods,
+ * and /cars filters on the id.
+ */
+export default function HeroSearch({
+  neighborhoods = [],
+}: {
+  neighborhoods?: Neighborhood[];
+}) {
   const t = useTranslations("home");
   const locale = useLocale();
   const router = useRouter();
@@ -68,13 +83,21 @@ export default function HeroSearch() {
             size={15}
             className={FIELD_ICON}
           />
-          <input
-            type="text"
-            placeholder={t("pickupLocation")}
+          <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className={FIELD}
-          />
+            aria-label={t("pickupLocation")}
+            className={`${FIELD} appearance-none [color-scheme:dark] ${
+              location ? "text-white" : "text-white/50"
+            }`}
+          >
+            <option value="">{t("pickupLocation")}</option>
+            {neighborhoods.map((n) => (
+              <option key={n.id} value={n.id}>
+                {n.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Start date */}
