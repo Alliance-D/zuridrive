@@ -98,7 +98,15 @@ async function getHomepageCars(excludeIds: string[]) {
   }
 }
 
-// Platform stats — shown in hero
+/**
+ * Platform stats — shown in the hero.
+ *
+ * Returns null when the counts cannot be read, and the strip is not rendered.
+ * This used to fall back to { carCount: 120, bookingCount: 850, ownerCount: 65 }
+ * — numbers that were never true, shown to the public, in the one situation
+ * where nobody would be looking at the logs to notice. A homepage with no
+ * stats on it is a smaller problem than a homepage that invents them.
+ */
 async function getStats() {
   try {
     const [carCount, bookingCount, ownerCount] = await Promise.all([
@@ -107,9 +115,22 @@ async function getStats() {
       prisma.carOwnerProfile.count(),
     ]);
     return { carCount, bookingCount, ownerCount };
-  } catch {
-    return { carCount: 120, bookingCount: 850, ownerCount: 65 };
+  } catch (error) {
+    console.error("[home] Could not read platform stats", error);
+    return null;
   }
+}
+
+/**
+ * "120+" reads as "at least 120, probably more". That is fair once a number is
+ * large enough to have been rounded down to it, and misleading at "4+", where
+ * the real figure is exactly four. Below the threshold the exact count is shown
+ * instead. Lower or remove this once the numbers can carry themselves.
+ */
+const PLUS_THRESHOLD = 10;
+
+function statValue(count: number): string {
+  return count >= PLUS_THRESHOLD ? `${count}+` : String(count);
 }
 
 export default async function HomePage({
@@ -125,6 +146,16 @@ export default async function HomePage({
     getHomepageCars(bannerCars.map((c) => c.id)),
     getStats(),
   ]);
+
+  // Nothing to say is better than something untrue: no stats when the read
+  // failed, and no entry for a count that is still zero.
+  const shownStats = stats
+    ? [
+        { count: stats.carCount, labelKey: "statCars" },
+        { count: stats.bookingCount, labelKey: "statTrips" },
+        { count: stats.ownerCount, labelKey: "statOwners" },
+      ].filter((s) => s.count > 0)
+    : [];
 
   return (
     <div className="min-h-screen bg-bone">
@@ -154,23 +185,22 @@ export default async function HomePage({
 
         {/* Hero content */}
         <div className="container relative z-[2] pb-[clamp(3rem,6vw,5rem)]">
-          {/* Stats strip — top-left */}
-          <div className="mb-[clamp(1.5rem,3vw,2.5rem)] flex animate-[fadeIn_0.8s_ease_0.2s_both] gap-[clamp(1rem,4vw,3rem)]">
-            {[
-              { value: `${stats.carCount}+`, labelKey: "statCars" },
-              { value: `${stats.bookingCount}+`, labelKey: "statTrips" },
-              { value: `${stats.ownerCount}+`, labelKey: "statOwners" },
-            ].map((stat) => (
-              <div key={stat.labelKey}>
-                <div className="font-display text-fluid-2xl font-semibold leading-[1.1] tracking-[-0.02em] text-white">
-                  {stat.value}
+          {/* Stats strip — top-left. Absent entirely if the counts could not be
+              read, and a count of zero is left out rather than shown as "0". */}
+          {shownStats.length > 0 && (
+            <div className="mb-[clamp(1.5rem,3vw,2.5rem)] flex animate-[fadeIn_0.8s_ease_0.2s_both] gap-[clamp(1rem,4vw,3rem)]">
+              {shownStats.map((stat) => (
+                <div key={stat.labelKey}>
+                  <div className="font-display text-fluid-2xl font-semibold leading-[1.1] tracking-[-0.02em] text-white">
+                    {statValue(stat.count)}
+                  </div>
+                  <div className="mt-[0.15rem] font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/60">
+                    {t(stat.labelKey)}
+                  </div>
                 </div>
-                <div className="mt-[0.15rem] font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/60">
-                  {t(stat.labelKey)}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Main headline */}
           <h1 className="mb-[clamp(1.5rem,3vw,2.5rem)] max-w-[14ch] animate-[slideUp_0.7s_ease_0.1s_both] font-display text-fluid-hero font-light leading-[0.92] tracking-[-0.04em] text-white [text-wrap:balance]">
