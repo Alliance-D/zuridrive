@@ -259,7 +259,7 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
               className="flex w-full items-center justify-center gap-1 text-xs font-semibold text-ink-soft hover:text-ink"
             >
               <ArrowLeft className="h-3 w-3" />
-              Change details
+              {t('changeDetails')}
             </button>
           </div>
         )}

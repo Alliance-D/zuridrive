@@ -197,7 +197,8 @@
     "phEmail": "For booking confirmation email",
     "minBookingDays": "Minimum booking: {count, plural, =1 {# day} other {# days}}",
     "phCustomLocation": "e.g. In front of Chic Restaurant, Kacyiru — near the roundabout",
-    "fuelPolicy": "Fuel Policy"
+    "fuelPolicy": "Fuel Policy",
+    "describePickup": "Describe your pickup location"
   },
   "deposit": {
     "labelPlatform": "Refundable deposit",
@@ -1833,7 +1834,11 @@
     "couldNotSave": "We couldn't save your review.",
     "whatWouldYouTell": "What would you tell a friend about this car and owner?",
     "backToBooking": "Back to booking",
-    "leaveAReview": "Leave a review"
+    "leaveAReview": "Leave a review",
+    "pageTitle": "Leave a review",
+    "alreadyReviewed": "You've already reviewed this trip",
+    "reviewLive": "Thanks — your review is live on the {car} listing.",
+    "tripNotFinished": "This trip isn't finished yet"
   },
   "photos": {
     "photosSubmitted": "Photos submitted",

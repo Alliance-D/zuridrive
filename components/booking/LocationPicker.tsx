@@ -189,7 +189,7 @@ export function LocationPicker({
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-1.5">
-              Describe your pickup location
+              {t('describePickup')}
             </label>
             <textarea
               value={customText}

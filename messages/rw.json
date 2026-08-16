@@ -197,7 +197,8 @@
     "phEmail": "Imeyili yo kwemeza ubukode",
     "minBookingDays": "Ubukode buto bushoboka: {count, plural, =1 {umunsi #} other {iminsi #}}",
     "phCustomLocation": "urugero: Imbere ya Chic Restaurant, Kacyiru — hafi y'uruziga",
-    "fuelPolicy": "Amabwiriza ya lisansi"
+    "fuelPolicy": "Amabwiriza ya lisansi",
+    "describePickup": "Sobanura aho uzafatira imodoka"
   },
   "deposit": {
     "labelPlatform": "Ingwate isubizwa",
@@ -1833,7 +1834,11 @@
     "couldNotSave": "Ntitwashoboye kubika igitekerezo cyawe.",
     "whatWouldYouTell": "Ni iki wabwira inshuti ku modoka na nyirayo?",
     "backToBooking": "Subira ku bukode",
-    "leaveAReview": "Tanga igitekerezo"
+    "leaveAReview": "Tanga igitekerezo",
+    "pageTitle": "Tanga igitekerezo",
+    "alreadyReviewed": "Wamaze gutanga igitekerezo kuri uru rugendo",
+    "reviewLive": "Urakoze — igitekerezo cyawe kiragaragara kuri {car}.",
+    "tripNotFinished": "Uru rugendo ntirurarangira"
   },
   "photos": {
     "photosSubmitted": "Amafoto yoherejwe",

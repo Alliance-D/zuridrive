@@ -9,6 +9,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { loginPath } from '@/lib/navigation'
 import { db } from '@/lib/db'
 import { ConditionPhotoUploader } from '@/components/photos/ConditionPhotoUploader'
 
@@ -19,7 +20,7 @@ interface Props {
 
 export default async function OwnerPhotoUploadPage({ params, searchParams }: Props) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) redirect('/login')
+  if (!session?.user?.id) redirect(await loginPath())
 
   const phase = searchParams.phase === 'POST_TRIP' ? 'POST_TRIP' : 'PRE_TRIP'
 

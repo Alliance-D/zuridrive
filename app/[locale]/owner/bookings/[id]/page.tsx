@@ -9,6 +9,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { loginPath } from '@/lib/navigation'
 import { db } from '@/lib/db'
 import { BookingDetailView } from '@/components/trip/BookingDetailView'
 import { OwnerConfirmBanner } from '@/components/trip/OwnerConfirmBanner'
@@ -20,7 +21,7 @@ export default async function OwnerBookingDetailPage({
   params: { id: string }
 }) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) redirect('/login')
+  if (!session?.user?.id) redirect(await loginPath())
 
   const booking = await db.booking.findUnique({
     where: { id: params.id },

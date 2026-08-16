@@ -11,19 +11,29 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { routes } from "@/lib/routes";
+import { getTranslations } from "next-intl/server";
+import { loginPath } from "@/lib/navigation";
 import ReviewForm from "@/components/reviews/ReviewForm";
 import { ChevronLeft, Star, CheckCircle2 } from "lucide-react";
 
-export const metadata = { title: "Leave a review — ZuriDrive" };
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale: params.locale, namespace: "review" });
+  return { title: `${t("pageTitle")} — ZuriDrive` };
+}
 
 export default async function ReviewPage({
   params,
 }: {
-  params: { id: string };
+  params: { id: string; locale: string };
 }) {
+  const t = await getTranslations({ locale: params.locale, namespace: "review" });
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    redirect(`/login?next=/dashboard/bookings/${params.id}/review`);
+    redirect(await loginPath(`/dashboard/bookings/${params.id}/review`));
   }
 
   const booking = await prisma.booking.findUnique({
@@ -49,22 +59,22 @@ export default async function ReviewPage({
   // Already reviewed — show that rather than a form that would 409.
   if (booking.review) {
     return (
-      <Shell bookingId={booking.id}>
+      <Shell bookingId={booking.id} backLabel={t("backToBooking")}>
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success-bg">
             <CheckCircle2 className="h-5 w-5 text-success" />
           </div>
           <h1 className="text-base font-semibold text-ink">
-            You&apos;ve already reviewed this trip
+            {t("alreadyReviewed")}
           </h1>
           <p className="mt-1 text-sm text-ink-soft">
-            Thanks — your review is live on the {carName} listing.
+            {t("reviewLive", { car: carName })}
           </p>
           <Link
             href={routes.bookingDetail(booking.id)}
             className="mt-4 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
           >
-            Back to booking
+            {t("backToBooking")}
           </Link>
         </div>
       </Shell>
@@ -74,13 +84,13 @@ export default async function ReviewPage({
   // Not finished yet.
   if (booking.status !== "COMPLETED") {
     return (
-      <Shell bookingId={booking.id}>
+      <Shell bookingId={booking.id} backLabel={t("backToBooking")}>
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-sand">
             <Star className="h-5 w-5 text-ink-faint" />
           </div>
           <h1 className="text-base font-semibold text-ink">
-            This trip isn&apos;t finished yet
+            {t("tripNotFinished")}
           </h1>
           <p className="mx-auto mt-1 max-w-sm text-sm text-ink-soft">
             You can leave a review once the trip is complete and both you and
@@ -90,7 +100,7 @@ export default async function ReviewPage({
             href={routes.bookingDetail(booking.id)}
             className="mt-4 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
           >
-            Back to booking
+            {t("backToBooking")}
           </Link>
         </div>
       </Shell>
@@ -98,9 +108,9 @@ export default async function ReviewPage({
   }
 
   return (
-    <Shell bookingId={booking.id}>
+    <Shell bookingId={booking.id} backLabel={t("backToBooking")}>
       <div className="mb-4">
-        <h1 className="text-xl font-bold text-ink">Leave a review</h1>
+        <h1 className="text-xl font-bold text-ink">{t("pageTitle")}</h1>
         <p className="text-sm text-ink-soft">
           {booking.reference}
           {booking.tripEndedAt &&
@@ -112,11 +122,15 @@ export default async function ReviewPage({
   );
 }
 
+// Module-level, so it cannot hold a hook and is not the async component that
+// could await getTranslations. The label comes in already translated.
 function Shell({
   bookingId,
+  backLabel,
   children,
 }: {
   bookingId: string;
+  backLabel: string;
   children: React.ReactNode;
 }) {
   return (
@@ -127,7 +141,7 @@ function Shell({
           className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-ink"
         >
           <ChevronLeft className="h-3 w-3" />
-          Back to booking
+          {backLabel}
         </Link>
         {children}
       </div>

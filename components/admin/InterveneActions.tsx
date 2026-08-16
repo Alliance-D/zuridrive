@@ -123,7 +123,7 @@ export default function InterveneActions({
           className="flex items-center gap-1.5 rounded-lg border border-sand-dark px-3 py-2 text-xs font-semibold text-ink-muted hover:border-brand hover:text-brand"
         >
           <CheckCircle2 className="h-3.5 w-3.5" />
-          Force complete
+          {t("forceComplete")}
         </button>
       )}
       {canCancel && (
@@ -132,7 +132,7 @@ export default function InterveneActions({
           className="flex items-center gap-1.5 rounded-lg border border-danger-soft px-3 py-2 text-xs font-semibold text-danger-strong hover:bg-danger-tint"
         >
           <Ban className="h-3.5 w-3.5" />
-          Cancel booking
+          {t("cancelBooking")}
         </button>
       )}
     </div>

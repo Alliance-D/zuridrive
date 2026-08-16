@@ -246,10 +246,10 @@ export default function Navbar() {
               {/* .btn already sets justify-content: center, so the old inline
                   justifyContent was redundant. */}
               <Link href={ROUTES.login} className="btn btn-secondary btn-lg">
-                Sign In
+                {t("signIn")}
               </Link>
               <Link href={ROUTES.signupOwner} className="btn btn-primary btn-lg">
-                List Your Car
+                {t("listYourCar")}
               </Link>
             </div>
           )}
