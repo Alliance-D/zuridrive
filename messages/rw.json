@@ -963,7 +963,9 @@
     "pastTarget": "amasaha {count} arenze igihe",
     "closedReopen": "Cyarafunzwe. Kifungure kugira ngo usubize.",
     "signOut": "Sohoka",
-    "voided": "byavanyweho"
+    "voided": "byavanyweho",
+    "plans": "Gahunda n'ibiciro",
+    "plansSub": "Ibyo ba nyir'imodoka bishyura, na komisiyo kuri buri gahunda."
   },
   "common": {
     "cancel": "Reka",
@@ -1690,7 +1692,24 @@
     "cancellationNote": "Bireba gusa igihe <b>umukodesha</b> ahagaritse hafi y'igihe cyo gufata imodoka ku ngwate yari yarakiriwe koko. Nyir'imodoka uhagaritse nta cyo yigumanira na rimwe, kandi umukodesha ashobora kuregera ayo mafaranga.",
     "autoPublishOn": "Imodoka nshya zihita zigaragara nta gusuzumwa n'Ushinzwe imodoka.",
     "autoPublishOff": "Imodoka nshya zitegereza ko Ushinzwe imodoka azemeza.",
-    "titleInAppOnly": "(mu rubuga gusa)"
+    "titleInAppOnly": "(mu rubuga gusa)",
+    "planPriceNote": "Guhindura igiciro bitangira gukurikizwa ku gihe gitaha cy'uwiyandikishije. Ibyo yishyuye bisanzwe byanditswe ku ifatabuguzi rye kandi ntibihinduka.",
+    "planName": "Izina rya gahunda",
+    "planActive": "Irakora",
+    "planPrice": "Igiciro cy'ukwezi (RWF)",
+    "planMaxListings": "Umubare ntarengwa w'imodoka",
+    "planUnlimited": "Nta mubare ntarengwa",
+    "planCapHint": "Imodoka iyi gahunda yemera",
+    "planUncappedWarning": "Nta mubare ntarengwa: ufite imodoka 30 yishyura nk'ufite 8",
+    "planCommission": "Komisiyo (%)",
+    "planCommissionInherited": "Ubusa: ikoresha komisiyo y'urubuga ya {rate}%",
+    "planCommissionOwn": "Iyi gahunda ifite komisiyo yayo bwite",
+    "planFeatured": "Igaragara mbere mu ishakisha",
+    "planVerifiedBadge": "Ikimenyetso cyo kwemezwa",
+    "planHomepageBanner": "Kugaragara ku rupapuro rw'itangiriro",
+    "planPrioritySupport": "Ubufasha bwihutirwa",
+    "planAnalytics": "Isesengura",
+    "savePlans": "Bika gahunda"
   },
   "auth": {
     "backToHome": "Subira ku rupapuro rw'ibanze",
@@ -2252,7 +2271,7 @@
     "b6Title": "Abakodesha bemewe",
     "b6Desc": "Abakodesha bafite nimero ya telefoni yemejwe, kandi wowe wemeza buri busabe mbere y'uko imodoka igenda.",
     "choosePlan": "Hitamo gahunda",
-    "planNote": "Gahunda ni yo ituma imodoka zawe zikomeza kugaragara. ZuriDrive kandi ifata {rate}% ku bukode ubwabwo. Ntabwo ifata ku mafaranga yo kuzana imodoka, kandi ntabwo ifata ku ngwate.",
+    "planNote": "Gahunda ni yo ituma imodoka zawe zikomeza kugaragara, kandi ni yo igena komisiyo ku bukode bwawe. Komisiyo ifatwa ku bukode gusa, ntabwo ifatwa ku mafaranga yo kuyizana cyangwa ku ngwate.",
     "mostPopular": "Ikunzwe cyane",
     "perMonth": "/ukwezi",
     "unlimitedListings": "Imodoka zitagira urugero",
@@ -2268,7 +2287,13 @@
     "getStarted": "Tangira",
     "insuranceNotePre": "Ukomeza kugira ubwishingizi bwawe kandi ugakomeza kuba nyir'imodoka. Reba",
     "termsLink": "amasezerano",
-    "insuranceNotePost": "kugira ngo umenye icyo buri ruhande rushinzwe."
+    "insuranceNotePost": "kugira ngo umenye icyo buri ruhande rushinzwe.",
+    "freePlanName": "Ubuntu",
+    "standardPlacement": "Umwanya usanzwe mu ishakisha",
+    "noMonthlyFee": "Nta mafaranga y'ukwezi",
+    "startFree": "Tangira ku buntu",
+    "needMore": "Ufite imodoka nyinshi kurushaho? Tuvugishe twumvikane.",
+    "commissionLine": "Komisiyo ya {rate}% ku bukode"
   },
   "howItWorks": {
     "eyebrow": "Ishusho yuzuye",

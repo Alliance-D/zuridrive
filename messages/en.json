@@ -963,7 +963,9 @@
     "pastTarget": "{count}h past target",
     "closedReopen": "Closed. Reopen it to reply.",
     "signOut": "Sign out",
-    "voided": "voided"
+    "voided": "voided",
+    "plans": "Plans & pricing",
+    "plansSub": "What owners pay, and the commission each plan carries."
   },
   "common": {
     "cancel": "Cancel",
@@ -1690,7 +1692,24 @@
     "cancellationNote": "Applies only when a <b>client</b> cancels close to pickup on a deposit that was actually collected. An owner who pulls out never keeps anything, and the client can always dispute the fee.",
     "autoPublishOn": "New cars go live immediately without Fleet Manager review.",
     "autoPublishOff": "New cars wait for a Fleet Manager to approve them.",
-    "titleInAppOnly": "(in-app only)"
+    "titleInAppOnly": "(in-app only)",
+    "planPriceNote": "Changing a price applies from a subscriber's next cycle. What someone already paid is recorded on their subscription and is never rewritten.",
+    "planName": "Plan name",
+    "planActive": "Active",
+    "planPrice": "Price per month (RWF)",
+    "planMaxListings": "Listing cap",
+    "planUnlimited": "Unlimited",
+    "planCapHint": "Cars this plan allows",
+    "planUncappedWarning": "Uncapped: a 30-car operator pays the same as an 8-car one",
+    "planCommission": "Commission rate (%)",
+    "planCommissionInherited": "Empty: uses the platform rate of {rate}%",
+    "planCommissionOwn": "This plan overrides the platform rate",
+    "planFeatured": "Featured in search results",
+    "planVerifiedBadge": "Verified badge",
+    "planHomepageBanner": "Homepage banner",
+    "planPrioritySupport": "Priority support",
+    "planAnalytics": "Analytics",
+    "savePlans": "Save plans"
   },
   "auth": {
     "backToHome": "Back to home",
@@ -2252,7 +2271,7 @@
     "b6Title": "Approved renters",
     "b6Desc": "Renters have a verified phone number, and you confirm each request before the car goes anywhere.",
     "choosePlan": "Choose a plan",
-    "planNote": "A plan is what lets you keep listings live. ZuriDrive also takes {rate}% commission on the rental itself. Never on delivery fees, and never on a damage deposit.",
+    "planNote": "A plan is what lets you keep listings live, and it sets the commission on your bookings. Commission is charged on the rental only — never on delivery fees, and never on a damage deposit.",
     "mostPopular": "Most popular",
     "perMonth": "/month",
     "unlimitedListings": "Unlimited listings",
@@ -2268,7 +2287,13 @@
     "getStarted": "Get started",
     "insuranceNotePre": "You keep your own insurance and remain the vehicle's owner throughout. See the",
     "termsLink": "terms",
-    "insuranceNotePost": "for what each side is responsible for."
+    "insuranceNotePost": "for what each side is responsible for.",
+    "freePlanName": "Free",
+    "standardPlacement": "Standard search placement",
+    "noMonthlyFee": "No monthly fee",
+    "startFree": "Start free",
+    "needMore": "More cars than this? Talk to us about a fleet arrangement.",
+    "commissionLine": "{rate}% commission on bookings"
   },
   "howItWorks": {
     "eyebrow": "The full picture",

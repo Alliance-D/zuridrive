@@ -30,6 +30,7 @@ import {
   BarChart3,
   LifeBuoy,
   Settings,
+  Tags,
   UserCog,
   LogOut,
   Menu,
@@ -62,6 +63,7 @@ const NAV: NavItem[] = [
   { labelKey: "analytics",     href: "/admin/analytics",     icon: BarChart3,       module: "ANALYTICS_VIEWER" },
   { labelKey: "support",       href: "/admin/support",       icon: LifeBuoy,        module: "SUPPORT_AGENT" },
   { labelKey: "team",          href: "/admin/team",          icon: UserCog,         module: null },
+  { labelKey: "plans",         href: "/admin/plans",         icon: Tags,            module: null },
   { labelKey: "settings",      href: "/admin/settings",      icon: Settings,        module: null },
 ];
 

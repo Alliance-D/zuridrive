@@ -17,8 +17,9 @@
  *    that contradicts your legal terms is a liability, so it is gone.
  *
  *  • It also advertised per-plan commission discounts ("reduced commission
- *    12%"). SubscriptionPlan has no commission field — the rate is platform
- *    wide. That claim was unimplementable, not merely inaccurate.
+ *    12%") at a time when SubscriptionPlan had no commission field, so the
+ *    claim was unimplementable rather than merely inaccurate. The field now
+ *    exists and each card states its own rate, read from the plan.
  *
  * Also dropped: "join thousands of car owners", which is not true.
  */
@@ -154,10 +155,48 @@ export default async function BecomeAnOwnerPage({
           {t("choosePlan")}
         </h2>
         <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-ink-muted">
-          {t("planNote", { rate: settings.commissionRatePercent })}
+          {t("planNote")}
         </p>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {/* The free tier is not a plan row. It is what an owner gets with no
+              subscription at all, enforced by freeTierMaxListings in
+              lib/subscriptions/limits.ts, so it is rendered from that setting
+              rather than from a database row that could drift away from the
+              limit actually applied. */}
+          <div className="flex flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ring-sand-dark">
+            <h3 className="font-display text-2xl font-semibold text-ink">
+              {t("freePlanName")}
+            </h3>
+            <p className="mt-2 text-3xl font-semibold text-brand">
+              {formatRWF(0)}
+            </p>
+            <ul className="mt-6 flex-1 space-y-2.5 text-sm text-ink-muted">
+              <li className="flex gap-2">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                {t("upToListings", { count: settings.freeTierMaxListings })}
+              </li>
+              <li className="flex gap-2">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                {t("standardPlacement")}
+              </li>
+              <li className="flex gap-2">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                {t("noMonthlyFee")}
+              </li>
+              <li className="flex gap-2">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                {t("commissionLine", { rate: settings.commissionRatePercent })}
+              </li>
+            </ul>
+            <Link
+              href="/signup/owner"
+              className="mt-6 block rounded-full border border-brand px-5 py-2.5 text-center text-sm font-semibold text-brand transition-colors hover:bg-brand/5"
+            >
+              {t("startFree")}
+            </Link>
+          </div>
+
           {plans.map((plan) => {
             const highlight = plan.tier === "PRO";
             return (
@@ -193,6 +232,14 @@ export default async function BecomeAnOwnerPage({
                     {plan.maxListings === null
                       ? t("unlimitedListings")
                       : t("upToListings", { count: plan.maxListings })}
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                    {t("commissionLine", {
+                      rate:
+                        plan.commissionRatePercent ??
+                        settings.commissionRatePercent,
+                    })}
                   </li>
                   <li className="flex gap-2">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
@@ -246,6 +293,14 @@ export default async function BecomeAnOwnerPage({
             );
           })}
         </div>
+
+        {/* The top plan has a ceiling now, so anyone above it needs somewhere
+            to go rather than silently finding themselves capped. */}
+        <p className="mt-8 text-center text-sm text-ink-soft">
+          <Link href="/contact" className="font-semibold text-brand underline">
+            {t("needMore")}
+          </Link>
+        </p>
 
         <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-ink-faint">
           {t("insuranceNotePre")}{" "}

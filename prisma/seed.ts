@@ -153,18 +153,26 @@ async function main() {
   )
 
   // ── Subscription plans ───────────────────────────────────────────────────
+  // Prices and caps are editable at /admin/plans — these are only the values a
+  // fresh database starts with. Listing caps rise across the tiers and Premium
+  // carries a ceiling, so the largest operators are a conversation rather than
+  // paying what a mid-sized fleet pays. Commission falls as the tier rises, so
+  // a bigger subscription buys a smaller cut.
   const plans = [
     {
-      tier: 'BASIC' as const, name: 'Basic', priceMonthly: 15000, maxListings: 2,
+      tier: 'BASIC' as const, name: 'Basic', priceMonthly: 15000, maxListings: 3,
+      commissionRatePercent: 17,
       analyticsLevel: 'BASIC',
     },
     {
-      tier: 'PRO' as const, name: 'Pro', priceMonthly: 35000, maxListings: 6,
+      tier: 'PRO' as const, name: 'Pro', priceMonthly: 35000, maxListings: 8,
+      commissionRatePercent: 14,
       isFeatured: true, featuredPriority: 2, hasVerifiedBadge: true,
       analyticsLevel: 'ADVANCED',
     },
     {
-      tier: 'PREMIUM' as const, name: 'Premium', priceMonthly: 75000, maxListings: null,
+      tier: 'PREMIUM' as const, name: 'Premium', priceMonthly: 75000, maxListings: 20,
+      commissionRatePercent: 11,
       isFeatured: true, featuredPriority: 1, hasVerifiedBadge: true,
       analyticsLevel: 'FULL', hasHomepageBanner: true, hasPrioritySupport: true,
     },

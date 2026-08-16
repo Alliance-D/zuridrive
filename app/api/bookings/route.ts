@@ -24,7 +24,7 @@ import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { checkCarAvailability } from '@/lib/booking/availability'
 import { calculateBookingPrice } from '@/lib/booking/pricing'
-import { getPlatformSettings } from '@/lib/platform-settings'
+import { getCommissionRateForOwner } from '@/lib/subscriptions/limits'
 import { paymentsEnabled } from '@/lib/payments'
 import { sendSms } from '@/lib/sms'
 import { localeFromRequest } from '@/lib/locale-cookie'
@@ -158,7 +158,11 @@ export async function POST(req: NextRequest) {
     // --- Server-side price calculation (never trust client) ---
     // The rate is read here and snapshotted onto the Booking and Commission
     // rows, so a later rate change never rewrites historical bookings.
-    const { commissionRatePercent } = await getPlatformSettings()
+    //
+    // It comes from the owner's plan when that plan sets one, so a higher
+    // subscription can buy a smaller cut, and falls back to the platform rate
+    // otherwise.
+    const commissionRatePercent = await getCommissionRateForOwner(car.ownerId)
 
     const pricing = calculateBookingPrice({
       commissionRatePercent,

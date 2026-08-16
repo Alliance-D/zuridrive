@@ -389,3 +389,35 @@ export async function relistAfterRenewal(
 
   return candidates.length;
 }
+
+/**
+ * The commission rate that applies to this owner's bookings.
+ *
+ * A plan may carry its own rate, so that a higher subscription buys a smaller
+ * cut. When it does not — or when the owner has no live plan at all — the
+ * platform-wide rate applies, which is exactly how every booking behaved
+ * before per-plan rates existed.
+ *
+ * "Live" means the same thing here as it does for listing allowances: ACTIVE
+ * or TRIAL. A lapsed plan grants nothing, including its better rate.
+ */
+export async function getCommissionRateForOwner(
+  ownerProfileId: string,
+  db: Db = prisma,
+): Promise<number> {
+  const [subscription, settings] = await Promise.all([
+    db.ownerSubscription.findFirst({
+      where: { ownerId: ownerProfileId },
+      include: { plan: true },
+      orderBy: [{ status: "asc" }, { startedAt: "desc" }],
+    }),
+    getPlatformSettings(),
+  ]);
+
+  const isLive =
+    subscription?.status === "ACTIVE" || subscription?.status === "TRIAL";
+
+  if (!subscription || !isLive) return settings.commissionRatePercent;
+
+  return subscription.plan.commissionRatePercent ?? settings.commissionRatePercent;
+}

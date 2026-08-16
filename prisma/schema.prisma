@@ -983,7 +983,14 @@ model SubscriptionPlan {
   tier               SubscriptionTier @unique
   name               String // Display name
   priceMonthly       Int // RWF
-  maxListings        Int? // Null = unlimited
+  /// Null = unlimited. A tier with no ceiling means the largest operator pays
+  /// the same as a mid-sized one, so every paid tier should normally carry a
+  /// number and anything beyond the top one is a conversation.
+  maxListings        Int?
+  /// Commission on this plan's bookings. Null falls back to the platform-wide
+  /// rate in PlatformSetting, so a plan that has never been given its own rate
+  /// behaves exactly as it did before this column existed.
+  commissionRatePercent Int?
   isFeatured         Boolean          @default(false) // Appears in search results
   featuredPriority   Int? // 1 = top of search (PREMIUM), 2 = standard (PRO)
   hasVerifiedBadge   Boolean          @default(false)
