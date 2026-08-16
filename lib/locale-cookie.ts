@@ -8,6 +8,19 @@
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
 /**
+ * Whether the visitor has been offered a language yet.
+ *
+ * Deliberately NOT the locale cookie. next-intl's middleware writes
+ * NEXT_LOCALE on the very first request, so a prompt that treats that cookie
+ * as "they have chosen" is suppressed before anyone has seen it — which is
+ * exactly what happened: the bar could never appear at all.
+ *
+ * NEXT_LOCALE answers "which language do we serve". This answers "have we
+ * already asked". They are different questions and need different cookies.
+ */
+export const LANG_ASKED_COOKIE = "ZD_LANG_ASKED";
+
+/**
  * The locale to stamp on a newly created account.
  *
  * An account created mid-session has no stored preference yet, and the first

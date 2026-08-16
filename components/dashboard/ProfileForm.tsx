@@ -10,7 +10,8 @@
  */
 
 import { useState, useRef, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatMonth } from "@/lib/dates";
 import Image from "next/image";
 import {
   User, Phone, Mail, CreditCard, Car,
@@ -94,6 +95,7 @@ export default function ProfileForm({
   memberSince,
 }: ProfileFormProps) {
   const t = useTranslations("dashboard");
+  const locale = useLocale();
   const tc = useTranslations("common");
   const [data,   setData]   = useState<ProfileData>(initialData);
   const [errors, setErrors] = useState<Partial<Record<keyof ProfileData, string>>>({});
@@ -234,10 +236,9 @@ export default function ProfileForm({
 
   // ─────────────────────────────────────────────────────────────────────────────
 
-  const memberSinceStr = memberSince.toLocaleDateString("en-RW", {
-    month: "long",
-    year:  "numeric",
-  });
+  // formatMonth reads the active locale; "en-RW" printed an English month to
+  // a Kinyarwanda reader regardless of what the rest of the page said.
+  const memberSinceStr = formatMonth(memberSince, locale);
 
   return (
     <div className="space-y-5">
@@ -289,8 +290,8 @@ export default function ProfileForm({
             <h2 className="truncate text-lg font-bold text-ink">
               {data.name || t("yourNamePlaceholder")}
             </h2>
-            <p className="text-sm text-ink-soft">Member since {memberSinceStr}</p>
-            <p className="mt-1 text-xs text-ink-faint">Max 5 MB · JPG, PNG, or WebP</p>
+            <p className="text-sm text-ink-soft">{t("memberSince", { date: memberSinceStr })}</p>
+            <p className="mt-1 text-xs text-ink-faint">{t("photoLimits")}</p>
           </div>
         </div>
       </div>

@@ -23,7 +23,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { X } from "lucide-react";
 import { routing, LOCALE_LABELS, type Locale } from "@/i18n/routing";
-import { LOCALE_COOKIE } from "@/lib/locale-cookie";
+import { LOCALE_COOKIE, LANG_ASKED_COOKIE } from "@/lib/locale-cookie";
 
 /** Ask for this in the offered language, not the current one. */
 const OFFER: Record<Locale, string> = {
@@ -40,8 +40,9 @@ export default function LanguagePrompt() {
   const [suggest, setSuggest] = useState<Locale | null>(null);
 
   useEffect(() => {
-    // Already chosen — never ask again.
-    if (document.cookie.includes(`${LOCALE_COOKIE}=`)) return;
+    // Already asked — never ask again. Checked against our own marker, not
+    // NEXT_LOCALE, which the middleware sets on the first request.
+    if (document.cookie.includes(`${LANG_ASKED_COOKIE}=`)) return;
 
     // navigator.languages is ordered by preference: take the first that we
     // actually support, so "rw-RW, en-US" suggests Kinyarwanda rather than
@@ -58,6 +59,7 @@ export default function LanguagePrompt() {
 
   function remember(choice: Locale) {
     document.cookie = `${LOCALE_COOKIE}=${choice};path=/;max-age=31536000;samesite=lax`;
+    document.cookie = `${LANG_ASKED_COOKIE}=1;path=/;max-age=31536000;samesite=lax`;
 
     // Store it against the account too, so SMS follows. Both buttons come
     // through here — keeping the current language is as much a preference as
@@ -72,10 +74,14 @@ export default function LanguagePrompt() {
   if (!suggest) return null;
 
   return (
+    // Sits below the fixed navbar rather than in normal flow at the top of the
+    // page. In flow it began at y=0, underneath the nav, and the nav swallowed
+    // every click — the bar was visible and its buttons did nothing.
     <div
       role="region"
       aria-label="Language suggestion"
-      className="flex flex-wrap items-center justify-center gap-3 border-b border-sand-dark bg-sand px-4 py-2.5 text-sm"
+      style={{ zIndex: "calc(var(--z-sticky) - 1)" }}
+      className="fixed left-0 right-0 top-[var(--nav-height)] flex flex-wrap items-center justify-center gap-3 border-b border-sand-dark bg-sand px-4 py-2.5 text-sm shadow-sm"
     >
       <span className="text-ink-muted">{OFFER[suggest]}</span>
 

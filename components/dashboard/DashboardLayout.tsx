@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -48,6 +48,15 @@ export default function DashboardLayout({
   notificationCount = 0,
 }: DashboardLayoutProps) {
   const t = useTranslations("dashboard");
+  const locale = useLocale();
+
+  /**
+   * Every path here lives under /[locale]. Linking to a bare "/dashboard"
+   * still arrives, but only because the middleware redirects it, which costs a
+   * round trip — and comparing a bare path against the real pathname does not
+   * work at all, since "/en/dashboard" does not start with "/dashboard".
+   */
+  const path = (href: string) => `/${locale}${href}`;
   const pathname  = usePathname();
   const router    = useRouter();
   const { data: session } = useSession();
@@ -63,14 +72,24 @@ export default function DashboardLayout({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close dropdowns on outside click
+  // Close dropdowns on outside click.
+  //
+  // Only while something is open. The App Router hydrates React into the
+  // document, so React's own click handling and a listener registered here sit
+  // on the same target — and stopPropagation cannot stop a sibling listener on
+  // the same node. Registered unconditionally, this fired on the very click
+  // that opened the menu: the button set it open, this closed it again, and the
+  // dropdown appeared to do nothing at all.
   useEffect(() => {
+    if (!userMenuOpen && !mobileMenuOpen) return;
     const close = () => { setUserMenuOpen(false); setMobileMenuOpen(false); };
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
-  }, []);
+  }, [userMenuOpen, mobileMenuOpen]);
 
-  const activeTab = TABS.findLast((t) => pathname.startsWith(t.href))?.href ?? "/dashboard";
+  const unprefixed = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, "") || "/";
+  const activeTab =
+    TABS.findLast((t) => unprefixed.startsWith(t.href))?.href ?? "/dashboard";
 
   const userName = session?.user?.name ?? "Traveller";
   const userInitials = userName
@@ -91,7 +110,7 @@ export default function DashboardLayout({
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link href={path("/")} className="flex items-center gap-2 group">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand">
                 <Car className="h-4 w-4 text-accent" />
               </div>
@@ -102,7 +121,7 @@ export default function DashboardLayout({
             <div className="hidden md:flex items-center gap-3">
               {/* Notification bell */}
               <Link
-                href="/dashboard/notifications"
+                href={path("/dashboard/notifications")}
                 className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-sand transition-colors"
                 aria-label="Notifications"
               >
@@ -137,7 +156,7 @@ export default function DashboardLayout({
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-xl border border-sand-dark bg-white py-1 shadow-xl shadow-black/10 animate-in fade-in slide-in-from-top-2 duration-150">
                     <Link
-                      href="/dashboard/profile"
+                      href={path("/dashboard/profile")}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-ink-muted hover:bg-bone transition-colors"
                     >
                       <User className="h-4 w-4" /> {t("myProfile")}
@@ -178,7 +197,7 @@ export default function DashboardLayout({
                 return (
                   <Link
                     key={href}
-                    href={href}
+                    href={path(href)}
                     className={`
                       relative flex items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium
                       transition-colors duration-150 select-none
@@ -219,7 +238,7 @@ export default function DashboardLayout({
             </div>
 
             <Link
-              href="/dashboard/notifications"
+              href={path("/dashboard/notifications")}
               className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-ink-muted hover:bg-bone"
             >
               <Bell className="h-4 w-4" />

@@ -18,7 +18,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Globe, Check, ChevronDown } from "lucide-react";
 import { routing, LOCALE_LABELS, type Locale } from "@/i18n/routing";
-import { LOCALE_COOKIE } from "@/lib/locale-cookie";
+import { LOCALE_COOKIE, LANG_ASKED_COOKIE } from "@/lib/locale-cookie";
 
 export default function LanguageSwitcher({ dark = false }: { dark?: boolean }) {
   const locale = useLocale() as Locale;
@@ -31,6 +31,8 @@ export default function LanguageSwitcher({ dark = false }: { dark?: boolean }) {
     // Remember it, so the prompt bar never asks again and a later visit to the
     // bare domain lands in the right language.
     document.cookie = `${LOCALE_COOKIE}=${next};path=/;max-age=31536000;samesite=lax`;
+    // Picking a language here is a choice, so the prompt must not ask later.
+    document.cookie = `${LANG_ASKED_COOKIE}=1;path=/;max-age=31536000;samesite=lax`;
     setOpen(false);
 
     // Also store it against the account, so SMS goes out in this language.

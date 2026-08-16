@@ -481,7 +481,9 @@
     "previous": "Ibanza",
     "next": "Ibikurikira",
     "notificationsSub": "Amakuru ku bukode bwawe, ubwishyu n'ingwate.",
-    "keepDetailsAccurate": "Gumana amakuru yawe ari ukuri. Akoreshwa kuri buri bukode."
+    "keepDetailsAccurate": "Gumana amakuru yawe ari ukuri. Akoreshwa kuri buri bukode.",
+    "memberSince": "Yinjiye muri {date}",
+    "photoLimits": "Ntirenze 5 MB · JPG, PNG cyangwa WebP"
   },
   "owner": {
     "overview": "Incamake",

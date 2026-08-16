@@ -481,7 +481,9 @@
     "previous": "Previous",
     "next": "Next",
     "notificationsSub": "Updates about your bookings, payments and deposits.",
-    "keepDetailsAccurate": "Keep your details accurate. They're used on every booking."
+    "keepDetailsAccurate": "Keep your details accurate. They're used on every booking.",
+    "memberSince": "Member since {date}",
+    "photoLimits": "Max 5 MB · JPG, PNG, or WebP"
   },
   "owner": {
     "overview": "Overview",
