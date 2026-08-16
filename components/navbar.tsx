@@ -30,7 +30,6 @@ const DARK_HERO_PAGES = ["/"];
 
 export default function Navbar() {
   const t = useTranslations("nav");
-  const tc = useTranslations("cars");
   const { data: session, status } = useSession();
   const pathname = usePathname();
 
@@ -96,6 +95,11 @@ export default function Navbar() {
           {/* DESKTOP NAV LINKS                                                */}
           {/* ---------------------------------------------------------------- */}
           <div className="hide-mobile flex items-center gap-6">
+            {/* The logo links home too, but that is a convention people who
+                build sites know and people who use them often do not. */}
+            <NavLink href={ROUTES.home} transparent={isTransparent}>
+              {t("home")}
+            </NavLink>
             <NavLink href={ROUTES.cars} transparent={isTransparent}>
               {t("browseCars")}
             </NavLink>
@@ -155,7 +159,7 @@ export default function Navbar() {
                     <DropdownItem
                       href={getProfilePath(session.user.role)}
                       icon={<User size={15} />}
-                      label="Profile"
+                      label={t("profile")}
                     />
                     <div className="my-1 h-px bg-sand-light" />
                     {/* Hover was done imperatively with onMouseEnter/onMouseLeave
@@ -181,17 +185,6 @@ export default function Navbar() {
                   }`}
                 >
                   {t("signIn")}
-                </Link>
-                <Link
-                  href={ROUTES.cars}
-                  className="btn btn-primary btn-sm"
-                  style={isTransparent ? {
-                    background: "var(--color-accent)",
-                    borderColor: "var(--color-accent)",
-                    color: "var(--color-text)",
-                  } : {}}
-                >
-                  {tc("browseCars")}
                 </Link>
               </>
             )}
@@ -220,6 +213,7 @@ export default function Navbar() {
           className="fixed inset-0 top-[var(--nav-height)] flex animate-[slideUp_0.25s_ease_forwards] flex-col gap-2 overflow-y-auto bg-bone px-5 py-6"
           style={{ zIndex: "calc(var(--z-sticky) - 1)" }}
         >
+          <MobileNavLink href={ROUTES.home}>{t("home")}</MobileNavLink>
           <MobileNavLink href={ROUTES.cars}>{t("browseCars")}</MobileNavLink>
           <MobileNavLink href={ROUTES.howItWorks}>{t("howItWorks")}</MobileNavLink>
           <MobileNavLink href={ROUTES.becomeAnOwner}>{t("listYourCar")}</MobileNavLink>
@@ -243,13 +237,13 @@ export default function Navbar() {
             </>
           ) : (
             <div className="mt-4 flex flex-col gap-3">
-              {/* .btn already sets justify-content: center, so the old inline
-                  justifyContent was redundant. */}
-              <Link href={ROUTES.login} className="btn btn-secondary btn-lg">
+              {/* "List your car" used to sit here as well as in the links
+                  above — the same label twice, and pointing somewhere else
+                  (/signup/owner rather than /list-your-car). The link above is
+                  the one that survives, so Sign In is now the only button and
+                  takes the primary style. */}
+              <Link href={ROUTES.login} className="btn btn-primary btn-lg">
                 {t("signIn")}
-              </Link>
-              <Link href={ROUTES.signupOwner} className="btn btn-primary btn-lg">
-                {t("listYourCar")}
               </Link>
             </div>
           )}
