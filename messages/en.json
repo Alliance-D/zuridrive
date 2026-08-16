@@ -1123,7 +1123,6 @@
     "forCarOwners": "For car owners",
     "earnsWhileYouSleep": "Your car earns while you sleep.",
     "ownerPitch": "List your car on ZuriDrive and connect with renters across Rwanda. You control availability, pricing, and pickup locations. We collect the payment, hold the damage deposit, and keep a photo record of every trip. You keep 80% of every booking.",
-    "avgMonthlyEarnings": "Avg. monthly earnings",
     "youKeep": "You keep of every booking",
     "startEarning": "Start earning today",
     "learnMore": "Learn more",
@@ -1131,7 +1130,9 @@
     "perWeek": "Per Week",
     "perMonth": "Per Month",
     "pickupLocation": "Pickup location",
-    "search": "Search"
+    "search": "Search",
+    "listedPerDay": "Per day on ZuriDrive today",
+    "priceRange": "{min} – {max}"
   },
   "finance": {
     "navPayments": "Payments",

@@ -1123,7 +1123,6 @@
     "forCarOwners": "Kuri ba nyir'imodoka",
     "earnsWhileYouSleep": "Imodoka yawe yinjiza mu gihe uryamye.",
     "ownerPitch": "Andikisha imodoka yawe kuri ZuriDrive uhuze n'abakodesha mu Rwanda hose. Wowe ugena igihe iboneka, ibiciro n'aho bayifata. Twakira ubwishyu, tukabika ingwate, kandi tugabika amafoto ya buri rugendo. Ukomeza kubona 80% ku buri bukode.",
-    "avgMonthlyEarnings": "Impuzandengo y'inyungu z'ukwezi",
     "youKeep": "Ubona kuri buri bukode",
     "startEarning": "Tangira kwinjiza uyu munsi",
     "learnMore": "Menya byinshi",
@@ -1131,7 +1130,9 @@
     "perWeek": "Ku cyumweru",
     "perMonth": "Ku kwezi",
     "pickupLocation": "Aho uzayifatira",
-    "search": "Shakisha"
+    "search": "Shakisha",
+    "listedPerDay": "Ku munsi kuri ZuriDrive ubu",
+    "priceRange": "{min} – {max}"
   },
   "finance": {
     "navPayments": "Ubwishyu",

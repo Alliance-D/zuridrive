@@ -21,6 +21,7 @@ import HeroSearch from "@/components/hero-search";
 import CarCardGrid from "@/components/car-card-grid";
 import ScrollReveal from "@/components/scroll-reveal";
 import { prisma } from "@/lib/prisma";
+import { getPlatformSettings } from "@/lib/platform-settings";
 import { getBannerEligibleOwnerIds } from "@/lib/subscriptions/limits";
 import { formatRWF } from "@/lib/currency";
 import { ROUTES } from "@/lib/routes";
@@ -122,6 +123,34 @@ async function getStats() {
 }
 
 /**
+ * What cars actually list for, per day.
+ *
+ * This replaced a hardcoded "Avg. monthly earnings — RWF 450,000". That figure
+ * was not derived from anything, and the data contradicts it: no owner has been
+ * paid out through the platform yet, so the real average is zero. A range of
+ * live asking prices is true by construction, moves on its own as listings
+ * change, and still tells an owner what their car might make.
+ *
+ * Null when there is nothing listed, and the strip is dropped rather than
+ * rendering an empty range.
+ */
+async function getListedPriceRange() {
+  try {
+    const rows = await prisma.pricingMatrix.findMany({
+      where: { car: { status: "LIVE", isActive: true } },
+      select: { perDayInCity: true },
+    });
+    if (rows.length === 0) return null;
+
+    const rates = rows.map((r) => r.perDayInCity);
+    return { min: Math.min(...rates), max: Math.max(...rates) };
+  } catch (error) {
+    console.error("[home] Could not read listed price range", error);
+    return null;
+  }
+}
+
+/**
  * "120+" reads as "at least 120, probably more". That is fair once a number is
  * large enough to have been rounded down to it, and misleading at "4+", where
  * the real figure is exactly four. Below the threshold the exact count is shown
@@ -142,10 +171,17 @@ export default async function HomePage({
   // Banner first — the main grid excludes whatever it takes, so no car
   // appears twice on the page.
   const bannerCars = await getBannerCars();
-  const [cars, stats] = await Promise.all([
+  const [cars, stats, priceRange, settings] = await Promise.all([
     getHomepageCars(bannerCars.map((c) => c.id)),
     getStats(),
+    getListedPriceRange(),
+    getPlatformSettings(),
   ]);
+
+  // The owner's share is the inverse of the commission, which an admin can
+  // change. Hardcoding "80%" left it to go quietly stale the first time
+  // somebody edited the rate in settings.
+  const ownerSharePercent = 100 - settings.commissionRatePercent;
 
   // Nothing to say is better than something untrue: no stats when the read
   // failed, and no entry for a count that is still zero.
@@ -381,20 +417,32 @@ export default async function HomePage({
                   {t("ownerPitch")}
                 </p>
 
-                {/* Earnings highlight */}
+                {/* What cars list for, and what the owner keeps. Both read
+                    from live data — see getListedPriceRange. The price half
+                    disappears when nothing is listed rather than showing an
+                    empty range. */}
                 <div className="mb-8 inline-flex flex-wrap gap-6 rounded-3xl border border-white/15 bg-white/[0.08] px-6 py-4">
-                  <div>
-                    <div className="font-display text-fluid-2xl font-semibold leading-none text-accent">
-                      {formatRWF(450000)}
-                    </div>
-                    <div className="mt-1 font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/55">
-                      {t("avgMonthlyEarnings")}
-                    </div>
-                  </div>
-                  <div className="w-px self-stretch bg-white/15" />
+                  {priceRange && (
+                    <>
+                      <div>
+                        <div className="font-display text-fluid-2xl font-semibold leading-none text-accent">
+                          {priceRange.min === priceRange.max
+                            ? formatRWF(priceRange.min)
+                            : t("priceRange", {
+                                min: formatRWF(priceRange.min),
+                                max: formatRWF(priceRange.max),
+                              })}
+                        </div>
+                        <div className="mt-1 font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/55">
+                          {t("listedPerDay")}
+                        </div>
+                      </div>
+                      <div className="w-px self-stretch bg-white/15" />
+                    </>
+                  )}
                   <div>
                     <div className="font-display text-fluid-2xl font-semibold leading-none text-white">
-                      80%
+                      {ownerSharePercent}%
                     </div>
                     <div className="mt-1 font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/55">
                       {t("youKeep")}
