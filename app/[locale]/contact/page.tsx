@@ -61,19 +61,19 @@ export default async function ContactPage({
 
           <dt>{t("dtPayments")}</dt>
           <dd>
-            <a href="mailto:finance@zuridrive.rw">finance@zuridrive.rw</a>{" "}
+            <a href="mailto:finance@zuridrive.rw">finance@zuridrive.rw</a>.{" "}
             {t("ddPayments")}
           </dd>
 
           <dt>{t("dtPrivacy")}</dt>
           <dd>
-            <a href="mailto:privacy@zuridrive.rw">privacy@zuridrive.rw</a>{" "}
+            <a href="mailto:privacy@zuridrive.rw">privacy@zuridrive.rw</a>.{" "}
             {t("ddPrivacy")}
           </dd>
 
           <dt>{t("dtSecurity")}</dt>
           <dd>
-            <a href="mailto:security@zuridrive.rw">security@zuridrive.rw</a>{" "}
+            <a href="mailto:security@zuridrive.rw">security@zuridrive.rw</a>.{" "}
             {t("ddSecurity")}
           </dd>
 
@@ -93,7 +93,7 @@ export default async function ContactPage({
         </ul>
         <p>
           {t("beforeYouWrite")}{" "}
-          <Link href="/help">{t("helpCentre")}</Link> {t("helpCentreAfter")}
+          <Link href="/help">{t("helpCentre")}</Link>. {t("helpCentreAfter")}
         </p>
       </Clause>
     </ProsePage>

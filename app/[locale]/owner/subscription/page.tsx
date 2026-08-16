@@ -107,10 +107,10 @@ export default async function OwnerSubscriptionPage({
             {t("withoutPlanYouCanList")}{" "}
             <strong>{t("freeTierCars", { count: freeTier })}</strong>
             {carCount > freeTier
-              ? t("someNotVisible", {
+              ? `. ${t("someNotVisible", {
                   count: carCount,
                   hidden: carCount - freeTier,
-                })
+                })}`
               : t("standardPlacementSuffix")}{" "}
             {t("planLiftsLimit")}
           </p>

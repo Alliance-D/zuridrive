@@ -9,7 +9,7 @@
    there first and update the mirror — the two drifted once already.
    ============================================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* -------------------------------------------------------------------------- */
 /* TAILWIND                                                                    */
@@ -64,7 +64,15 @@
 
   /* Typography */
   --font-display:  'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  --font-sans:     'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Body and UI text.
+     
+     Was 'Syne', which is a display face: its descenders are drawn very short
+     and flat, so at body sizes g, j, p, q and y read as though they have been
+     cut off. Nothing in the CSS was clipping them - the letterforms are simply
+     shaped that way, and it is the wrong tool for running text. Cormorant
+     Garamond still carries the headings and the logo, so the character of the
+     brand is unchanged. Revert by putting 'Syne' back at the front. */
+  --font-sans:     'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:     'JetBrains Mono', 'Courier New', monospace;
 
   /* Type scale — fluid via clamp() */

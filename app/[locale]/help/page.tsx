@@ -118,7 +118,7 @@ export default async function HelpPage({
         <p>
           {t("stuckPre")}{" "}
           <Link href="/owner/support">{t("supportDesk")}</Link>
-          {t("stuckMid")} <Link href="/contact">{t("contactPage")}</Link>{" "}
+          {t("stuckMid")} <Link href="/contact">{t("contactPage")}</Link>.{" "}
           {t("stuckPost")}
         </p>
         <p>

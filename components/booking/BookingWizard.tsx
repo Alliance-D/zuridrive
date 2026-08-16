@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CalendarDays, MapPin, User, CreditCard, ChevronRight, ChevronLeft, Info, Check, Car, Fuel, Clock } from 'lucide-react'
 import { formatRWF } from '@/lib/currency'
+import { ROUTES } from '@/lib/routes'
 import { calculateBookingPrice } from '@/lib/booking/pricing'
 import { StepIndicator } from './StepIndicator'
 import { RentalTypeSelector } from './RentalTypeSelector'
@@ -359,6 +360,26 @@ export function BookingWizard({
     <div className="min-h-screen bg-bone">
       {/* ── Top car summary bar ── */}
       <div className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-sm">
+        {/* This page deliberately has no site navbar - a checkout flow with a
+            full nav invites people to wander out of it. But it also left no way
+            back at all except the browser button, so the brand and a return
+            link live in the sticky bar instead. One sticky header, not two. */}
+        <div className="max-w-4xl mx-auto px-4 pt-2.5 flex items-center justify-between">
+          <Link
+            href={ROUTES.home}
+            className="font-display text-lg font-normal tracking-tight text-brand no-underline"
+          >
+            Zuri<span className="text-accent">Drive</span>
+          </Link>
+          <Link
+            href={ROUTES.carDetail(car.id)}
+            className="flex items-center gap-1 text-xs font-semibold text-stone-500 no-underline hover:text-brand"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+            {t("backToCar")}
+          </Link>
+        </div>
+
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-4">
           {car.coverPhotoUrl && (
             <Image

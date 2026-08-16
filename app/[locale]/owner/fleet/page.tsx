@@ -106,7 +106,7 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
             {allowance.plan && allowance.status !== "LAPSED"
               ? t("onPlan", { plan: allowance.plan.name })
               : allowance.status === "LAPSED"
-                ? t("planLapsed")
+                ? `. ${t("planLapsed")}`
                 : t("onFreeTier")}
           </p>
           {!allowance.canListMore && (

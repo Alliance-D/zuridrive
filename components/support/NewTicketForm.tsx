@@ -116,7 +116,7 @@ export default function NewTicketForm({
       <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-soft">
         {isPriority && <Zap className="h-3.5 w-3.5 text-accent" />}
         {t("replyWithin", { hours: responseHours })}
-        {isPriority && planName ? t("prioritySuffix", { plan: planName }) : "."}
+        {isPriority && planName ? `. ${t("prioritySuffix", { plan: planName })}` : "."}
       </p>
 
       <div className="mt-3 space-y-2.5">
