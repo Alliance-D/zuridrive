@@ -404,10 +404,10 @@ const WEEKDAYS = [
   "sunday",
   "monday",
   "tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
 ];
 
 export interface DemandPatterns {
@@ -545,7 +545,8 @@ export async function getOwnerPricePosition(
       return {
         carId: car.id,
         name: `${car.year} ${car.make} ${car.model}`,
-        category: car.category.replace(/_/g, " ").toLowerCase(),
+        // Raw enum value: the page runs it through the labeller.
+        category: car.category,
         yourRate,
         marketMedian: median,
         sampleSize: rates.length,
@@ -593,7 +594,7 @@ export async function getOwnerRatingBreakdown(
   return [
     { category: "Cleanliness", average: agg._avg.cleanlinessRating ?? 0 },
     { category: "Comfort", average: agg._avg.comfortRating ?? 0 },
-    { category: "Value for money", average: agg._avg.valueRating ?? 0 },
+    { category: "Value", average: agg._avg.valueRating ?? 0 },
     { category: "Communication", average: agg._avg.communicationRating ?? 0 },
   ].map((r) => ({ ...r, count: agg._count }));
 }

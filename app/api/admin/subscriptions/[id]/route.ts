@@ -38,6 +38,12 @@ const PatchSchema = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('OVERRIDE'),
     note: z.string().min(5).max(500),
+    /**
+     * Grant the plan as a trial rather than as a paid subscription. Both give
+     * the same benefits; only a trial stays out of the revenue figures, which
+     * count ACTIVE subscriptions.
+     */
+    asTrial: z.boolean().optional(),
   }),
   z.object({
     action: z.literal('CANCEL'),
@@ -112,9 +118,13 @@ export async function PATCH(
         )
       }
 
+      const asTrial =
+        action === 'OVERRIDE' && parsed.data.asTrial === true
+
       const activation = await prisma.$transaction((tx) =>
         activateSubscription(tx, subscription.id, {
           confirmedById: session.user.id,
+          asTrial,
         }),
       )
 

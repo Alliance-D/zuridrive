@@ -180,8 +180,10 @@ export default function Navbar() {
               <>
                 <Link
                   href={ROUTES.login}
-                  className={`rounded-full px-4 py-2 text-fluid-sm font-medium transition-all ${
-                    isTransparent ? "text-white/85" : "text-ink"
+                  className={`rounded-full border px-4 py-2 text-fluid-sm font-medium no-underline transition-all ${
+                    isTransparent
+                      ? "border-white/35 text-white/90 hover:bg-white/10"
+                      : "border-sand-darker text-ink hover:bg-sand"
                   }`}
                 >
                   {t("signIn")}

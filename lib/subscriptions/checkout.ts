@@ -57,7 +57,16 @@ export interface ActivationResult {
 export async function activateSubscription(
   db: Db,
   subscriptionId: string,
-  options: { confirmedById?: string | null } = {},
+  options: {
+    confirmedById?: string | null;
+    /**
+     * Grant the plan without payment. Everything that reads entitlements
+     * already treats TRIAL as live, but nothing ever set it, so a free period
+     * had to be given as a normal ACTIVE subscription — which then counted
+     * towards MRR as though somebody had paid for it.
+     */
+    asTrial?: boolean;
+  } = {},
 ): Promise<ActivationResult> {
   const subscription = await db.ownerSubscription.findUnique({
     where: { id: subscriptionId },
@@ -99,12 +108,14 @@ export async function activateSubscription(
   await db.ownerSubscription.update({
     where: { id: subscription.id },
     data: {
-      status: "ACTIVE",
+      status: options.asTrial ? "TRIAL" : "ACTIVE",
       startedAt: now,
       expiresAt,
       renewedAt: isRenewal ? now : null,
-      paymentConfirmedAt: now,
-      paymentConfirmedById: options.confirmedById ?? null,
+      // A trial was never paid for, so it carries no confirmation and no
+      // price — pricePaid stays null and the finance figures stay honest.
+      paymentConfirmedAt: options.asTrial ? null : now,
+      paymentConfirmedById: options.asTrial ? null : (options.confirmedById ?? null),
       rejectionReason: null,
     },
   });

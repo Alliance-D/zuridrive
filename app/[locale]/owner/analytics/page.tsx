@@ -391,7 +391,7 @@ export default async function OwnerAnalyticsPage({
                       <tr key={p.carId}>
                         <td className="py-2.5 text-xs font-medium text-ink">
                           {p.name}
-                          <span className="block text-[10px] capitalize text-ink-faint">
+                          <span className="block text-[10px] text-ink-faint">
                             {label("category", p.category)}
                           </span>
                         </td>

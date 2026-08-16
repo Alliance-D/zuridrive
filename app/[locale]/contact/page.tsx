@@ -59,6 +59,19 @@ export default async function ContactPage({
             <a href="mailto:hello@zuridrive.rw">hello@zuridrive.rw</a>
           </dd>
 
+          {/* The top plan carries a listing cap, so /list-your-car sends
+              anyone above it here. Without a line naming fleet accounts they
+              would land on a generic address with no sign anybody handles
+              them. */}
+          <dt>{t("dtFleet")}</dt>
+          <dd>
+            <a href="mailto:hello@zuridrive.rw?subject=Fleet%20enquiry">
+              hello@zuridrive.rw
+            </a>
+            .{" "}
+            {t("ddFleet")}
+          </dd>
+
           <dt>{t("dtPayments")}</dt>
           <dd>
             <a href="mailto:finance@zuridrive.rw">finance@zuridrive.rw</a>.{" "}

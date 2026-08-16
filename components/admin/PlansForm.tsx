@@ -253,7 +253,9 @@ export default function PlansForm({
                   <select
                     value={p.analyticsLevel}
                     onChange={(e) => update(p.id, { analyticsLevel: e.target.value })}
-                    className="rounded-lg border border-sand-dark px-2 py-1 text-sm"
+                    // pr-7 leaves room for the native chevron, which was
+                    // sitting on top of "ADVANCED".
+                    className="rounded-lg border border-sand-dark py-1 pl-2 pr-7 text-sm"
                   >
                     <option value="BASIC">BASIC</option>
                     <option value="ADVANCED">ADVANCED</option>

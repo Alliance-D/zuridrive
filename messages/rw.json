@@ -2050,7 +2050,9 @@
     "faster4": "Icyo wari witeze kubaho, n'icyabaye mu kigwi cyacyo.",
     "beforeYouWrite": "Mbere yo kwandika, ni byiza kureba",
     "helpCentre": "Ahatangirwa ubufasha",
-    "helpCentreAfter": "Ingwate, amafaranga yo guhagarika n'igihe cyo kwishyurwa ni byo abantu babaza cyane, kandi byose birasubizwa aho."
+    "helpCentreAfter": "Ingwate, amafaranga yo guhagarika n'igihe cyo kwishyurwa ni byo abantu babaza cyane, kandi byose birasubizwa aho.",
+    "dtFleet": "Ba nyir'imodoka nyinshi",
+    "ddFleet": "Ufite imodoka nyinshi kurusha izo gahunda ya hejuru yemera? Tubwire umubare wazo n'aho ziri, tuzagushakira uburyo bukubereye."
   },
   "cookies": {
     "metaTitle": "Amabwiriza ku ma cookie",
