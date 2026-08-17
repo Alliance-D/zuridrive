@@ -483,7 +483,18 @@
     "notificationsSub": "Updates about your bookings, payments and deposits.",
     "keepDetailsAccurate": "Keep your details accurate. They're used on every booking.",
     "memberSince": "Member since {date}",
-    "photoLimits": "Max 5 MB · JPG, PNG, or WebP"
+    "photoLimits": "Max 5 MB · JPG, PNG, or WebP",
+    "setPassword": "Set a password",
+    "setPasswordHint": "Your account has no password yet. Set one and you can sign in with it instead of waiting for a code.",
+    "changePassword": "Change password",
+    "changePasswordHint": "You will need your current password to change it.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "passwordUpdated": "Password updated",
+    "couldntSave": "We couldn't save that. Please try again.",
+    "languageTitle": "Language",
+    "languageHint": "The language we write to you in, including text messages.",
+    "languageSaved": "Language saved"
   },
   "owner": {
     "overview": "Overview",

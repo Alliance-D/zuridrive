@@ -8,6 +8,8 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile } from "@/lib/owner";
 import OwnerProfileForm from "@/components/owner/OwnerProfileForm";
+import PasswordSection from "@/components/dashboard/PasswordSection";
+import LanguageSection from "@/components/dashboard/LanguageSection";
 import { CalendarDays, Clock, Car } from "lucide-react";
 
 export async function generateMetadata({
@@ -30,7 +32,14 @@ export default async function OwnerProfilePage({
   const [user, carCount] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: session.user.id },
-      select: { name: true, email: true, phone: true },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        locale: true,
+        // Only whether one exists — the hash never leaves the server.
+        passwordHash: true,
+      },
     }),
     prisma.car.count({ where: { ownerId: profile.id } }),
   ]);
@@ -80,6 +89,9 @@ export default async function OwnerProfilePage({
           bankAccountNumber: profile.bankAccountNumber ?? "",
         }}
       />
+
+      <PasswordSection hasPassword={user.passwordHash !== null} />
+      <LanguageSection saved={user.locale} />
     </div>
   );
 }

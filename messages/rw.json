@@ -483,7 +483,18 @@
     "notificationsSub": "Amakuru ku bukode bwawe, ubwishyu n'ingwate.",
     "keepDetailsAccurate": "Gumana amakuru yawe ari ukuri. Akoreshwa kuri buri bukode.",
     "memberSince": "Yinjiye muri {date}",
-    "photoLimits": "Ntirenze 5 MB · JPG, PNG cyangwa WebP"
+    "photoLimits": "Ntirenze 5 MB · JPG, PNG cyangwa WebP",
+    "setPassword": "Shyiraho ijambo ry'ibanga",
+    "setPasswordHint": "Konti yawe ntiragira ijambo ry'ibanga. Rishyireho ubone kwinjira utategereje kode.",
+    "changePassword": "Hindura ijambo ry'ibanga",
+    "changePasswordHint": "Uzakenera ijambo ry'ibanga usanzwe ufite kugira ngo urihindure.",
+    "currentPassword": "Ijambo ry'ibanga usanzwe ufite",
+    "newPassword": "Ijambo ry'ibanga rishya",
+    "passwordUpdated": "Ijambo ry'ibanga ryahinduwe",
+    "couldntSave": "Ntitwashoboye kubika. Ongera ugerageze.",
+    "languageTitle": "Ururimi",
+    "languageHint": "Ururimi tugukoreshereza, harimo n'ubutumwa bugufi.",
+    "languageSaved": "Ururimi rwabitswe"
   },
   "owner": {
     "overview": "Incamake",

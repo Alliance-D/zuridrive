@@ -10,8 +10,7 @@
  */
 
 import { useState, useRef, useTransition } from "react";
-import { useTranslations, useLocale } from "next-intl";
-import { formatMonth } from "@/lib/dates";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import {
   User, Phone, Mail, CreditCard, Car,
@@ -31,7 +30,8 @@ interface ProfileData {
 interface ProfileFormProps {
   userId:      string;
   initialData: ProfileData;
-  memberSince: Date;
+  /** Already formatted on the server — see the note in the profile page. */
+  memberSince: string;
 }
 
 // ─── Inline field component ───────────────────────────────────────────────────
@@ -95,7 +95,6 @@ export default function ProfileForm({
   memberSince,
 }: ProfileFormProps) {
   const t = useTranslations("dashboard");
-  const locale = useLocale();
   const tc = useTranslations("common");
   const [data,   setData]   = useState<ProfileData>(initialData);
   const [errors, setErrors] = useState<Partial<Record<keyof ProfileData, string>>>({});
@@ -236,9 +235,7 @@ export default function ProfileForm({
 
   // ─────────────────────────────────────────────────────────────────────────────
 
-  // formatMonth reads the active locale; "en-RW" printed an English month to
-  // a Kinyarwanda reader regardless of what the rest of the page said.
-  const memberSinceStr = formatMonth(memberSince, locale);
+  const memberSinceStr = memberSince;
 
   return (
     <div className="space-y-5">

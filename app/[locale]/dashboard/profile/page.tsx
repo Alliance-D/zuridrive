@@ -17,8 +17,11 @@ import { loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { formatMonth } from "@/lib/dates";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ProfileForm from "@/components/dashboard/ProfileForm";
+import PasswordSection from "@/components/dashboard/PasswordSection";
+import LanguageSection from "@/components/dashboard/LanguageSection";
 import { ProfileSkeleton } from "@/components/dashboard/DashboardSkeletons";
 
 // ─── Data fetcher ─────────────────────────────────────────────────────────────
@@ -33,6 +36,9 @@ async function getProfile(userId: string) {
       email:                 true,
       profilePhoto:          true,
       createdAt:             true,
+      locale:                true,
+      // Only whether one exists — the hash itself never leaves the server.
+      passwordHash:          true,
     },
   });
   return user;
@@ -69,8 +75,16 @@ async function ProfileContent({
           email:                 user.email ?? "",
           profilePhotoUrl:       user.profilePhoto ?? "",
         }}
-        memberSince={user.createdAt}
+        // Formatted here rather than in the client component: the browser's
+        // Intl has no Kinyarwanda month names and falls back to English, which
+        // both mismatched hydration and showed the wrong language.
+        memberSince={formatMonth(user.createdAt, locale)}
       />
+
+      <div className="mt-5 grid gap-5">
+        <PasswordSection hasPassword={user.passwordHash !== null} />
+        <LanguageSection saved={user.locale} />
+      </div>
     </DashboardLayout>
   );
 }
