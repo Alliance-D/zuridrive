@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateOtp, sendOtpSms } from "@/lib/sms";
+import { hashPassword } from "@/lib/auth";
+import { passwordSchema } from "@/lib/password-policy";
 import { localeFromRequest } from "@/lib/locale-cookie";
 import { z } from "zod";
 
@@ -18,6 +20,9 @@ const ownerSignupSchema = z.object({
     .max(15)
     .regex(/^\+?[0-9\s\-()]+$/, "Invalid phone number"),
   name: z.string().min(2).max(100),
+  // Owners sign in with a password like everyone else. The code below only
+  // proves the number is theirs.
+  password: passwordSchema,
   email: z.string().email().optional(),
   // Declared at signup so the first listing already carries the right byline.
   // Everything else about the business (registration number, TIN) is asked for
@@ -98,6 +103,7 @@ export async function POST(req: NextRequest) {
           phone: normalizedPhone,
           name,
           email: email?.toLowerCase() ?? null,
+          passwordHash: await hashPassword(parsed.data.password),
           role: "OWNER",
           // The OTP below is the first thing this account receives.
           locale: localeFromRequest(req),

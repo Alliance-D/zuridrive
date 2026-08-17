@@ -1730,7 +1730,7 @@
     "showPassword": "Show password",
     "signingIn": "Signing in…",
     "signIn": "Sign in",
-    "forgotOneTimeCode": "Forgot it? Sign in with a one-time code",
+    "forgotOneTimeCode": "Forgotten it, or never set one? Sign in with a code",
     "changeNumber": "Change number",
     "sixDigitCode": "6-digit code",
     "codeExpiresIn": "Code expires in {time}",
@@ -1779,7 +1779,12 @@
     "couldntSignYouIn": "We couldn't sign you in. Please try again.",
     "alreadyHaveAccount": "Already have an account?",
     "lookingToRent": "Looking to rent instead?",
-    "haveCarToRentOut": "Have a car to rent out?"
+    "haveCarToRentOut": "Have a car to rent out?",
+    "passwordHint": "At least 8 characters. You will use this to sign in.",
+    "confirmPassword": "Confirm password",
+    "passwordsDontMatch": "Those two passwords are not the same.",
+    "passwordTooShort": "Use at least 8 characters.",
+    "passwordTooCommon": "That password is too easy to guess. Try something less common."
   },
   "confirmation": {
     "proofReceived": "Payment proof received!",

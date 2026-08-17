@@ -3,9 +3,11 @@
 /**
  * SignupForm — phone-first signup for clients and owners.
  *
- * Two steps: details → SMS code. There is no password, because the platform
- * signs people in with a one-time code; creating one here would be a
- * credential nobody needs.
+ * Two steps: details → SMS code.
+ *
+ * A password is set here and the code is a one-off proof that the number is
+ * theirs. This used to create no password at all, which left everyone who
+ * signed up unable to use the sign-in form, since that asks for one.
  *
  * In development the API returns the code (`devOtp`) since no SMS provider is
  * configured, and the form shows it rather than leaving you stuck.
@@ -17,13 +19,16 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { routes } from "@/lib/routes";
-import { Loader2, AlertCircle, ArrowLeft, Phone, User, Mail , Building2} from "lucide-react";
+import { Loader2, AlertCircle, ArrowLeft, Phone, User, Mail, Building2, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
   const t = useTranslations("auth");
   const tc = useTranslations("common");
   const router = useRouter();
   const [step, setStep] = useState<"details" | "code">("details");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -39,21 +44,35 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
   const isOwner = role === "OWNER";
 
   async function requestCode() {
+    // Caught here so a mistyped confirmation does not cost an SMS to discover.
+    if (password.length < 8) {
+      setError(t("passwordTooShort"));
+      return;
+    }
+    if (password !== confirm) {
+      setError(t("passwordsDontMatch"));
+      return;
+    }
+
     setBusy(true);
     setError(null);
     try {
       // Owners go through their own endpoint, which also creates the
       // CarOwnerProfile the onboarding checklist depends on.
-      const endpoint = isOwner ? "/api/auth/signup/owner" : "/api/auth/otp";
+      // Clients go to /api/auth/signup, which creates the account with a
+      // password and then sends the code. /api/auth/otp is only for requesting
+      // a code against an account that already exists.
+      const endpoint = isOwner ? "/api/auth/signup/owner" : "/api/auth/signup";
       const body = isOwner
         ? {
             name: name.trim(),
             phone: phone.trim(),
             email: email.trim() || undefined,
+            password,
             ownerType,
             businessName: ownerType === "COMPANY" ? businessName.trim() : undefined,
           }
-        : { phone: phone.trim(), name: name.trim(), isSignup: true };
+        : { phone: phone.trim(), name: name.trim(), password, email: email.trim() || undefined };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -150,8 +169,9 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
             )}
 
             {isOwner && ownerType === "COMPANY" && (
-              <Field label={t("businessName")} icon={Building2}>
+              <Field label={t("businessName")} icon={Building2} htmlFor="businessName">
                 <input
+                  id="businessName"
                   className={input}
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
@@ -167,8 +187,11 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
                   : t("fullName")
               }
               icon={User}
+            
+              htmlFor="name"
             >
               <input
+                id="name"
                 className={input}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -181,8 +204,9 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
               />
             </Field>
 
-            <Field label={t("phoneNumber")} icon={Phone}>
+            <Field label={t("phoneNumber")} icon={Phone} htmlFor="phone">
               <input
+                id="phone"
                 className={input}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -191,12 +215,46 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
               />
             </Field>
 
-            <Field label={t("emailOptional")} icon={Mail}>
+            <Field label={t("emailOptional")} icon={Mail} htmlFor="email">
               <input
+                id="email"
                 className={input}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 type="email"
+              />
+            </Field>
+
+            <Field label={t("password")} icon={Lock} htmlFor="password">
+              <div className="relative">
+                <input
+                  id="password"
+                  className={`${input} pr-10`}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? t("hidePassword") : t("showPassword")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-ink-faint">{t("passwordHint")}</p>
+            </Field>
+
+            <Field label={t("confirmPassword")} icon={Lock} htmlFor="confirm">
+              <input
+                id="confirm"
+                className={input}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
               />
             </Field>
 
@@ -226,8 +284,9 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
               </div>
             )}
 
-            <Field label={t("sixDigitCode")}>
+            <Field label={t("sixDigitCode")} htmlFor="code">
               <input
+                id="code"
                 className={`${input} text-center font-mono text-lg tracking-[0.4em]`}
                 value={code}
                 onChange={(e) =>
@@ -305,18 +364,29 @@ function normalise(phone: string) {
 const input =
   "w-full rounded-lg border border-sand-dark bg-white px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand/20";
 
+/**
+ * `htmlFor` is required rather than optional: the label carried no association
+ * at all before, so a screen reader announced an unlabelled box and clicking
+ * the label did nothing. Making it required means a new field cannot repeat
+ * that by omission.
+ */
 function Field({
   label,
+  htmlFor,
   icon: Icon,
   children,
 }: {
   label: string;
+  htmlFor: string;
   icon?: React.ElementType;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-ink-muted">
+      <label
+        htmlFor={htmlFor}
+        className="mb-1 flex items-center gap-1.5 text-xs font-medium text-ink-muted"
+      >
         {Icon && <Icon className="h-3 w-3 text-ink-faint" />}
         {label}
       </label>

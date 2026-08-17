@@ -20,12 +20,14 @@ import { localeFromRequest } from '@/lib/locale-cookie'
 import { prisma } from '@/lib/db'
 import { normalizeRwandaPhone } from '@/lib/phone'
 import { hashPassword } from '@/lib/auth'
+import { generateOtp, sendOtpSms } from '@/lib/sms'
+import { passwordSchema } from '@/lib/password-policy'
 import { z } from 'zod'
 
 const SignupSchema = z.object({
   phone: z.string().min(9).max(20),
   name: z.string().min(2).max(100),
-  password: z.string().min(8).max(200),
+  password: passwordSchema,
   email: z.string().email().optional(),
 })
 
@@ -36,8 +38,12 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         {
+          // The specific rule that failed, so "too easy to guess" does not
+          // arrive disguised as "too short".
           error:
-            'Please enter your name, phone number, and a password of at least 8 characters.',
+            parsed.error.issues[0]?.message ??
+            'Please check your name, phone number and password.',
+          fields: parsed.error.flatten().fieldErrors,
         },
         { status: 400 },
       )
@@ -84,7 +90,33 @@ export async function POST(req: NextRequest) {
       select: { id: true, phone: true, name: true },
     })
 
-    return NextResponse.json({ success: true, user }, { status: 201 })
+    // Verify the number now. The password is what signs them in from here on,
+    // so this code is a one-off proof that the phone is theirs rather than a
+    // credential they will need again.
+    const otp = generateOtp()
+    const expiryMinutes = parseInt(process.env.OTP_EXPIRY_MINUTES ?? '5')
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otpCode: otp,
+        otpExpiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000),
+        otpAttempts: 0,
+      },
+    })
+
+    await sendOtpSms(phone, otp, user.id, localeFromRequest(req))
+
+    return NextResponse.json(
+      {
+        success: true,
+        user,
+        // Dev only - no SMS provider is configured locally, so the form shows
+        // the code rather than leaving you stuck.
+        ...(process.env.NODE_ENV === 'development' && { devOtp: otp }),
+      },
+      { status: 201 },
+    )
   } catch (error) {
     console.error('[POST /api/auth/signup]', error)
     return NextResponse.json(
