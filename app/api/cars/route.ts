@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { rateLimit, clientIp, rateLimitHeaders } from "@/lib/rate-limit";
 import { z } from "zod";
 
 /**
@@ -11,6 +12,17 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
+    // The catalogue is public by design, but a page of 100 with no throttle
+    // makes copying the whole thing free. This does not stop a determined
+    // scraper - nothing does - it just stops it being a single loop.
+    const limit = await rateLimit(`cars:${clientIp(request)}`, 60, 60 * 1000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please slow down." },
+        { status: 429, headers: rateLimitHeaders(limit) },
+      );
+    }
+
     const take = Math.min(Number(searchParams.get("limit") ?? 50), 100);
 
     const cars = await prisma.car.findMany({

@@ -13,9 +13,10 @@
  *     before signup asked for a password, have none — and being signed in is
  *     already the strongest claim available to them.
  *
- * Every change ends the other sessions implicitly: NextAuth JWTs stay valid
- * until they expire, so this is not a full revocation. Worth knowing rather
- * than assuming otherwise.
+ * A change ends every existing session. NextAuth issues stateless JWTs, so
+ * there is nothing to delete; User.sessionsValidFrom records the moment and
+ * lib/auth-options.ts refuses any token issued before it. That includes the
+ * device making the change, which then signs in again with the new password.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -79,7 +80,14 @@ export async function PUT(req: NextRequest) {
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash: await hashPassword(parsed.data.newPassword) },
+      data: {
+        passwordHash: await hashPassword(parsed.data.newPassword),
+        // Ends every session issued before now, including this one — see the
+        // revocation check in lib/auth-options.ts. Changing a password because
+        // you think someone else has it should not leave their device signed
+        // in for the remaining thirty days of its token.
+        sessionsValidFrom: new Date(),
+      },
     });
 
     return NextResponse.json({ success: true, hadPassword: !!user.passwordHash });

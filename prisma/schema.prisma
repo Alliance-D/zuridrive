@@ -303,6 +303,15 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  /// Sessions issued before this moment are refused.
+  ///
+  /// NextAuth uses stateless JWTs here, so there is nothing to delete when a
+  /// password changes — every device already holding a token would keep it
+  /// until expiry, which is thirty days. Stamping the moment of the change and
+  /// comparing it against the token's issue time is what makes "change my
+  /// password" actually end the other sessions.
+  sessionsValidFrom DateTime?
+
   /// Preferred language, written when someone picks one in the switcher or the
   /// prompt bar. Pages get their locale from the URL, so this exists for the
   /// messages sent when there is no request to read it from — SMS, and cron
@@ -1321,4 +1330,22 @@ enum SupportStatus {
   AWAITING_USER // We replied, waiting on them
   RESOLVED // Answered, can be reopened by a reply
   CLOSED // Done
+}
+
+/// Counters for rate limiting, keyed by whatever the caller is limiting on -
+/// an IP, a phone number, a route.
+///
+/// In the database rather than in process memory for the same reason the OTP
+/// send counter is: every serverless instance has its own memory, so an
+/// in-process counter lets an attacker multiply their allowance by the number
+/// of running instances.
+model RateLimit {
+  key       String   @id
+  count     Int      @default(0)
+  /// When the current window ends. A row past this is treated as empty and
+  /// reused rather than deleted on the request path.
+  expiresAt DateTime
+
+  @@index([expiresAt])
+  @@map("rate_limits")
 }

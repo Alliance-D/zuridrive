@@ -18,6 +18,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { rateLimit } from "@/lib/rate-limit";
 import { normalizeRwandaPhone } from "@/lib/phone";
 
 /**
@@ -73,6 +74,15 @@ export const authOptions: NextAuthOptions = {
         const phone = normalizeRwandaPhone(credentials.phone.trim());
         if (!phone) throw new Error("INVALID_CREDENTIALS");
 
+        // Password guessing. Ten tries per number per fifteen minutes: enough
+        // that nobody typing their own password badly notices, far too few to
+        // work through a list. Keyed on the number rather than the caller,
+        // because an attacker rotating addresses is the case that matters.
+        const attempts = await rateLimit(`login:${phone}`, 10, 15 * 60 * 1000);
+        if (!attempts.allowed) {
+          throw new Error("TOO_MANY_ATTEMPTS");
+        }
+
         const user = await prisma.user.findUnique({
           where: { phone },
           include: { subAdminProfile: true, carOwnerProfile: true },
@@ -89,6 +99,12 @@ export const authOptions: NextAuthOptions = {
 
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!valid) throw new Error("INVALID_CREDENTIALS");
+
+        // Getting in clears the counter — the limit is there to stop guessing,
+        // not to punish someone who mistyped twice before succeeding.
+        await prisma.rateLimit
+          .deleteMany({ where: { key: `login:${phone}` } })
+          .catch(() => {});
 
         if (user.isSuspended) throw new Error("ACCOUNT_SUSPENDED");
 
@@ -285,6 +301,36 @@ export const authOptions: NextAuthOptions = {
         token.isVerified = user.isVerified;
         token.roleModules = user.roleModules;
         token.isOnboardingComplete = user.isOnboardingComplete;
+      }
+
+      // ── Has this session been revoked? ────────────────────────────────────
+      //
+      // Sessions are stateless JWTs, so there is nothing to delete when a
+      // password changes: every device already holding a token would keep it
+      // for the full thirty days. User.sessionsValidFrom records the moment of
+      // the change, and any token issued before it is refused here.
+      //
+      // This costs one indexed lookup per request. That is a real cost, and it
+      // is the price of "change my password" meaning what people assume it
+      // means — otherwise the phone someone left in a taxi keeps working for a
+      // month after they have done the one thing they know to do about it.
+      if (token.id && typeof token.iat === "number") {
+        const record = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { sessionsValidFrom: true },
+        });
+
+        if (record?.sessionsValidFrom) {
+          // iat is in seconds; allow a second of slack so the token issued by
+          // the sign-in that follows a password change is not caught by it.
+          const issuedAt = token.iat * 1000;
+          if (issuedAt + 1000 < record.sessionsValidFrom.getTime()) {
+            // Thrown rather than returned: this callback must return a JWT, and
+            // throwing is already how a suspended account ends its session
+            // further down.
+            throw new Error("SESSION_REVOKED");
+          }
+        }
       }
 
       // On session update trigger (e.g. after profile change), re-fetch from DB

@@ -22,6 +22,7 @@ import { normalizeRwandaPhone } from '@/lib/phone'
 import { hashPassword } from '@/lib/auth'
 import { generateOtp, sendOtpSms } from '@/lib/sms'
 import { passwordSchema } from '@/lib/password-policy'
+import { rateLimit, clientIp, rateLimitHeaders } from '@/lib/rate-limit'
 import { z } from 'zod'
 
 const SignupSchema = z.object({
@@ -33,6 +34,17 @@ const SignupSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // Each account created sends an SMS, so bulk signups cost real money.
+    // Five per address per hour is generous for a household sharing a
+    // connection and useless for scripted abuse.
+    const limit = await rateLimit(`signup:${clientIp(req)}`, 5, 60 * 60 * 1000)
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many accounts created from here. Please try again later.' },
+        { status: 429, headers: rateLimitHeaders(limit) },
+      )
+    }
+
     const parsed = SignupSchema.safeParse(await req.json())
 
     if (!parsed.success) {
