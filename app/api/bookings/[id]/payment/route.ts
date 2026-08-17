@@ -13,6 +13,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { formatPhoneForMoMo } from '@/lib/payments/momo'
 import { getPaymentProvider } from '@/lib/payments'
@@ -49,6 +51,21 @@ export async function POST(
   { params }: { params: { id: string } },
 ) {
   try {
+    // ── Who is asking ──────────────────────────────────────────────────────
+    //
+    // This route had no authentication at all. A booking id is not a secret —
+    // it sits in a URL — and initiate_momo takes the destination phone number
+    // from the request body, so anyone holding an id could push a payment
+    // prompt to any number they chose, repeatedly, at the platform's expense
+    // and to a stranger's phone.
+    //
+    // Checked before the body is parsed, so an anonymous caller cannot use the
+    // validation errors to learn what this endpoint accepts.
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Please sign in.' }, { status: 401 })
+    }
+
     const body = await req.json()
     const parsed = PaymentActionSchema.safeParse(body)
 
@@ -81,6 +98,14 @@ export async function POST(
     })
 
     if (!booking) {
+      return NextResponse.json({ error: 'Booking not found.' }, { status: 404 })
+    }
+
+    // Only the client the booking belongs to may act on its payment. Finance
+    // staff use their own admin routes, which log what they do.
+    if (booking.clientId !== session.user.id) {
+      // 404 rather than 403: confirming that a booking exists to someone who
+      // has no business with it is itself a small leak.
       return NextResponse.json({ error: 'Booking not found.' }, { status: 404 })
     }
 
@@ -253,10 +278,18 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   try {
+    // Same rule as POST: a booking id in a URL is not authorisation to read
+    // its payment state.
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Please sign in.' }, { status: 401 })
+    }
+
     const booking = await db.booking.findUnique({
       where: { id: params.id },
       select: {
         status: true,
+        clientId: true,
         payments: {
           where: { isVoided: false },
           orderBy: { createdAt: 'desc' },
@@ -270,7 +303,7 @@ export async function GET(
       },
     })
 
-    if (!booking) {
+    if (!booking || booking.clientId !== session.user.id) {
       return NextResponse.json({ error: 'Booking not found.' }, { status: 404 })
     }
 
