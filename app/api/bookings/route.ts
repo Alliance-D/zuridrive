@@ -388,6 +388,23 @@ export async function POST(req: NextRequest) {
       paymentMethod: data.paymentMethod,
     })
   } catch (error) {
+    // Someone else booked these dates in the moment between the availability
+    // check and the write. The database refuses the overlap — see the
+    // bookings_no_overlap constraint — and that is a conflict to explain, not
+    // a server fault to apologise for.
+    if (
+      error instanceof Error &&
+      error.message.includes('bookings_no_overlap')
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'Someone just booked these dates. Please pick different dates and try again.',
+        },
+        { status: 409 },
+      )
+    }
+
     console.error('[POST /api/bookings]', error)
     return NextResponse.json(
       {
