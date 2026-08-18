@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v2 as cloudinary } from 'cloudinary'
 import { getSession } from '@/lib/auth'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -34,26 +35,14 @@ const ALLOWED_FOLDERS = ['bank_proofs', 'condition_photos', 'car_photos', 'profi
 // wizard before an account existed. ZuriDrive no longer collects identity
 // documents at all (the owner checks them in person at handover), so the
 // anonymous upload path is closed entirely.
-const GUEST_UPLOADABLE_FOLDERS = new Set<string>()
-
-const ANON_RATE_LIMIT_MAX = 5
-const ANON_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000
-const anonUploads = new Map<string, { count: number; windowStart: number }>()
-
-function checkAnonRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = anonUploads.get(ip)
-
-  if (!entry || now - entry.windowStart > ANON_RATE_LIMIT_WINDOW_MS) {
-    anonUploads.set(ip, { count: 1, windowStart: now })
-    return true
-  }
-
-  if (entry.count >= ANON_RATE_LIMIT_MAX) return false
-
-  entry.count += 1
-  return true
-}
+// Uploads are limited per account, in the database. There used to be an
+// in-memory counter here for anonymous uploads, which was unreachable — guest
+// uploads are closed — and would not have worked anyway, since each serverless
+// instance has its own memory. Nothing limited signed-in uploads at all, so an
+// account could push 5MB at a time to Cloudinary without bound, and storage is
+// billed.
+const UPLOAD_LIMIT = 40
+const UPLOAD_WINDOW_MS = 15 * 60 * 1000
 
 export async function POST(req: NextRequest) {
   try {
@@ -75,24 +64,25 @@ export async function POST(req: NextRequest) {
     const session = await getSession()
 
     if (!session?.user?.id) {
-      if (!GUEST_UPLOADABLE_FOLDERS.has(folder)) {
-        return NextResponse.json(
-          { error: 'Please sign in to upload files.' },
-          { status: 401 },
-        )
-      }
+      return NextResponse.json(
+        { error: 'Please sign in to upload files.' },
+        { status: 401 },
+      )
+    }
 
-      const ip =
-        req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
-        req.headers.get('x-real-ip') ??
-        'unknown'
-
-      if (!checkAnonRateLimit(ip)) {
-        return NextResponse.json(
-          { error: 'Too many uploads. Please wait a few minutes and try again.' },
-          { status: 429 },
-        )
-      }
+    // Per account, so one runaway client cannot fill the Cloudinary bill. Forty
+    // in fifteen minutes clears the twelve-photo listing wizard and a full set
+    // of condition photos with room over.
+    const limit = await rateLimit(
+      `upload:${session.user.id}`,
+      UPLOAD_LIMIT,
+      UPLOAD_WINDOW_MS,
+    )
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many uploads. Please wait a few minutes and try again.' },
+        { status: 429, headers: rateLimitHeaders(limit) },
+      )
     }
 
     // Validate file type
