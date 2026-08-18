@@ -158,14 +158,16 @@ export async function POST(
         )
       }
 
-      const { reference: referenceId } = await provider.charge({
-        amount: totalChargedNow,
-        phoneNumber: formattedPhone,
-        externalId: booking.reference,
-        description: `ZuriDrive booking ${booking.reference} — ${booking.car.make} ${booking.car.model}`,
-      })
+      // Write the reference down BEFORE asking for the money.
+      //
+      // MTN queues a request and prompts the phone whether or not our
+      // connection survives the reply. If the reference only existed on a
+      // successful response, a timeout would lose it: the renter approves on
+      // their phone, the money moves, and nothing on our side can ever poll
+      // for it. Recorded first, the worst case is a payment we have to ask
+      // about, rather than one we cannot name.
+      const referenceId = crypto.randomUUID()
 
-      // Store the MTN reference ID on the payment record
       await db.payment.update({
         where: { id: payment.id },
         data: {
@@ -177,6 +179,33 @@ export async function POST(
           status: 'PENDING',
         },
       })
+
+      try {
+        await provider.charge({
+          reference: referenceId,
+          amount: totalChargedNow,
+          phoneNumber: formattedPhone,
+          externalId: booking.reference,
+          description: `ZuriDrive booking ${booking.reference} — ${booking.car.make} ${booking.car.model}`,
+        })
+      } catch (chargeError) {
+        // The reference is already saved, so this is recoverable: the next
+        // poll, the callback, or a person asks MTN what became of it. What we
+        // must not do is mark it FAILED — the prompt may be on the phone right
+        // now, and a wrong FAILED would strand a real payment.
+        console.error(
+          `[payment] charge failed for ${booking.reference} (reference ${referenceId})`,
+          chargeError,
+        )
+        return NextResponse.json(
+          {
+            error:
+              'We could not reach mobile money just now. If a prompt appears on your phone you can still approve it — otherwise please try again in a moment.',
+            referenceId,
+          },
+          { status: 502 },
+        )
+      }
 
       return NextResponse.json({
         success: true,

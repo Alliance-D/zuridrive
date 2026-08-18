@@ -28,6 +28,18 @@ export interface ChargeRequest {
   amount: number;
   /** Payer's phone in E.164, when the method needs one. */
   phoneNumber?: string;
+  /**
+   * The reference to charge under, when the caller has already recorded it.
+   *
+   * A charge that times out mid-flight is not the same as a charge that did
+   * not happen: MTN queues the request and pushes the prompt regardless of
+   * whether our connection survived. If the caller learns the reference only
+   * from a successful reply, a dropped connection loses it, the renter pays,
+   * and nothing on our side can ever poll for it. Passing one in lets the
+   * caller write it down first and reconcile afterwards.
+   */
+  reference?: string;
+
   /** Our id for this charge — booking id or subscription id. */
   externalId: string;
   /** Shown to the payer, e.g. on a USSD prompt. */

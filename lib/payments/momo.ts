@@ -43,6 +43,8 @@ export interface MoMoPaymentRequest {
   externalId: string       // our booking reference — for reconciliation
   payerMessage: string     // shown to client on USSD prompt
   payeeNote: string        // internal note
+  /** Reference the caller has already recorded, so a timeout stays traceable. */
+  reference?: string
 }
 
 export interface MoMoPaymentResult {
@@ -68,17 +70,49 @@ function buildAuthHeader(): string {
 }
 
 /**
+ * MTN is a third party on someone else's network. Without a deadline a stalled
+ * connection holds the request open until the platform kills the whole
+ * function, which turns one slow call into a failed page.
+ *
+ * Twenty seconds: long enough for a slow but working link, short enough to
+ * leave room to answer the caller before a serverless timeout.
+ */
+const MOMO_TIMEOUT_MS = 20_000
+
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs = MOMO_TIMEOUT_MS,
+): Promise<Response> {
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
+  } catch (error) {
+    // A timeout is not "the payment failed" — it is "we do not know". Say so,
+    // so callers do not record a failure that may still succeed on the phone.
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      throw new Error(
+        `MTN MoMo did not respond within ${timeoutMs / 1000}s — the payment may still be in progress`,
+      )
+    }
+    throw error
+  }
+}
+
+/**
  * Step 1: Initiate a payment request — sends USSD prompt to client's phone.
  * Returns a referenceId (UUID) that we use to poll for status.
  * Store this referenceId in the Payment record immediately.
  */
 export async function requestToPay(request: MoMoPaymentRequest): Promise<string> {
-  // MTN MoMo requires a UUID as the X-Reference-Id header
-  const referenceId = crypto.randomUUID()
+  // MTN MoMo requires a UUID as the X-Reference-Id header. The caller may
+  // supply one it has already written down, so that a request which times out
+  // in flight is still recoverable — MTN queues it and prompts the phone
+  // whether or not our connection survived.
+  const referenceId = request.reference ?? crypto.randomUUID()
 
   const callback = callbackUrl()
 
-  const response = await fetch(`${MOMO_BASE_URL}/collection/v1_0/requesttopay`, {
+  const response = await fetchWithTimeout(`${MOMO_BASE_URL}/collection/v1_0/requesttopay`, {
     method: 'POST',
     headers: {
       'Authorization': buildAuthHeader(),
@@ -117,7 +151,7 @@ export async function requestToPay(request: MoMoPaymentRequest): Promise<string>
  * Status: PENDING → SUCCESSFUL or FAILED
  */
 export async function getPaymentStatus(referenceId: string): Promise<MoMoPaymentResult> {
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${MOMO_BASE_URL}/collection/v1_0/requesttopay/${referenceId}`,
     {
       method: 'GET',

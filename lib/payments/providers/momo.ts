@@ -56,6 +56,7 @@ async function charge(request: ChargeRequest): Promise<ChargeResult> {
   }
 
   const reference = await requestToPay({
+    reference: request.reference,
     amount: request.amount,
     phoneNumber: formatPhoneForMoMo(request.phoneNumber),
     externalId: request.externalId,

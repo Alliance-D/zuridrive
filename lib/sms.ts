@@ -10,6 +10,9 @@ import { NotificationType } from "@prisma/client";
 import { renderSms, type SmsKey, type SmsParams } from "@/lib/sms-i18n";
 
 // Africa's Talking API base URL
+/** How long to wait on one Africa's Talking call before giving up. */
+const SMS_TIMEOUT_MS = 8_000;
+
 const AT_BASE_URL = "https://api.africastalking.com/version1";
 
 // How we identify ourselves to Africa's Talking
@@ -139,6 +142,15 @@ async function sendRawSms(
         method: "POST",
         headers: AT_HEADERS,
         body: body.toString(),
+        // Without a deadline, a stalled connection to Africa's Talking holds
+        // the caller open — and callers here are booking and payment routes
+        // that already did their real work. Three unbounded attempts could
+        // hold a booking request until the platform killed it, failing the
+        // page over a text message that nothing depends on.
+        //
+        // Eight seconds each, so all three attempts and their backoff still
+        // fit inside a serverless request.
+        signal: AbortSignal.timeout(SMS_TIMEOUT_MS),
       });
 
       if (!response.ok) {
