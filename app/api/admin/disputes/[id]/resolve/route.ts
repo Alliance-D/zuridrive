@@ -43,6 +43,13 @@ const ResolveSchema = z.object({
   ownerAwardAmount: z.number().int().min(0).optional(),
 })
 
+/** Thrown when another admin resolved this dispute first. */
+class AlreadyResolvedError extends Error {
+  constructor() {
+    super('ALREADY_RESOLVED')
+  }
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } },
@@ -180,10 +187,18 @@ export async function POST(
         },
       })
 
-      await tx.dispute.update({
-        where: { id: dispute.id },
+      // Claim the resolution. The dispute's status was read before this
+      // transaction opened, so two admins acting at once would both reach here
+      // and both move deposit money. Matching on the status means only one
+      // resolution takes effect.
+      const claimed = await tx.dispute.updateMany({
+        where: { id: dispute.id, status: { not: 'RESOLVED' } },
         data: { status: 'RESOLVED', assignedToId: session.user.id },
       })
+
+      if (claimed.count === 0) {
+        throw new AlreadyResolvedError()
+      }
 
       if (deposit && deposit.status !== 'PENDING') {
         await tx.deposit.update({
@@ -305,6 +320,13 @@ export async function POST(
       ownerAwardAmount,
     })
   } catch (error) {
+    if (error instanceof AlreadyResolvedError) {
+      return NextResponse.json(
+        { error: 'This dispute has already been resolved.' },
+        { status: 409 },
+      )
+    }
+
     console.error('[POST /api/admin/disputes/[id]/resolve]', error)
     return NextResponse.json(
       { error: 'We couldn’t resolve this dispute. Please try again.' },

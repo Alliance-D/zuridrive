@@ -49,6 +49,13 @@ const CANCELLABLE: BookingStatus[] = [
   'CONFIRMED',
 ]
 
+/** Thrown when a concurrent request cancelled this booking first. */
+class AlreadyCancelledError extends Error {
+  constructor() {
+    super('ALREADY_CANCELLED')
+  }
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } },
@@ -153,8 +160,14 @@ export async function POST(
         : confirmedPayments.reduce((sum, p) => sum + p.totalAmount, 0)
 
     await prisma.$transaction(async (tx) => {
-      await tx.booking.update({
-        where: { id: booking.id },
+      // Claim the cancellation rather than assume it. The status check above
+      // runs before this transaction opens, so two requests arriving together
+      // — a double-tap, a retried request — would both pass it and both write
+      // a refund row. Matching on the status as well as the id means only one
+      // can win; the other matches nothing and throws out of the transaction,
+      // leaving no half-cancelled booking behind.
+      const claimed = await tx.booking.updateMany({
+        where: { id: booking.id, status: { in: CANCELLABLE } },
         data: {
           status: 'CANCELLED',
           cancelledAt: now,
@@ -162,6 +175,10 @@ export async function POST(
           cancellationReason: parsed.data.reason,
         },
       })
+
+      if (claimed.count === 0) {
+        throw new AlreadyCancelledError()
+      }
 
       if (cancellationFee > 0) {
         // LATE — the original payment must STAND, so the deposit stays
@@ -321,6 +338,13 @@ export async function POST(
       canDisputeFee: cancellationFee > 0,
     })
   } catch (error) {
+    if (error instanceof AlreadyCancelledError) {
+      return NextResponse.json(
+        { error: 'This booking has already been cancelled.' },
+        { status: 409 },
+      )
+    }
+
     console.error('[POST /api/bookings/[id]/cancel]', error)
     return NextResponse.json(
       { error: 'We couldn’t cancel this booking. Please try again.' },

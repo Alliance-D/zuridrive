@@ -64,6 +64,13 @@ const ReturnSchema = z.discriminatedUnion('action', [
   }),
 ])
 
+/** Thrown when a concurrent confirmation completed this trip first. */
+class AlreadyCompletedError extends Error {
+  constructor() {
+    super('ALREADY_COMPLETED')
+  }
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } },
@@ -150,8 +157,12 @@ export async function POST(
       if (bothConfirmed) {
         // Both parties confirmed → COMPLETED + release deposit
         await db.$transaction(async (tx) => {
-          await tx.booking.update({
-            where: { id: booking.id },
+          // Claim the completion. The status was read before this transaction
+          // opened, so two confirmations arriving together would both reach
+          // here and both release the deposit. Matching on the status too
+          // means only one can win.
+          const claimed = await tx.booking.updateMany({
+            where: { id: booking.id, status: { not: 'COMPLETED' } },
             data: {
               status: 'COMPLETED',
               tripEndedAt: new Date(),
@@ -159,6 +170,11 @@ export async function POST(
               ownerConfirmedReturn: true,
             },
           })
+
+          // Somebody else completed it first: stop before touching the money.
+          if (claimed.count === 0) {
+            throw new AlreadyCompletedError()
+          }
 
           // Auto-release deposit
           if (booking.deposit && booking.deposit.status === 'HELD') {
@@ -366,6 +382,13 @@ export async function POST(
       })
     }
   } catch (error) {
+    if (error instanceof AlreadyCompletedError) {
+      return NextResponse.json(
+        { error: 'This trip has already been completed.' },
+        { status: 409 },
+      )
+    }
+
     console.error('[POST /api/bookings/[bookingId]/return]', error)
     return NextResponse.json(
       { error: 'Something went wrong. Please try again.' },
