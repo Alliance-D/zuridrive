@@ -114,7 +114,7 @@ export default function DashboardLayout({
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand">
                 <Car className="h-4 w-4 text-accent" />
               </div>
-              <span className="font-display text-lg font-semibold leading-[1.15] tracking-[-0.02em] text-brand">Zuri<span className="text-accent">Drive</span></span>
+              <span className="font-display text-lg font-semibold leading-[1.15] tracking-[-0.02em] text-brand">Zuri<span className="text-accent-ink">Drive</span></span>
             </Link>
 
             {/* Desktop right actions */}

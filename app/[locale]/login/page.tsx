@@ -218,7 +218,7 @@ export default function LoginPage() {
           href={ROUTES.home}
           className="font-display text-[clamp(1.3rem,3vw,1.6rem)] font-semibold tracking-[-0.02em] text-brand no-underline"
         >
-          Zuri<span className="text-accent">Drive</span>
+          Zuri<span className="text-accent-ink">Drive</span>
         </Link>
         <Link
           href={ROUTES.home}

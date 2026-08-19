@@ -87,7 +87,14 @@ export default function Navbar() {
                 isTransparent ? "text-white" : "text-brand"
               }`}
             >
-              Zuri<span className="text-accent">Drive</span>
+              Zuri
+              {/* The gold has to flip with the variant too. Over the dark hero
+                  it reads at better than 7:1; on the solid light bar it was
+                  managing 2.2:1, which is a decorative contrast, not a
+                  readable one — and this is the product's name. */}
+              <span className={isTransparent ? "text-accent" : "text-accent-ink"}>
+                Drive
+              </span>
             </span>
           </Link>
 

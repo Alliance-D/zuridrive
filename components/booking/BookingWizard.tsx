@@ -369,7 +369,7 @@ export function BookingWizard({
             href={ROUTES.home}
             className="font-display text-lg font-normal tracking-tight text-brand no-underline"
           >
-            Zuri<span className="text-accent">Drive</span>
+            Zuri<span className="text-accent-ink">Drive</span>
           </Link>
           <Link
             href={ROUTES.carDetail(car.id)}

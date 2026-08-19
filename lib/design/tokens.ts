@@ -34,11 +34,19 @@ export const colors = {
     wash: "#F0F5F2",
   },
 
-  /** Gold. Used sparingly — highlights, never large fills. */
+  /**
+   * Gold. Used sparingly — highlights, never large fills.
+   *
+   * DEFAULT is a fill colour: on a light background it manages 2.2:1, which is
+   * fine behind dark text and not fine as text. `ink` is the readable version
+   * for anywhere the gold carries words rather than decorates them.
+   */
   accent: {
     DEFAULT: "#D4A017",
+    /** The gold as text on a light background — 4.25:1. */
+    ink: "#96700D",
     light: "#E8BC3A",
-    dark: "#A87C0F",
+    dark: "#96700D",
     strong: "#F0C040",
     mid: "#E6B020",
     deep: "#B8880E",
@@ -73,8 +81,15 @@ export const colors = {
     /** --color-black: the gallery backdrop, darker than ink. */
     black: "#0A0A0A",
     muted: "#374151",
-    soft: "#6B7280",
-    faint: "#9CA3AF",
+    /* soft and faint both failed WCAG AA as text: 4.14:1 on the surface and
+       2.33:1 on the page background, against a 4.5:1 requirement. Darkened
+       with headroom rather than to exactly 4.5, so a later change to a
+       background does not quietly push them back under. These mirror
+       --color-text-muted and --color-text-subtle in globals.css; the two files
+       must agree, because Tailwind utilities read from here and hand-written
+       CSS reads from there. */
+    soft: "#5B6472",  // 5.49:1 on bg, 5.12:1 on surface
+    faint: "#656B78", // 5.35:1 on white, 4.58:1 on surface
     line: "#D1D5DB", // hairline dividers
   },
 
@@ -124,6 +139,7 @@ export const LEGACY_HEX_TO_TOKEN: Record<string, string> = {
   "#2D6A4F": "brand-light",
   "#A7D1BF": "brand-tint",
   "#D4A017": "accent",
+  "#96700D": "accent-ink",
   "#F7F5F0": "bone",
   "#F0EDE8": "sand",
   "#EDE7DC": "sand-light",
@@ -133,8 +149,8 @@ export const LEGACY_HEX_TO_TOKEN: Record<string, string> = {
   "#0A0A0A": "ink-black",
   "#1C1C1C": "ink",
   "#374151": "ink-muted",
-  "#6B7280": "ink-soft",
-  "#9CA3AF": "ink-faint",
+  "#5B6472": "ink-soft",
+  "#656B78": "ink-faint",
   "#166534": "success",
   "#DCFCE7": "success-bg",
   "#991B1B": "danger",

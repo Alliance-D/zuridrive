@@ -1148,7 +1148,9 @@
     "pickupLocation": "Aho uzayifatira",
     "search": "Shakisha",
     "listedPerDay": "Ku munsi kuri ZuriDrive ubu",
-    "priceRange": "{min} – {max}"
+    "priceRange": "{min} – {max}",
+    "startDateLabel": "Itariki uzayifatiraho",
+    "endDateLabel": "Itariki uzayisubizaho"
   },
   "finance": {
     "navPayments": "Ubwishyu",

@@ -102,11 +102,15 @@ export default function HeroSearch({
 
         {/* Start date */}
         <div className="relative">
+          <label htmlFor="hero-start-date" className="sr-only">
+            {t("startDateLabel")}
+          </label>
           <Calendar
             size={15}
             className={FIELD_ICON}
           />
           <input
+            id="hero-start-date"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -119,11 +123,15 @@ export default function HeroSearch({
 
         {/* End date */}
         <div className="relative">
+          <label htmlFor="hero-end-date" className="sr-only">
+            {t("endDateLabel")}
+          </label>
           <Car
             size={15}
             className={FIELD_ICON}
           />
           <input
+            id="hero-end-date"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}

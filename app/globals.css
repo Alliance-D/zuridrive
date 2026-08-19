@@ -41,7 +41,9 @@
   --color-primary-dark:   #0F2B1F;
   --color-accent:         #D4A017;
   --color-accent-light:   #E8BC3A;
-  --color-accent-dark:    #A87C0F;
+  /* The gold on a light background is used for text and icons, not just
+     decoration, so it needs 3:1 as a minimum and was managing 2.22:1. */
+  --color-accent-dark:    #96700D;   /* 4.25:1 on the lightest card */
 
   --color-bg:             #F7F5F0;
   --color-surface:        #F0EDE8;
@@ -50,8 +52,14 @@
   --color-border-light:   #EDE7DC;
 
   --color-text:           #1C1C1C;
-  --color-text-muted:     #6B7280;
-  --color-text-subtle:    #9CA3AF;
+  /* Both of these failed WCAG AA against the surfaces they actually sit on:
+     the old muted grey managed 4.14:1 on --color-surface and the subtle one
+     only 2.33:1 on --color-bg, against a 4.5:1 requirement. Chosen with
+     headroom rather than exactly on the line, so a later tweak to a background
+     does not silently push them back under. Measured on every surface in this
+     palette, lightest to darkest. */
+  --color-text-muted:     #5B6472;   /* 5.49:1 on bg, 5.12:1 on surface */
+  --color-text-subtle:    #656B78;   /* 5.35:1 on white, 4.58:1 on surface */
 
   --color-white:          #FFFFFF;
   --color-black:          #0A0A0A;

@@ -28,7 +28,7 @@ export default async function Footer() {
 
             {/* Contact */}
             <div className="mt-5">
-              <p className="mb-2 font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/40">
+              <p className="mb-2 font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/65">
                 Contact
               </p>
               <a
@@ -85,13 +85,13 @@ export default async function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.08] pt-6">
-          <p className="font-mono text-fluid-xs text-white/35">
+          <p className="font-mono text-fluid-xs text-white/65">
             © {year} ZuriDrive Ltd. All rights reserved. Kigali, Rwanda.
           </p>
           <div className="flex gap-5">
-            <a href="/privacy" className="text-fluid-xs text-white/35 no-underline">Privacy</a>
-            <a href="/terms" className="text-fluid-xs text-white/35 no-underline">Terms</a>
-            <a href="/cookies" className="text-fluid-xs text-white/35 no-underline">Cookies</a>
+            <a href="/privacy" className="text-fluid-xs text-white/65 no-underline">Privacy</a>
+            <a href="/terms" className="text-fluid-xs text-white/65 no-underline">Terms</a>
+            <a href="/cookies" className="text-fluid-xs text-white/65 no-underline">Cookies</a>
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default async function Footer() {
 
 function FooterHeading({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-4 font-mono text-fluid-xs uppercase tracking-[0.1em] text-white/40">
+    <p className="mb-4 font-mono text-fluid-xs uppercase tracking-[0.1em] text-white/65">
       {children}
     </p>
   );

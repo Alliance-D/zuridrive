@@ -481,6 +481,17 @@ model Car {
   reviews      Review[]
 
   @@map("cars")
+
+  /// Postgres does not index a foreign key just because it is one, and Prisma
+  /// does not add them either, so every one of these was a full scan. Harmless
+  /// on a few dozen cars and not harmless later, and an index is far cheaper to
+  /// add now than to diagnose under load.
+
+  /// The browse and search pages: every visitor, every time.
+  @@index([status, isActive])
+  /// An owner opening their fleet.
+  @@index([ownerId])
+
 }
 
 // Car photos — uploaded via Cloudinary
@@ -720,6 +731,17 @@ model Booking {
   supportTickets  SupportTicket[]
 
   @@map("bookings")
+
+  /// Availability checks and a car's calendar. carId leads because it is
+  /// always an equality match, with the dates narrowing from there.
+  @@index([carId, startDate, endDate])
+  /// "My bookings", and every owner or admin list filtered by state.
+  @@index([clientId])
+  @@index([status])
+  /// The cron jobs sweep by date: trips to activate, trips to auto-complete.
+  @@index([startDate])
+  @@index([endDate])
+
 }
 
 // Pickup/dropoff location for a booking — snapshot of the chosen tier
