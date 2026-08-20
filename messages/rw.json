@@ -2440,8 +2440,8 @@
     "confirmReturnBody": "{role, select, client {Umukiliya} other {Nyir'imodoka}} yemeje isubizwa rya {car}. Kwemeza kwawe birakenewe kugira ngo ingwate irekurwe.",
     "disputeOpenedAdminTitle": "Hatanzwe impaka ku bukode {reference}",
     "disputeOpenedAdminBody": "{role, select, client {Umukiliya} other {Nyir'imodoka}} yatanze: {category}, {description}",
-    "reconciliationMismatchTitle": "Ibarura ntirihuye",
-    "reconciliationMismatchBody": "Ibitabo bitandukanyeho {amount}. {note}"
+    "reconciliationMismatchTitle": "Amafaranga ntabwo ahwanye",
+    "reconciliationMismatchBody": "Igenzura ryo muri iri joro ryabonye itandukaniro rya {amount}. Fungura raporo z'imari urebe birambuye."
   },
   "sms": {
     "otp": "Kode yawe yo kwemeza kuri ZuriDrive ni: {code}. Imara iminota {minutes}. Ntugasangize uyu mubare.",

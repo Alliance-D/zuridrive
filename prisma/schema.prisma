@@ -206,6 +206,8 @@ enum NotificationType {
   SUBSCRIPTION_EXPIRED
   BANK_TRANSFER_PENDING
   ADMIN_BROADCAST
+  /// The nightly books-balance check found a discrepancy.
+  RECONCILIATION_MISMATCH
   SUPPORT_TICKET_REPLY
 }
 

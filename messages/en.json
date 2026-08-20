@@ -2440,8 +2440,8 @@
     "confirmReturnBody": "The {role, select, client {client} other {owner}} has confirmed return of {car}. Your confirmation is needed to release the deposit.",
     "disputeOpenedAdminTitle": "Dispute opened on booking {reference}",
     "disputeOpenedAdminBody": "{role, select, client {Client} other {Owner}} reported: {category}, {description}",
-    "reconciliationMismatchTitle": "Reconciliation mismatch",
-    "reconciliationMismatchBody": "The books are off by {amount}. {note}"
+    "reconciliationMismatchTitle": "The books do not balance",
+    "reconciliationMismatchBody": "Tonight's check found a discrepancy of {amount}. Open the finance reports for the breakdown."
   },
   "sms": {
     "otp": "Your ZuriDrive verification code is: {code}. Valid for {minutes} minutes. Do not share this code.",
