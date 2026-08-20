@@ -2012,7 +2012,8 @@
     "pickupDirectionsPlaceholder": "Iruhande rwa sitasiyo ya lisansi, imbere y'isoko",
     "noPhotosYet": "Nta mafoto arahaba. Imodoka idafite amafoto ntizakodeshwa.",
     "addAPhoto": "Ongeraho ifoto",
-    "photosUnder5mb": "Amafoto agomba kuba ari munsi ya 5 MB."
+    "photosUnder5mb": "Amafoto agomba kuba ari munsi ya 5 MB.",
+    "draftSaved": "Inyandiko y'agateganyo yabitswe saa {time}. Ushobora gufunga ukazagaruka."
   },
   "about": {
     "metaTitle": "Ibyerekeye",

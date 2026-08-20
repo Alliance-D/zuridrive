@@ -2012,7 +2012,8 @@
     "pickupDirectionsPlaceholder": "By the petrol station, opposite the market",
     "noPhotosYet": "No photos yet. A listing without photos will not get booked.",
     "addAPhoto": "Add a photo",
-    "photosUnder5mb": "Photos must be under 5 MB."
+    "photosUnder5mb": "Photos must be under 5 MB.",
+    "draftSaved": "Draft saved at {time}. You can close this and come back."
   },
   "about": {
     "metaTitle": "About",

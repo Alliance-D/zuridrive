@@ -413,6 +413,9 @@ model CarOwnerProfile {
   payouts       Payout[]
 
   @@map("car_owner_profiles")
+  /// Unfinished listing held while the owner works through the wizard.
+  listingDraft CarListingDraft?
+
 }
 
 // Extended profile for sub-admins — created by Super Admin
@@ -1372,4 +1375,32 @@ model RateLimit {
 
   @@index([expiresAt])
   @@map("rate_limits")
+}
+
+/// An unfinished car listing, held while the owner works through the wizard.
+///
+/// Deliberately not a Car row with status DRAFT. A listing abandoned on step
+/// one has no pricing, no photos and no plate, and making those columns
+/// nullable so a half-built Car could exist would weaken the constraints that
+/// keep real listings sound. This is the wizard's own state, handed back when
+/// the owner returns, and converted into a real Car through the normal
+/// validated create when they publish.
+///
+/// One per owner: the wizard builds one listing at a time, so a second draft
+/// could only ever be a stale copy of the first.
+model CarListingDraft {
+  id      String          @id @default(cuid())
+  ownerId String          @unique
+  owner   CarOwnerProfile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  /// The wizard's form state verbatim. Not validated — half-finished work does
+  /// not validate, and the real checks run on publish.
+  form Json
+  /// Which step to resume on.
+  step Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("car_listing_drafts")
 }

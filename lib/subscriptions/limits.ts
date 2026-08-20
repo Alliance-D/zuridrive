@@ -93,6 +93,11 @@ export function formatAllowanceReason(reason: AllowanceReason): string {
  * SUSPENDED cars still count against the limit — an owner can't dodge their
  * cap by getting a listing suspended. Only a listing that no longer exists
  * frees a slot.
+ *
+ * DRAFT cars do not count. A draft is unfinished work, not a listing: nobody
+ * can see it and nobody can book it. Counting it would mean an owner on the
+ * one-car plan who started a second listing and abandoned it half-way could
+ * never list again without knowing why.
  */
 export async function getOwnerAllowance(
   ownerProfileId: string,
@@ -104,7 +109,9 @@ export async function getOwnerAllowance(
       include: { plan: true },
       orderBy: [{ status: "asc" }, { startedAt: "desc" }],
     }),
-    db.car.count({ where: { ownerId: ownerProfileId } }),
+    db.car.count({
+      where: { ownerId: ownerProfileId, status: { not: "DRAFT" } },
+    }),
     getPlatformSettings(),
   ]);
 

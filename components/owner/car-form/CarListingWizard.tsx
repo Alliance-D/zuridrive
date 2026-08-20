@@ -10,8 +10,8 @@
  * the car and all its related rows in a single transaction.
  */
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { formatRWF } from "@/lib/currency";
 import {
@@ -99,6 +99,7 @@ export default function CarListingWizard({
 }) {
   const t = useTranslations("carForm");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>(INITIAL);
@@ -106,6 +107,65 @@ export default function CarListingWizard({
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [restoring, setRestoring] = useState(true);
+  // Set once the listing is published, so unmount does not re-save a draft for
+  // a listing that no longer needs one.
+  const finished = useRef(false);
+
+  // ── Draft: pick up where the owner left off ───────────────────────────────
+  //
+  // Everything lived in browser memory until the final submit, so a dead
+  // battery or a mistapped back button lost five steps of work and up to ten
+  // uploaded photos. The photos themselves are already on Cloudinary by this
+  // point — it was only the record of them that was fragile.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/owner/cars/draft");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !data.draft) return;
+        setForm((current) => ({ ...current, ...(data.draft.form as FormState) }));
+        setStep(data.draft.step ?? 1);
+        setSavedAt(new Date(data.draft.savedAt));
+      } catch {
+        // A draft that will not load is not worth blocking the form over.
+      } finally {
+        if (!cancelled) setRestoring(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /**
+   * Saved when the owner moves between steps rather than on a timer.
+   *
+   * A 60-second timer writes half-typed fields and costs a request a minute
+   * per owner for the whole time the form is open. Step boundaries are where
+   * the work is actually complete, and they are the points someone is likely
+   * to stop at.
+   */
+  const saveDraft = useCallback(
+    async (formNow: FormState, stepNow: number) => {
+      if (finished.current) return;
+      try {
+        const res = await fetch("/api/owner/cars/draft", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ form: formNow, step: stepNow }),
+        });
+        if (res.ok) setSavedAt(new Date((await res.json()).savedAt));
+      } catch {
+        // Silent: a failed save must never interrupt someone mid-listing. The
+        // banner simply keeps showing the last time that did work.
+      }
+    },
+    [],
+  );
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -168,10 +228,15 @@ export default function CarListingWizard({
   }
 
   function next() {
-    if (validateStep(step)) setStep((s) => Math.min(5, s + 1));
+    if (!validateStep(step)) return;
+    const to = Math.min(5, step + 1);
+    setStep(to);
+    void saveDraft(form, to);
   }
   function back() {
-    setStep((s) => Math.max(1, s - 1));
+    const to = Math.max(1, step - 1);
+    setStep(to);
+    void saveDraft(form, to);
   }
 
   // ── Photo upload ─────────────────────────────────────────────────────────
@@ -273,6 +338,11 @@ export default function CarListingWizard({
         return;
       }
 
+      // Published: the draft has done its job and must not reappear next time
+      // the owner opens the wizard.
+      finished.current = true;
+      await fetch("/api/owner/cars/draft", { method: "DELETE" }).catch(() => {});
+
       router.push("/owner/fleet?submitted=1");
       router.refresh();
     } catch {
@@ -284,6 +354,19 @@ export default function CarListingWizard({
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
+      {/* Saved-state line. The point of a draft is the confidence to close the
+          tab, and that only works if the owner can see it happened. */}
+      {savedAt && !restoring && (
+        <p className="text-fluid-xs text-ink-soft" role="status">
+          {t("draftSaved", {
+            time: savedAt.toLocaleTimeString(locale, {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          })}
+        </p>
+      )}
+
       {/* ── Step indicator ────────────────────────────────────────────── */}
       <ol className="flex items-center gap-1">
         {STEPS.map((s, i) => {
