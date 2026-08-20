@@ -24,6 +24,8 @@ import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { sendSms } from '@/lib/sms'
 import { logAdminAction } from '@/lib/admin-logger'
+import { createNotification } from '@/lib/notifications'
+import { NotificationType } from '@prisma/client'
 import { formatRWF } from '@/lib/currency'
 import { setRetentionOnCompletion } from '@/lib/photos/retention'
 import type { DisputeType } from '@prisma/client'
@@ -237,6 +239,22 @@ export async function POST(
             to: booking.car.owner.user.phone,
             messageKey: 'tripCompleteOwner',
           params: { car: carName, reference: booking.reference },
+          })
+        }
+
+        // The SMS already went out; this is the in-app half. A row in the
+        // database costs nothing, so there is no reason for the notification
+        // centre to be missing an event the platform already texted about.
+        for (const userId of [booking.client.id, booking.car.owner.user.id]) {
+          await createNotification({
+            userId,
+            type: NotificationType.TRIP_COMPLETED,
+            title: 'Trip completed',
+            body: `${carName} — ${booking.reference}.`,
+            titleKey: 'tripCompletedTitle',
+            bodyKey: 'tripCompletedBody',
+            params: { car: carName, reference: booking.reference },
+            actionUrl: `/dashboard/bookings/${booking.id}`,
           })
         }
 

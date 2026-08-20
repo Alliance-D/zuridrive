@@ -2442,7 +2442,11 @@
     "disputeOpenedAdminTitle": "Dispute opened on booking {reference}",
     "disputeOpenedAdminBody": "{role, select, client {Client} other {Owner}} reported: {category}, {description}",
     "reconciliationMismatchTitle": "The books do not balance",
-    "reconciliationMismatchBody": "Tonight's check found a discrepancy of {amount}. Open the finance reports for the breakdown."
+    "reconciliationMismatchBody": "Tonight's check found a discrepancy of {amount}. Open the finance reports for the breakdown.",
+    "tripStartingTomorrowTitle": "Your trip starts tomorrow",
+    "tripStartingTomorrowBody": "{car} — {reference}. Take condition photos at pickup.",
+    "tripCompletedTitle": "Trip completed",
+    "tripCompletedBody": "{car} — {reference}."
   },
   "sms": {
     "otp": "Your ZuriDrive verification code is: {code}. Valid for {minutes} minutes. Do not share this code.",
@@ -2494,6 +2498,8 @@
     "depositPartialWithheldClient": "ZuriDrive: {withheld} of your deposit for booking {reference} has been withheld. {returned} will be returned within 1-3 business days. Reason: {reason}",
     "depositDeductionOwner": "ZuriDrive: A deposit deduction of {amount} has been approved for booking {reference}. Contact support for details.",
     "depositFullWithheld": "ZuriDrive: Your full deposit of {amount} for booking {reference} has been withheld. Reason: {reason}. Contact support if you wish to dispute this.",
-    "bookingRejectedByOwnerNoReason": "ZuriDrive: Sorry {client}, your {car} booking ({reference}) was declined by the owner. A full refund will be processed within 24-48 hours."
+    "bookingRejectedByOwnerNoReason": "ZuriDrive: Sorry {client}, your {car} booking ({reference}) was declined by the owner. A full refund will be processed within 24-48 hours.",
+    "tripStartingTomorrowClient": "ZuriDrive: Your {car} trip starts tomorrow. Ref: {reference}. Take photos of the car at pickup - they protect your deposit.",
+    "tripStartingTomorrowOwner": "ZuriDrive: {client} collects your {car} tomorrow. Ref: {reference}. Take photos at handover - they protect you in a dispute."
   }
 }

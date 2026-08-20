@@ -718,6 +718,9 @@ model Booking {
   // Cron de-duplication. Without these the scheduled jobs re-send the same
   // SMS on every run (every 15 minutes / hourly).
   reminderSmsSentAt     DateTime? // "Trip starts tomorrow" reminder
+  /// Stamped when the day-before reminder goes out, so a re-run or a retry
+  /// cannot send — and bill for — the same reminder twice.
+  bookingReminderSmsSentAt DateTime?
   photoWarningSmsSentAt DateTime? // "Condition photos are about to be deleted"
 
   createdAt DateTime @default(now())

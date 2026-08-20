@@ -2442,7 +2442,11 @@
     "disputeOpenedAdminTitle": "Hatanzwe impaka ku bukode {reference}",
     "disputeOpenedAdminBody": "{role, select, client {Umukiliya} other {Nyir'imodoka}} yatanze: {category}, {description}",
     "reconciliationMismatchTitle": "Amafaranga ntabwo ahwanye",
-    "reconciliationMismatchBody": "Igenzura ryo muri iri joro ryabonye itandukaniro rya {amount}. Fungura raporo z'imari urebe birambuye."
+    "reconciliationMismatchBody": "Igenzura ryo muri iri joro ryabonye itandukaniro rya {amount}. Fungura raporo z'imari urebe birambuye.",
+    "tripStartingTomorrowTitle": "Urugendo rwawe rutangira ejo",
+    "tripStartingTomorrowBody": "{car} — {reference}. Fata amafoto y'uko imodoka imeze mu gihe uyifata.",
+    "tripCompletedTitle": "Urugendo rwarangiye",
+    "tripCompletedBody": "{car} — {reference}."
   },
   "sms": {
     "otp": "Kode yawe yo kwemeza kuri ZuriDrive ni: {code}. Imara iminota {minutes}. Ntugasangize uyu mubare.",
@@ -2494,6 +2498,8 @@
     "depositPartialWithheldClient": "ZuriDrive: {withheld} yo mu ngwate yawe ku bukode {reference} yafashwe. {returned} izasubizwa mu minsi 1-3 y'akazi. Impamvu: {reason}",
     "depositDeductionOwner": "ZuriDrive: Gukuramo ingwate ya {amount} ku bukode {reference} byemejwe. Vugana n'ubufasha kugira ngo umenye byinshi.",
     "depositFullWithheld": "ZuriDrive: Ingwate yawe yose ya {amount} ku bukode {reference} yafashwe. Impamvu: {reason}. Vugana n'ubufasha niba ushaka kubirwanya.",
-    "bookingRejectedByOwnerNoReason": "ZuriDrive: Ihangane {client}, ubukode bwawe bwa {car} ({reference}) bwanzwe na nyir'imodoka. Amafaranga yose azasubizwa mu masaha 24-48."
+    "bookingRejectedByOwnerNoReason": "ZuriDrive: Ihangane {client}, ubukode bwawe bwa {car} ({reference}) bwanzwe na nyir'imodoka. Amafaranga yose azasubizwa mu masaha 24-48.",
+    "tripStartingTomorrowClient": "ZuriDrive: Urugendo rwa {car} rutangira ejo. Ref: {reference}. Fata amafoto y'imodoka mu gihe uyifata - arinda ingwate yawe.",
+    "tripStartingTomorrowOwner": "ZuriDrive: {client} aza gufata {car} ejo. Ref: {reference}. Fata amafoto mu gihe uyimuha - akurinda mu mpaka."
   }
 }
