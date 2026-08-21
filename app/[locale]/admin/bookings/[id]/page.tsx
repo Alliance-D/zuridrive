@@ -15,7 +15,7 @@ import { formatDate, formatDateTime } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { prisma } from "@/lib/db";
 import { requireAdminModule, hasAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { PageHeader, Card, Badge } from "@/components/admin/ui";
 import InterveneActions from "@/components/admin/InterveneActions";
 import { getAdminActionLog } from "@/lib/admin-logger";
@@ -189,26 +189,26 @@ export default async function AdminBookingDetailPage({
         <div className="grid gap-3 lg:grid-cols-2">
           <Card title={t("money")}>
             <dl className="space-y-1.5 text-xs">
-              <Row label={t("rowBase")}>{formatRWF(booking.baseAmount)}</Row>
+              <Row label={t("rowBase")}>{formatMoney(booking.baseAmount)}</Row>
               {booking.driverTotal > 0 && (
-                <Row label={t("rowDriver")}>{formatRWF(booking.driverTotal)}</Row>
+                <Row label={t("rowDriver")}>{formatMoney(booking.driverTotal)}</Row>
               )}
               {booking.deliveryFee > 0 && (
-                <Row label={t("rowDelivery")}>{formatRWF(booking.deliveryFee)}</Row>
+                <Row label={t("rowDelivery")}>{formatMoney(booking.deliveryFee)}</Row>
               )}
               <Row label={t("rowSubtotal")}>
-                <span className="font-semibold">{formatRWF(booking.subtotal)}</span>
+                <span className="font-semibold">{formatMoney(booking.subtotal)}</span>
               </Row>
               <Row label={t("commissionPercent", { rate: booking.commissionRate })}>
-                −{formatRWF(booking.commissionAmount)}
+                −{formatMoney(booking.commissionAmount)}
               </Row>
               <Row label={t("rowOwnerEarnings")}>
                 <span className="font-semibold text-brand">
-                  {formatRWF(booking.ownerEarnings)}
+                  {formatMoney(booking.ownerEarnings)}
                 </span>
               </Row>
               <Row label={t("rowDeposit")}>
-                {formatRWF(booking.depositAmount)}
+                {formatMoney(booking.depositAmount)}
                 {booking.deposit && (
                   <span className="ml-2">
                     <Badge
@@ -240,7 +240,7 @@ export default async function AdminBookingDetailPage({
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-semibold text-ink">
-                        {formatRWF(p.totalAmount)}
+                        {formatMoney(p.totalAmount)}
                       </span>
                       <Badge
                         tone={
@@ -261,8 +261,8 @@ export default async function AdminBookingDetailPage({
                     <p className="mt-0.5 text-[11px] text-ink-soft">
                       {p.method === "MTN_MOMO" ? "MoMo" : t("bankTransfer")} ·{" "}
                       {t("paymentBreakdown", {
-                        rental: formatRWF(p.rentalAmount),
-                        deposit: formatRWF(p.depositAmount),
+                        rental: formatMoney(p.rentalAmount),
+                        deposit: formatMoney(p.depositAmount),
                       })}
                     </p>
                     {p.voidReason && (

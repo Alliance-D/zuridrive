@@ -13,7 +13,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { formatRWF } from "@/lib/currency";
+import { currencyCode, formatMoney } from '@/lib/currency';
 import {
   Car,
   Camera,
@@ -651,11 +651,11 @@ export default function CarListingWizard({
                   On a 3-day in-city booking you&apos;d receive
                 </p>
                 <p className="mt-1 text-ink-soft">
-                  {formatRWF(Number(form.perDayInCity) * 3)} rental −{" "}
-                  {formatRWF(Math.round(Number(form.perDayInCity) * 3 * 0.2))}{" "}
+                  {formatMoney(Number(form.perDayInCity) * 3)} rental −{" "}
+                  {formatMoney(Math.round(Number(form.perDayInCity) * 3 * 0.2))}{" "}
                   commission ={" "}
                   <strong className="text-brand">
-                    {formatRWF(
+                    {formatMoney(
                       Number(form.perDayInCity) * 3 -
                         Math.round(Number(form.perDayInCity) * 3 * 0.2),
                     )}
@@ -884,7 +884,7 @@ function MoneyInput({
   return (
     <div className="relative">
       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
-        RWF
+        {currencyCode}
       </span>
       <input
         className={`${inputCls(error)} pl-11`}

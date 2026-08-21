@@ -15,6 +15,7 @@
 // A non-zero discrepancy means a record was written outside the normal flow.
 // =============================================================================
 
+import { formatMoney } from '@/lib/currency'
 import { prisma } from "@/lib/db";
 
 export interface ReconciliationResult {
@@ -109,7 +110,7 @@ export async function runReconciliation(): Promise<ReconciliationResult> {
     commissionableBase - (totalCommission + ownerEarningsRealised);
   if (rentalDiscrepancy !== 0) {
     notes.push(
-      `Commission split is off by ${rentalDiscrepancy} RWF on completed trips — ` +
+      `Commission split is off by ${formatMoney(rentalDiscrepancy)} on completed trips — ` +
         `commission + owner earnings should equal the commissionable base.`,
     );
   }

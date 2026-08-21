@@ -22,7 +22,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { Loader2, Check, AlertCircle, AlertTriangle, Infinity as InfinityIcon } from "lucide-react";
 
 export interface PlanValues {
@@ -180,7 +180,7 @@ export default function PlansForm({
                     className="w-full rounded-lg border border-sand-dark px-3 py-2 text-sm"
                   />
                   <span className="mt-1 block text-[11px] text-ink-faint">
-                    {formatRWF(Number(p.priceMonthly || 0))}
+                    {formatMoney(Number(p.priceMonthly || 0))}
                   </span>
                 </label>
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { Banknote, Loader2, AlertCircle, Smartphone, Landmark } from "lucide-react";
 
 interface Props {
@@ -77,7 +77,7 @@ export default function RequestPayoutButton({
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-ink">
-              {t("readyToWithdraw", { amount: formatRWF(available) })}
+              {t("readyToWithdraw", { amount: formatMoney(available) })}
             </p>
             <p className="text-xs text-ink-soft">
               {t("paidWithin")}
@@ -95,7 +95,7 @@ export default function RequestPayoutButton({
         <div className="space-y-3">
           <div>
             <p className="text-sm font-semibold text-ink">
-              {t("withdrawAmount", { amount: formatRWF(available) })}
+              {t("withdrawAmount", { amount: formatMoney(available) })}
             </p>
             <p className="text-xs text-ink-soft">
               {t("coversEveryTrip")}

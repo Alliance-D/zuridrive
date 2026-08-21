@@ -10,7 +10,7 @@ import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { FinanceNav } from "../nav";
 import {
   PageHeader,
@@ -113,7 +113,7 @@ export default async function AdminSubscriptionsPage({
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label={t("mrr")}
-          value={formatRWF(mrr)}
+          value={formatMoney(mrr)}
           hint={t("activeOnly")}
           tone="dark"
         />
@@ -154,7 +154,7 @@ export default async function AdminSubscriptionsPage({
                     </p>
                     <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-ink-faint">
                       <span className="font-semibold text-brand">
-                        {formatRWF(s.pricePaid ?? s.plan.priceMonthly)}
+                        {formatMoney(s.pricePaid ?? s.plan.priceMonthly)}
                       </span>
                       <span>
                         {t("requestedOn", {
@@ -201,7 +201,7 @@ export default async function AdminSubscriptionsPage({
               <div key={plan.id} className="rounded-xl bg-bone p-3">
                 <p className="text-sm font-semibold text-ink">{plan.name}</p>
                 <p className="text-xs text-ink-soft">
-                  {formatRWF(plan.priceMonthly)}/month
+                  {formatMoney(plan.priceMonthly)}/month
                 </p>
                 <p className="mt-1.5 text-lg font-bold text-brand">
                   {count}
@@ -210,7 +210,7 @@ export default async function AdminSubscriptionsPage({
                   </span>
                 </p>
                 <p className="text-[11px] text-ink-faint">
-                  {formatRWF(plan.priceMonthly * count)}/month
+                  {formatMoney(plan.priceMonthly * count)}/month
                 </p>
               </div>
             ))}
@@ -264,7 +264,7 @@ export default async function AdminSubscriptionsPage({
                     </Td>
                     <Td align="right">
                       <span className="font-semibold">
-                        {formatRWF(s.plan.priceMonthly)}
+                        {formatMoney(s.plan.priceMonthly)}
                       </span>
                     </Td>
                     <Td muted>{formatDate(s.startedAt, params.locale)}</Td>

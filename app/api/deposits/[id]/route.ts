@@ -22,7 +22,7 @@ import { db } from '@/lib/db'
 import { requireModuleAccess } from '@/lib/api-guard'
 import { logAdminAction } from '@/lib/admin-logger'
 import { sendSms } from '@/lib/sms'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { z } from 'zod'
 
 const DepositActionSchema = z.discriminatedUnion('action', [
@@ -147,7 +147,7 @@ export async function POST(
           to: client.phone,
           messageKey: 'depositReleased',
           params: {
-            amount: formatRWF(deposit.amount),
+            amount: formatMoney(deposit.amount),
             reference: deposit.booking.reference,
           },
         })
@@ -221,9 +221,9 @@ export async function POST(
           to: client.phone,
           messageKey: 'depositPartialWithheldClient',
           params: {
-            withheld: formatRWF(withholdAmount),
+            withheld: formatMoney(withholdAmount),
             reference: deposit.booking.reference,
-            returned: formatRWF(returnAmount),
+            returned: formatMoney(returnAmount),
             reason,
           },
         })
@@ -234,7 +234,7 @@ export async function POST(
           to: ownerUser.phone,
           messageKey: 'depositDeductionOwner',
           params: {
-            amount: formatRWF(withholdAmount),
+            amount: formatMoney(withholdAmount),
             reference: deposit.booking.reference,
           },
         })
@@ -286,7 +286,7 @@ export async function POST(
           to: client.phone,
           messageKey: 'depositFullWithheld',
           params: {
-            amount: formatRWF(deposit.amount),
+            amount: formatMoney(deposit.amount),
             reference: deposit.booking.reference,
             reason,
           },

@@ -12,7 +12,7 @@ import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { FinanceNav } from "../nav";
 import {
   PageHeader,
@@ -123,7 +123,7 @@ export default async function AdminCommissionsPage({
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label={t("thisMonth")}
-          value={formatRWF(current)}
+          value={formatMoney(current)}
           hint={
             delta !== null
               ? `${delta >= 0 ? "+" : ""}${delta}% vs last month`
@@ -131,14 +131,14 @@ export default async function AdminCommissionsPage({
           }
           tone="dark"
         />
-        <StatCard label={t("lastMonth")} value={formatRWF(previous)} />
+        <StatCard label={t("lastMonth")} value={formatMoney(previous)} />
         <StatCard
           label={t("realised")}
-          value={formatRWF(realised._sum.commissionAmount ?? 0)}
+          value={formatMoney(realised._sum.commissionAmount ?? 0)}
         />
         <StatCard
           label={t("booked")}
-          value={formatRWF(lifetime._sum.commissionAmount ?? 0)}
+          value={formatMoney(lifetime._sum.commissionAmount ?? 0)}
           hint="Includes trips not yet completed"
         />
       </div>
@@ -191,18 +191,18 @@ export default async function AdminCommissionsPage({
                       </Badge>
                     </Td>
                     <Td align="right" muted>
-                      {formatRWF(c.baseAmount)}
+                      {formatMoney(c.baseAmount)}
                     </Td>
                     <Td align="right" muted>
                       {c.rate}%
                     </Td>
                     <Td align="right">
                       <span className="font-semibold text-brand">
-                        {formatRWF(c.commissionAmount)}
+                        {formatMoney(c.commissionAmount)}
                       </span>
                     </Td>
                     <Td align="right" muted>
-                      {formatRWF(c.netOwnerAmount)}
+                      {formatMoney(c.netOwnerAmount)}
                     </Td>
                     <Td muted>
                       {formatDate(

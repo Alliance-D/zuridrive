@@ -15,7 +15,7 @@
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Lock, Unlock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface DepositStatusCardProps {
@@ -113,7 +113,7 @@ export function DepositStatusCard({ deposit }: DepositStatusCardProps) {
         <div className="space-y-1.5">
           <div className="flex justify-between items-center">
             <span className="text-sm text-stone-500">{t('totalDeposit')}</span>
-            <span className="text-sm font-semibold text-stone-800">{formatRWF(deposit.amount)}</span>
+            <span className="text-sm font-semibold text-stone-800">{formatMoney(deposit.amount)}</span>
           </div>
 
           {deposit.status === 'PARTIALLY_WITHHELD' && (
@@ -121,13 +121,13 @@ export function DepositStatusCard({ deposit }: DepositStatusCardProps) {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-red-600">{t('withheld')}</span>
                 <span className="text-sm font-semibold text-red-700">
-                  − {formatRWF(deposit.withheldAmount ?? 0)}
+                  − {formatMoney(deposit.withheldAmount ?? 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center border-t border-stone-100 pt-1.5">
                 <span className="text-sm font-semibold text-stone-700">{t('returnedToYou')}</span>
                 <span className="text-sm font-bold text-brand">
-                  {formatRWF(deposit.releasedAmount ?? 0)}
+                  {formatMoney(deposit.releasedAmount ?? 0)}
                 </span>
               </div>
             </>
@@ -171,7 +171,7 @@ export function DepositStatusCard({ deposit }: DepositStatusCardProps) {
                           <span className="font-medium text-stone-700">
                             {t(MOVEMENT_LABEL_KEYS[movement.type] ?? 'movementReleased')}
                           </span>
-                          <span className="text-stone-500">{formatRWF(movement.amount)}</span>
+                          <span className="text-stone-500">{formatMoney(movement.amount)}</span>
                         </div>
                         <p className="text-stone-400 mt-0.5">{movement.reason}</p>
                         <p className="text-stone-300 mt-0.5">

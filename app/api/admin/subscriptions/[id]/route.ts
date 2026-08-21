@@ -25,7 +25,7 @@ import { createNotification } from '@/lib/notifications'
 import { sendSms } from '@/lib/sms'
 import { activateSubscription } from '@/lib/subscriptions/checkout'
 import { applyPlanChange } from '@/lib/subscriptions/limits'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { NotificationType } from '@prisma/client'
 import { z } from 'zod'
 
@@ -151,7 +151,7 @@ export async function PATCH(
         description:
           action === 'OVERRIDE'
             ? `Granted ${activation.planName} without payment — ${parsed.data.note}`
-            : `Confirmed ${activation.planName} payment (${formatRWF(subscription.pricePaid ?? subscription.plan.priceMonthly)})`,
+            : `Confirmed ${activation.planName} payment (${formatMoney(subscription.pricePaid ?? subscription.plan.priceMonthly)})`,
         reason: action === 'OVERRIDE' ? parsed.data.note : undefined,
         metadata: {
           expiresAt: activation.expiresAt.toISOString(),

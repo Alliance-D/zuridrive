@@ -25,7 +25,7 @@ import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CalendarDays, MapPin, User, CreditCard, ChevronRight, ChevronLeft, Info, Check, Car, Fuel, Clock } from 'lucide-react'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { ROUTES } from '@/lib/routes'
 import { calculateBookingPrice } from '@/lib/booking/pricing'
 import { StepIndicator } from './StepIndicator'
@@ -399,7 +399,7 @@ export function BookingWizard({
           </div>
           {pricing && (
             <div className="text-right">
-              <p className="font-bold text-brand">{formatRWF(pricing.totalChargedNow)}</p>
+              <p className="font-bold text-brand">{formatMoney(pricing.totalChargedNow)}</p>
               <p className="text-xs text-stone-500">{t("total")}</p>
             </div>
           )}

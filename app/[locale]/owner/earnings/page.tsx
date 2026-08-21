@@ -10,7 +10,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile, getAvailableBalance } from "@/lib/owner";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { formatDate } from "@/lib/dates";
 import { routes } from "@/lib/routes";
 import { Wallet, TrendingUp, Receipt, Banknote } from "lucide-react";
@@ -97,24 +97,24 @@ export default async function OwnerEarningsPage({
           <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
             <Wallet className="h-4 w-4 text-accent" />
           </div>
-          <p className="text-2xl font-bold">{formatRWF(balance.available)}</p>
+          <p className="text-2xl font-bold">{formatMoney(balance.available)}</p>
           <p className="mt-0.5 text-xs text-brand-tint">{t("availableNow")}</p>
         </div>
 
         <Stat
           icon={TrendingUp}
-          value={formatRWF(monthAgg._sum.netOwnerAmount ?? 0)}
+          value={formatMoney(monthAgg._sum.netOwnerAmount ?? 0)}
           label={t("thisMonth")}
         />
         <Stat
           icon={Receipt}
-          value={formatRWF(balance.totalEarned)}
+          value={formatMoney(balance.totalEarned)}
           label={t("lifetimeEarnings")}
           hint={t("completedTripCount", { count: commissions.length })}
         />
         <Stat
           icon={Banknote}
-          value={formatRWF(balance.totalRequested)}
+          value={formatMoney(balance.totalRequested)}
           label={t("alreadyPaidOut")}
         />
       </div>
@@ -127,7 +127,7 @@ export default async function OwnerEarningsPage({
         <p className="mt-1 text-xs text-ink-soft">{t("commissionExplain")}</p>
         {lifetimeCommission > 0 && (
           <p className="mt-2 text-xs text-ink-faint">
-            {t("commissionToDate", { amount: formatRWF(lifetimeCommission) })}
+            {t("commissionToDate", { amount: formatMoney(lifetimeCommission) })}
           </p>
         )}
       </div>
@@ -182,13 +182,13 @@ export default async function OwnerEarningsPage({
                         : "—"}
                     </td>
                     <td className="py-2.5 text-right text-xs text-ink-soft">
-                      {formatRWF(c.baseAmount)}
+                      {formatMoney(c.baseAmount)}
                     </td>
                     <td className="py-2.5 text-right text-xs text-danger-strong">
-                      −{formatRWF(c.commissionAmount)}
+                      −{formatMoney(c.commissionAmount)}
                     </td>
                     <td className="py-2.5 text-right font-semibold text-brand">
-                      {formatRWF(c.netOwnerAmount)}
+                      {formatMoney(c.netOwnerAmount)}
                     </td>
                   </tr>
                 ))}

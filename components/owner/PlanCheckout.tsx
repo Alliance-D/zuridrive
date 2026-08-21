@@ -14,7 +14,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import {
   Loader2,
   AlertCircle,
@@ -184,7 +184,7 @@ export default function PlanCheckout({
   return (
     <div className="mt-4 space-y-2 border-t border-sand pt-3">
       <p className="text-xs font-semibold text-ink">
-        {t("forThirtyDays", { amount: formatRWF(priceMonthly) })}
+        {t("forThirtyDays", { amount: formatMoney(priceMonthly) })}
       </p>
 
       {hasActivePlan && (
@@ -233,7 +233,7 @@ export default function PlanCheckout({
               ? t("waitingApproval")
               : busy
                 ? t("sendingPrompt")
-                : t("payAmount", { amount: formatRWF(priceMonthly) })}
+                : t("payAmount", { amount: formatMoney(priceMonthly) })}
           </button>
         </div>
       ) : (

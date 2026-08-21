@@ -21,7 +21,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { notifyAdminsWithModule } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { uploadedFileUrls } from '@/lib/validation/urls'
 import { z } from 'zod'
 
@@ -116,7 +116,7 @@ export async function POST(
         status: 'OPEN',
         description:
           `[CANCELLATION FEE DISPUTE] The client is challenging a ` +
-          `${formatRWF(feeCharged)} late-cancellation fee and is asking for a ` +
+          `${formatMoney(feeCharged)} late-cancellation fee and is asking for a ` +
           `full refund.\n\nTheir reason:\n${parsed.data.reason}${proofBlock}`,
       },
     })
@@ -134,10 +134,10 @@ export async function POST(
       titleKey: 'feeDisputedTitle',
       bodyKey: 'feeDisputedBody',
       params: {
-        amount: formatRWF(feeCharged),
+        amount: formatMoney(feeCharged),
         reference: booking.reference,
       },
-      body: `A client is challenging a ${formatRWF(feeCharged)} fee on ${booking.reference}. Resolving for the client returns the full deposit.`,
+      body: `A client is challenging a ${formatMoney(feeCharged)} fee on ${booking.reference}. Resolving for the client returns the full deposit.`,
       actionUrl: `/admin/disputes/${dispute.id}`,
       metadata: { bookingId: booking.id, feeCharged },
     })

@@ -10,7 +10,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile } from "@/lib/owner";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { formatDate } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { routes } from "@/lib/routes";
@@ -81,7 +81,7 @@ export default async function OwnerSubscriptionPage({
               <p className="mt-0.5 text-lg font-bold">{current.plan.name}</p>
               <p className="mt-1 text-xs text-brand-tint">
                 {t("perMonthRenews", {
-                  amount: formatRWF(current.plan.priceMonthly),
+                  amount: formatMoney(current.plan.priceMonthly),
                   date: formatDate(current.expiresAt, params.locale),
                 })}
               </p>
@@ -175,7 +175,7 @@ export default async function OwnerSubscriptionPage({
               <h2 className="text-sm font-bold text-ink">{plan.name}</h2>
               <p className="mt-0.5">
                 <span className="text-xl font-bold text-ink">
-                  {formatRWF(plan.priceMonthly)}
+                  {formatMoney(plan.priceMonthly)}
                 </span>
                 <span className="text-xs text-ink-soft">{t("perMonth")}</span>
               </p>

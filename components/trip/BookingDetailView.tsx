@@ -26,7 +26,7 @@ import {
   AlertTriangle, Clock, ChevronDown, ChevronUp,
   Lock, Unlock, MessageSquare, Star, Phone
 } from 'lucide-react'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { ReturnConfirmPanel } from './ReturnConfirmPanel'
 import { DisputePanel } from './DisputePanel'
 import { DepositStatusCard } from './DepositStatusCard'
@@ -220,23 +220,23 @@ export function BookingDetailView({ booking }: BookingDetailViewProps) {
                   className="overflow-hidden"
                 >
                   <div className="px-5 pb-5 space-y-1.5">
-                    <PriceRow label={t('baseRental')} value={formatRWF(booking.baseAmount)} />
+                    <PriceRow label={t('baseRental')} value={formatMoney(booking.baseAmount)} />
                     {booking.driverSurchargeTotal > 0 && (
-                      <PriceRow label={t('driverSurcharge')} value={formatRWF(booking.driverSurchargeTotal)} />
+                      <PriceRow label={t('driverSurcharge')} value={formatMoney(booking.driverSurchargeTotal)} />
                     )}
                     {booking.deliveryFee > 0 && (
-                      <PriceRow label={t('delivery')} value={formatRWF(booking.deliveryFee)} />
+                      <PriceRow label={t('delivery')} value={formatMoney(booking.deliveryFee)} />
                     )}
-                    <PriceRow label={t('subtotal')} value={formatRWF(booking.subtotal)} bold />
+                    <PriceRow label={t('subtotal')} value={formatMoney(booking.subtotal)} bold />
                     {booking.deposit && (
                       <PriceRow
                         label={t('depositRefundable')}
-                        value={formatRWF(booking.deposit.amount)}
+                        value={formatMoney(booking.deposit.amount)}
                         muted
                       />
                     )}
                     <div className="border-t border-stone-100 pt-1.5">
-                      <PriceRow label={t('totalCharged')} value={formatRWF(booking.totalChargedNow)} bold large />
+                      <PriceRow label={t('totalCharged')} value={formatMoney(booking.totalChargedNow)} bold large />
                     </div>
                   </div>
                 </motion.div>

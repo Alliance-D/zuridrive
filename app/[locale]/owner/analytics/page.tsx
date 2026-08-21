@@ -22,7 +22,7 @@ import { localePath, loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { formatRWF, formatRWFCompact } from "@/lib/currency";
+import { formatMoney, formatMoneyCompact } from "@/lib/currency";
 import { RANGES, resolveRange } from "@/lib/analytics/queries";
 import {
   getOwnerAnalyticsLevel,
@@ -147,7 +147,7 @@ export default async function OwnerAnalyticsPage({
             {t("yourEarnings")}
           </p>
           <p className="mt-1 text-[44px] font-bold leading-none">
-            {formatRWF(headlines.earnings)}
+            {formatMoney(headlines.earnings)}
           </p>
           <div className="mt-2">
             <Delta
@@ -212,7 +212,7 @@ export default async function OwnerAnalyticsPage({
           tableLabel={t("viewAsTable")}
           caption={t("earningsByPeriod")}
           headers={[t("colPeriod"), t("colYourEarnings")]}
-          rows={earnings.map((p) => [p.label, formatRWF(p.value)])}
+          rows={earnings.map((p) => [p.label, formatMoney(p.value)])}
         />
       </Card>
 
@@ -271,7 +271,7 @@ export default async function OwnerAnalyticsPage({
                           {c.avgRating !== null ? c.avgRating.toFixed(1) : "—"}
                         </td>
                         <td className="py-2.5 text-right text-xs font-semibold text-brand">
-                          {formatRWF(c.earnings)}
+                          {formatMoney(c.earnings)}
                         </td>
                       </tr>
                     ))}
@@ -396,11 +396,11 @@ export default async function OwnerAnalyticsPage({
                           </span>
                         </td>
                         <td className="py-2.5 text-right text-xs text-ink">
-                          {formatRWF(p.yourRate)}
+                          {formatMoney(p.yourRate)}
                         </td>
                         <td className="py-2.5 text-right text-xs text-ink-soft">
                           {p.marketMedian !== null
-                            ? formatRWF(p.marketMedian)
+                            ? formatMoney(p.marketMedian)
                             : "—"}
                         </td>
                         <td className="py-2.5 text-right text-xs font-semibold">

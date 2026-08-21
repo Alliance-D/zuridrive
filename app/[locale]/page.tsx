@@ -23,7 +23,7 @@ import ScrollReveal from "@/components/scroll-reveal";
 import { prisma } from "@/lib/prisma";
 import { getPlatformSettings } from "@/lib/platform-settings";
 import { getBannerEligibleOwnerIds } from "@/lib/subscriptions/limits";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { ROUTES } from "@/lib/routes";
 import {
   Shield, Clock, MapPin, Star, TrendingUp, Users,
@@ -442,10 +442,10 @@ export default async function HomePage({
                       <div>
                         <div className="font-display text-fluid-2xl font-semibold leading-none text-accent">
                           {priceRange.min === priceRange.max
-                            ? formatRWF(priceRange.min)
+                            ? formatMoney(priceRange.min)
                             : t("priceRange", {
-                                min: formatRWF(priceRange.min),
-                                max: formatRWF(priceRange.max),
+                                min: formatMoney(priceRange.min),
+                                max: formatMoney(priceRange.max),
                               })}
                         </div>
                         <div className="mt-1 font-mono text-fluid-xs uppercase tracking-[0.08em] text-white/55">

@@ -26,7 +26,7 @@ import { requireModuleAccess } from '@/lib/api-guard'
 import { logAdminAction } from '@/lib/admin-logger'
 import { sendSms } from '@/lib/sms'
 import { createNotification } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { NotificationType } from '@prisma/client'
 import { z } from 'zod'
 
@@ -219,7 +219,7 @@ export async function POST(
             reference: booking.reference,
             car: carName,
             reason,
-            amount: formatRWF(depositReturned),
+            amount: formatMoney(depositReturned),
           },
         })
       }

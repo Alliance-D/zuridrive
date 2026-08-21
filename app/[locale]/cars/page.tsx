@@ -4,6 +4,7 @@
 // Shows: filter sidebar, results grid, active filter chips
 // =============================================================================
 
+import { formatMoney } from '@/lib/currency';
 import { Suspense } from "react";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { getTranslations } from "next-intl/server";
@@ -277,8 +278,8 @@ function ActiveFilterChips({ filters }: { filters: FilterParams }) {
   if (filters.category) chips.push({ label: filters.category, removeParam: "category" });
   if (filters.transmission) chips.push({ label: filters.transmission, removeParam: "transmission" });
   if (filters.driver) chips.push({ label: "Driver included", removeParam: "driver" });
-  if (filters.minPrice) chips.push({ label: `From RWF ${filters.minPrice.toLocaleString()}`, removeParam: "minPrice" });
-  if (filters.maxPrice) chips.push({ label: `Up to RWF ${filters.maxPrice.toLocaleString()}`, removeParam: "maxPrice" });
+  if (filters.minPrice) chips.push({ label: `From ${formatMoney(filters.minPrice)}`, removeParam: "minPrice" });
+  if (filters.maxPrice) chips.push({ label: `Up to ${formatMoney(filters.maxPrice)}`, removeParam: "maxPrice" });
 
   if (chips.length === 0) return null;
 

@@ -18,7 +18,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { formatDate } from "@/lib/dates";
 import { routes } from "@/lib/routes";
 import {
@@ -170,13 +170,13 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
           icon={Wallet}
-          value={formatRWF(monthEarnings._sum.netOwnerAmount ?? 0)}
+          value={formatMoney(monthEarnings._sum.netOwnerAmount ?? 0)}
           label={t("earnedThisMonth")}
           accent
         />
         <StatCard
           icon={TrendingUp}
-          value={formatRWF(lifetimeEarnings._sum.netOwnerAmount ?? 0)}
+          value={formatMoney(lifetimeEarnings._sum.netOwnerAmount ?? 0)}
           label={t("lifetimeEarnings")}
           hint={t("completedTripCount", { count: completedCount })}
         />
@@ -237,7 +237,7 @@ export default async function OwnerDashboardPage({ params }: { params: { locale:
                     </p>
                   </div>
                   <span className="shrink-0 text-sm font-bold text-brand">
-                    {formatRWF(b.ownerEarnings)}
+                    {formatMoney(b.ownerEarnings)}
                   </span>
                   <ArrowRight className="h-4 w-4 shrink-0 text-ink-faint" />
                 </Link>

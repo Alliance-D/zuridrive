@@ -1,3 +1,4 @@
+import { currencyCode } from '@/lib/currency';
 // Formatted RWF Amount Display
 
 interface RWFAmountProps {
@@ -11,7 +12,7 @@ export function RWFAmount({ amount, showCurrency = true }: RWFAmountProps) {
   return (
     <span className="font-semibold text-gray-900">
       {formatted}
-      {showCurrency && <span className="text-sm text-gray-600"> RWF</span>}
+      {showCurrency && <span className="text-sm text-gray-600"> {currencyCode}</span>}
     </span>
   );
 }

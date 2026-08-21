@@ -15,7 +15,7 @@ import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { FinanceNav } from "../nav";
 import {
   PageHeader,
@@ -118,25 +118,25 @@ export default async function AdminDepositsPage({
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label={t("currentlyHeld")}
-          value={formatRWF(sumFor("HELD"))}
+          value={formatMoney(sumFor("HELD"))}
           hint={t("depositCount", { count: countFor("HELD") })}
           tone="dark"
         />
         <StatCard
           label={t("releasedToClients")}
-          value={formatRWF(sumFor("RELEASED"))}
+          value={formatMoney(sumFor("RELEASED"))}
           hint={t("returnedInFull", { count: countFor("RELEASED") })}
         />
         <StatCard
           label={t("withheldToOwners")}
-          value={formatRWF(withheld)}
+          value={formatMoney(withheld)}
           hint={t("disputedCount", {
             count: countFor("PARTIALLY_WITHHELD") + countFor("FULLY_WITHHELD"),
           })}
         />
         <StatCard
           label={t("totalTracked")}
-          value={formatRWF(byStatus.reduce((s, g) => s + (g._sum.amount ?? 0), 0))}
+          value={formatMoney(byStatus.reduce((s, g) => s + (g._sum.amount ?? 0), 0))}
         />
       </div>
 
@@ -180,15 +180,15 @@ export default async function AdminDepositsPage({
                       </Badge>
                     </Td>
                     <Td align="right">
-                      <span className="font-semibold">{formatRWF(d.amount)}</span>
+                      <span className="font-semibold">{formatMoney(d.amount)}</span>
                     </Td>
                     <Td align="right" muted>
                       {d.clientRefundAmount !== null
-                        ? formatRWF(d.clientRefundAmount)
+                        ? formatMoney(d.clientRefundAmount)
                         : "—"}
                     </Td>
                     <Td align="right" muted>
-                      {d.ownerAwardAmount ? formatRWF(d.ownerAwardAmount) : "—"}
+                      {d.ownerAwardAmount ? formatMoney(d.ownerAwardAmount) : "—"}
                     </Td>
                     <Td muted>{formatDate(d.heldAt, params.locale)}</Td>
                     <Td align="right" muted>

@@ -10,7 +10,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { Loader2, AlertCircle, XCircle } from "lucide-react";
 
 export default function CancelBookingButton({
@@ -73,7 +73,7 @@ export default function CancelBookingButton({
       </p>
       <p className="mt-0.5 text-xs text-danger">
         {refundableDeposit > 0
-          ? t("cancelRefundLine", { amount: formatRWF(refundableDeposit) })
+          ? t("cancelRefundLine", { amount: formatMoney(refundableDeposit) })
           : t("cancelNoRefund")}{" "}
         {viewerRole === "OWNER"
           ? t("clientWillBeTold")

@@ -17,16 +17,16 @@
  * plain string, which serialises fine.
  */
 
-import { formatRWF, formatRWFCompact } from "@/lib/currency";
+import { formatMoney, formatMoneyCompact } from "@/lib/currency";
 
 export type ChartFormat = "rwf" | "rwfCompact" | "number" | "rating" | "percent";
 
 export function formatChartValue(value: number, format: ChartFormat): string {
   switch (format) {
     case "rwf":
-      return formatRWF(value);
+      return formatMoney(value);
     case "rwfCompact":
-      return formatRWFCompact(value);
+      return formatMoneyCompact(value);
     case "rating":
       return `${value.toFixed(1)} / 5`;
     case "percent":

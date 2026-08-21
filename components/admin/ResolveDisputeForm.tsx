@@ -11,7 +11,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { formatRWF } from "@/lib/currency";
+import { currencyCode, formatMoney } from '@/lib/currency';
 import {
   Loader2,
   AlertCircle,
@@ -178,7 +178,7 @@ export default function ResolveDisputeForm({
           </label>
           <div className="relative max-w-xs">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
-              RWF
+              {currencyCode}
             </span>
             <input
               value={clientAmount}
@@ -195,19 +195,19 @@ export default function ResolveDisputeForm({
             <div className="flex justify-between">
               <span className="text-ink-soft">{t("toClient")}</span>
               <span className="font-semibold text-ink">
-                {formatRWF(Math.max(0, Math.min(clientRefund, depositAmount)))}
+                {formatMoney(Math.max(0, Math.min(clientRefund, depositAmount)))}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-ink-soft">{t("toOwner")}</span>
               <span className="font-semibold text-ink">
-                {formatRWF(Math.max(0, ownerAward))}
+                {formatMoney(Math.max(0, ownerAward))}
               </span>
             </div>
             <div className="flex justify-between border-t border-sand-dark pt-1">
               <span className="font-semibold text-ink">{t("depositTotal")}</span>
               <span className="font-bold text-brand">
-                {formatRWF(depositAmount)}
+                {formatMoney(depositAmount)}
               </span>
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function ResolveDisputeForm({
           {clientRefund > depositAmount && (
             <p className="mt-2 text-xs text-danger-strong">
               That&apos;s more than the deposit. Maximum is{" "}
-              {formatRWF(depositAmount)}.
+              {formatMoney(depositAmount)}.
             </p>
           )}
         </div>

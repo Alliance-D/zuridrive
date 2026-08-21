@@ -13,7 +13,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { Loader2, Check, AlertCircle, AlertTriangle } from "lucide-react";
 
 export interface SettingsValues {
@@ -123,7 +123,7 @@ export default function SettingsForm({
             label={t("largePayoutThreshold")}
             hint={
               Number(form.largePayoutThreshold) > 0
-                ? `${formatRWF(Number(form.largePayoutThreshold))} and above needs Super Admin approval`
+                ? `${formatMoney(Number(form.largePayoutThreshold))} and above needs Super Admin approval`
                 : "Every payout will need Super Admin approval"
             }
           >
@@ -262,13 +262,13 @@ export default function SettingsForm({
 
         {/* A percentage is hard to judge in the abstract — show the money. */}
         <p className="mt-3 rounded-xl bg-bone p-3 text-xs text-ink-muted">
-          On a {formatRWF(100_000)} deposit, a client cancelling{" "}
+          On a {formatMoney(100_000)} deposit, a client cancelling{" "}
           {Number(form.lateCancellationWindowHours) > 0
             ? `less than ${form.lateCancellationWindowHours}h`
             : "at any point"}{" "}
           before pickup keeps{" "}
           <strong>
-            {formatRWF(
+            {formatMoney(
               100_000 -
                 Math.round(
                   (100_000 * Number(form.lateCancellationFeePercent || 0)) / 100,
@@ -277,7 +277,7 @@ export default function SettingsForm({
           </strong>
           , and{" "}
           <strong>
-            {formatRWF(
+            {formatMoney(
               Math.round(
                 (100_000 * Number(form.lateCancellationFeePercent || 0)) / 100,
               ),

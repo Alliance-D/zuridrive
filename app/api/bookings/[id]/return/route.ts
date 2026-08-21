@@ -26,7 +26,7 @@ import { sendSms } from '@/lib/sms'
 import { logAdminAction } from '@/lib/admin-logger'
 import { createNotification } from '@/lib/notifications'
 import { NotificationType } from '@prisma/client'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { setRetentionOnCompletion } from '@/lib/photos/retention'
 import type { DisputeType } from '@prisma/client'
 import { z } from 'zod'
@@ -230,7 +230,7 @@ export async function POST(
           params: {
             car: carName,
             reference: booking.reference,
-            amount: formatRWF(booking.deposit?.amount ?? 0),
+            amount: formatMoney(booking.deposit?.amount ?? 0),
           },
           })
         }

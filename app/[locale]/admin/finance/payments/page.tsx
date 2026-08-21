@@ -11,7 +11,7 @@ import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { FinanceNav } from "../nav";
 import {
   PageHeader,
@@ -118,17 +118,17 @@ export default async function AdminPaymentsPage({
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label={t("collectedRental")}
-          value={formatRWF(totals._sum.rentalAmount ?? 0)}
+          value={formatMoney(totals._sum.rentalAmount ?? 0)}
           tone="dark"
         />
         <StatCard
           label={t("collectedDeposits")}
-          value={formatRWF(totals._sum.depositAmount ?? 0)}
+          value={formatMoney(totals._sum.depositAmount ?? 0)}
           hint={t("heldOnBehalf")}
         />
         <StatCard
           label={t("totalConfirmed")}
-          value={formatRWF(totals._sum.totalAmount ?? 0)}
+          value={formatMoney(totals._sum.totalAmount ?? 0)}
         />
         <StatCard
           label={t("awaitingConfirmation")}
@@ -156,7 +156,7 @@ export default async function AdminPaymentsPage({
                       href={`/admin/bookings/${p.booking.id}`}
                       className="text-sm font-semibold text-ink hover:text-brand"
                     >
-                      {formatRWF(p.totalAmount)} · {p.booking.reference}
+                      {formatMoney(p.totalAmount)} · {p.booking.reference}
                     </Link>
                     <p className="text-xs text-ink-soft">
                       {p.booking.client.name ?? t("clientFallback")} ·{" "}
@@ -167,8 +167,8 @@ export default async function AdminPaymentsPage({
                     </p>
                     <p className="text-[11px] text-ink-faint">
                       {t("rentalPlusDeposit", {
-                        rental: formatRWF(p.rentalAmount),
-                        deposit: formatRWF(p.depositAmount),
+                        rental: formatMoney(p.rentalAmount),
+                        deposit: formatMoney(p.depositAmount),
                       })}
                     </p>
                   </div>
@@ -222,14 +222,14 @@ export default async function AdminPaymentsPage({
                       </Badge>
                     </Td>
                     <Td align="right" muted>
-                      {formatRWF(p.rentalAmount)}
+                      {formatMoney(p.rentalAmount)}
                     </Td>
                     <Td align="right" muted>
-                      {p.depositAmount ? formatRWF(p.depositAmount) : "—"}
+                      {p.depositAmount ? formatMoney(p.depositAmount) : "—"}
                     </Td>
                     <Td align="right">
                       <span className="font-semibold">
-                        {formatRWF(p.totalAmount)}
+                        {formatMoney(p.totalAmount)}
                       </span>
                     </Td>
                     <Td muted>{formatDate(p.createdAt, params.locale)}</Td>

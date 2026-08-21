@@ -20,7 +20,7 @@ import { requireRole } from '@/lib/api-guard'
 import { getPhoneVerification } from '@/lib/phone-verification'
 import { logAdminAction } from '@/lib/admin-logger'
 import { sendSms } from '@/lib/sms'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { z } from 'zod'
 
 const ConfirmSchema = z.object({

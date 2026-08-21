@@ -5,7 +5,7 @@
  * Select DAY / WEEK / MONTH with rate previews.
  */
 
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { useTranslations } from 'next-intl'
 import { CalendarDays, CalendarRange, CalendarClock } from 'lucide-react';
 
@@ -39,9 +39,9 @@ function getRateLabel(
   t: (key: string, values?: Record<string, string>) => string,
 ): string {
   if (!pricing) return '—'
-  if (type === 'PER_DAY') return t('perDayFrom', { amount: formatRWF(pricing.perDayInCity) })
-  if (type === 'PER_WEEK') return t('perWeekFrom', { amount: formatRWF(pricing.perWeekInCity) })
-  return t('perMonthFlat', { amount: formatRWF(pricing.perMonth) })
+  if (type === 'PER_DAY') return t('perDayFrom', { amount: formatMoney(pricing.perDayInCity) })
+  if (type === 'PER_WEEK') return t('perWeekFrom', { amount: formatMoney(pricing.perWeekInCity) })
+  return t('perMonthFlat', { amount: formatMoney(pricing.perMonth) })
 }
 
 export function RentalTypeSelector({ value, onChange, pricing }: RentalTypeSelectorProps) {

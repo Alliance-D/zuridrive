@@ -19,7 +19,7 @@ import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { motion } from 'framer-motion'
 import { CalendarDays, MapPin, Car, Phone, Copy, Check, ArrowRight, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 
 interface ConfirmationScreenProps {
   booking: {
@@ -198,24 +198,24 @@ export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
           <div className="px-5 pb-5 space-y-1.5 border-t border-stone-100 pt-4">
             <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">{t("paymentSummary")}</p>
 
-            <PriceLine label={t("baseRental")} value={formatRWF(booking.baseAmount)} />
+            <PriceLine label={t("baseRental")} value={formatMoney(booking.baseAmount)} />
             {booking.driverSurchargeTotal > 0 && (
-              <PriceLine label={t("driverSurcharge")} value={formatRWF(booking.driverSurchargeTotal)} />
+              <PriceLine label={t("driverSurcharge")} value={formatMoney(booking.driverSurchargeTotal)} />
             )}
             {booking.deliveryFee > 0 && (
-              <PriceLine label={t("deliveryFee")} value={formatRWF(booking.deliveryFee)} />
+              <PriceLine label={t("deliveryFee")} value={formatMoney(booking.deliveryFee)} />
             )}
-            <PriceLine label={t("rentalSubtotal")} value={formatRWF(booking.subtotal)} bold />
+            <PriceLine label={t("rentalSubtotal")} value={formatMoney(booking.subtotal)} bold />
 
             {booking.depositAmount > 0 && (
               <div className="flex justify-between items-center py-1.5 bg-amber-50 rounded-lg px-3 mt-2 border border-amber-100">
                 <span className="text-xs text-amber-700 font-medium">{t("depositRefundable")}</span>
-                <span className="text-xs font-bold text-amber-700">{formatRWF(booking.depositAmount)}</span>
+                <span className="text-xs font-bold text-amber-700">{formatMoney(booking.depositAmount)}</span>
               </div>
             )}
 
             <div className="border-t border-stone-100 pt-2 mt-2">
-              <PriceLine label={t("totalCharged")} value={formatRWF(booking.totalChargedNow)} bold large />
+              <PriceLine label={t("totalCharged")} value={formatMoney(booking.totalChargedNow)} bold large />
             </div>
           </div>
         </motion.div>

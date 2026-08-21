@@ -18,7 +18,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { notifyAdminsWithModule } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { getPlatformSettings } from '@/lib/platform-settings'
 import { z } from 'zod'
 
@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
       type: 'PAYOUT_REQUESTED',
       title: 'New payout request',
       titleKey: 'newPayoutTitle',
-      body: `${formatRWF(payout.netAmount)} requested across ${items.length} trip${
+      body: `${formatMoney(payout.netAmount)} requested across ${items.length} trip${
         items.length === 1 ? '' : 's'
       }.${payout.requiresSuperAdminApproval ? ' Requires Super Admin sign-off.' : ''}`,
       actionUrl: '/admin/finance/payouts',

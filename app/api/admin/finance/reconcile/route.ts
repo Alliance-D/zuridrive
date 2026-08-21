@@ -14,7 +14,7 @@ import { prisma } from '@/lib/db'
 import { requireModuleAccess } from '@/lib/api-guard'
 import { logAdminAction } from '@/lib/admin-logger'
 import { runAndLogReconciliation } from '@/lib/finance/reconciliation'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { Prisma, NotificationChannel } from '@prisma/client'
 
 export async function POST(_req: NextRequest) {
@@ -37,7 +37,7 @@ export async function POST(_req: NextRequest) {
       targetType: 'ReconciliationLog',
       targetId: log.id,
       description: result.hasMismatch
-        ? `Reconciliation found a ${formatRWF(result.discrepancyAmount)} discrepancy`
+        ? `Reconciliation found a ${formatMoney(result.discrepancyAmount)} discrepancy`
         : 'Reconciliation ran clean',
       metadata: {
         discrepancyAmount: result.discrepancyAmount,
@@ -58,11 +58,11 @@ export async function POST(_req: NextRequest) {
             type: 'ADMIN_BROADCAST' as const,
             channel: NotificationChannel.IN_APP,
             title: 'Reconciliation mismatch',
-            body: `The books are off by ${formatRWF(result.discrepancyAmount)}. ${result.notes[0] ?? ''}`,
+            body: `The books are off by ${formatMoney(result.discrepancyAmount)}. ${result.notes[0] ?? ''}`,
             titleKey: 'reconciliationMismatchTitle',
             bodyKey: 'reconciliationMismatchBody',
             params: {
-              amount: formatRWF(result.discrepancyAmount),
+              amount: formatMoney(result.discrepancyAmount),
               note: result.notes[0] ?? '',
             } as Prisma.InputJsonValue,
             actionUrl: '/admin/finance/reports',

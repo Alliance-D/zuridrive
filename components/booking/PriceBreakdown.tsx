@@ -13,7 +13,7 @@
  * - All values formatted as RWF 15,000
  */
 
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { useTranslations } from 'next-intl'
 import { getDepositCopy } from '@/lib/deposit-copy';
 import { CalendarDays } from 'lucide-react';
@@ -62,7 +62,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
         : d.unit === 'MONTH'
           ? 'baseRateMonth'
           : 'baseRateDay'
-    return t(key, { count: d.count, rate: formatRWF(d.rate), scope })
+    return t(key, { count: d.count, rate: formatMoney(d.rate), scope })
   }
 
   return (
@@ -96,7 +96,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
             {/* Base rate */}
             <LineItem
               label={t('baseRateLine', { detail: baseRateDetail(pricing.baseRateDetail) })}
-              value={formatRWF(pricing.baseAmount)}
+              value={formatMoney(pricing.baseAmount)}
             />
 
             {/* Driver surcharge */}
@@ -104,9 +104,9 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
               <LineItem
                 label={t('driverLine', {
                   count: pricing.driverSurcharge?.count ?? 0,
-                  rate: formatRWF(pricing.driverSurcharge?.rate ?? 0),
+                  rate: formatMoney(pricing.driverSurcharge?.rate ?? 0),
                 })}
-                value={formatRWF(pricing.driverSurchargeTotal)}
+                value={formatMoney(pricing.driverSurchargeTotal)}
               />
             )}
 
@@ -114,7 +114,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
             {pricing.deliveryFee > 0 && (
               <LineItem
                 label={t('deliveryFee')}
-                value={formatRWF(pricing.deliveryFee)}
+                value={formatMoney(pricing.deliveryFee)}
               />
             )}
 
@@ -122,7 +122,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
             <div className="border-t border-stone-100 my-2 pt-2">
               <LineItem
                 label={t("subtotal")}
-                value={formatRWF(pricing.subtotalBeforeDeposit)}
+                value={formatMoney(pricing.subtotalBeforeDeposit)}
                 bold
               />
             </div>
@@ -135,7 +135,7 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
                   <div className="flex-1">
                     <div className="flex justify-between">
                       <span className="text-xs font-semibold text-amber-700">{td(depositCopy.labelKey)}</span>
-                      <span className="text-xs font-bold text-amber-700">{formatRWF(pricing.depositAmount)}</span>
+                      <span className="text-xs font-bold text-amber-700">{formatMoney(pricing.depositAmount)}</span>
                     </div>
                     <p className="text-xs text-amber-600 mt-0.5">
                       {td(depositCopy.explanationKey)}
@@ -149,11 +149,11 @@ export function PriceBreakdown({ pricing, car, form }: PriceBreakdownProps) {
             <div className="border-t border-stone-200 mt-3 pt-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-bold text-stone-900">{depositCopy.heldBy === 'owner' ? t('totalPayableToOwner') : t('totalChargedNow')}</span>
-                <span className="text-lg font-bold text-brand">{formatRWF(pricing.totalChargedNow)}</span>
+                <span className="text-lg font-bold text-brand">{formatMoney(pricing.totalChargedNow)}</span>
               </div>
               {pricing.depositEnabled && pricing.depositAmount > 0 && (
                 <p className="text-xs text-stone-400 mt-1 text-right">
-                  Includes {formatRWF(pricing.depositAmount)} refundable deposit
+                  Includes {formatMoney(pricing.depositAmount)} refundable deposit
                 </p>
               )}
             </div>

@@ -13,7 +13,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, XCircle, Clock, ChevronDown } from 'lucide-react'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 
 interface OwnerConfirmBannerProps {
   bookingId: string
@@ -113,7 +113,7 @@ export function OwnerConfirmBanner({
               {t('newBookingRequest', { reference: bookingRef })}
             </p>
             <p className="text-sm text-stone-600">
-              {clientName} · {formatDate(startDate)} → {formatDate(endDate)} · {formatRWF(totalAmount)}
+              {clientName} · {formatDate(startDate)} → {formatDate(endDate)} · {formatMoney(totalAmount)}
             </p>
           </div>
 

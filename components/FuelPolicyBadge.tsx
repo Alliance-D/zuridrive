@@ -1,5 +1,6 @@
 'use client'
 
+import { formatMoney } from '@/lib/currency';
 /**
  * components/FuelPolicyBadge.tsx
  *
@@ -29,7 +30,7 @@ const POLICY_CONFIG = {
     border: 'border-green-200',
     explanation: (fee?: number) =>
       fee
-        ? `Car leaves with a full tank. Return it full or a refueling fee of RWF ${fee.toLocaleString()} applies.`
+        ? `Car leaves with a full tank. Return it full or a refueling fee of ${formatMoney(fee)} applies.`
         : 'Car leaves with a full tank. Please return it with a full tank.',
   },
   SAME_LEVEL: {

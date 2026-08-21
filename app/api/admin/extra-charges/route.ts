@@ -23,7 +23,7 @@ import { requireModuleAccess } from '@/lib/api-guard'
 import { logAdminAction } from '@/lib/admin-logger'
 import { sendSms } from '@/lib/sms'
 import { createNotification } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { NotificationType } from '@prisma/client'
 import { z } from 'zod'
 
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
       targetType: 'ExtraCharge',
       targetId: charge.id,
       targetUserId: booking.clientId,
-      description: `Raised ${TYPE_LABEL[parsed.data.type]} of ${formatRWF(parsed.data.amount)} on ${booking.reference}`,
+      description: `Raised ${TYPE_LABEL[parsed.data.type]} of ${formatMoney(parsed.data.amount)} on ${booking.reference}`,
       metadata: { bookingRef: booking.reference, amount: parsed.data.amount },
     })
 
@@ -123,12 +123,12 @@ export async function POST(req: NextRequest) {
       userId: booking.clientId,
       type: 'DEPOSIT_WITHHELD',
       title: `${TYPE_LABEL[parsed.data.type]} raised`,
-      body: `${formatRWF(parsed.data.amount)} on booking ${booking.reference}. ${parsed.data.description}`,
+      body: `${formatMoney(parsed.data.amount)} on booking ${booking.reference}. ${parsed.data.description}`,
       titleKey: 'chargeRaisedTitle',
       bodyKey: 'chargeRaisedBody',
       params: {
         chargeType: TYPE_LABEL[parsed.data.type],
-        amount: formatRWF(parsed.data.amount),
+        amount: formatMoney(parsed.data.amount),
         reference: booking.reference,
         description: parsed.data.description,
       },
@@ -210,7 +210,7 @@ export async function PATCH(req: NextRequest) {
         targetId: charge.id,
         targetUserId: charge.booking.clientId,
         reason: parsed.data.reason,
-        description: `Waived ${formatRWF(charge.amount)} charge on ${charge.booking.reference}`,
+        description: `Waived ${formatMoney(charge.amount)} charge on ${charge.booking.reference}`,
       })
 
       await createNotification({
@@ -220,11 +220,11 @@ export async function PATCH(req: NextRequest) {
         titleKey: 'chargeWaivedTitle',
         bodyKey: 'chargeWaivedBody',
         params: {
-          amount: formatRWF(charge.amount),
+          amount: formatMoney(charge.amount),
           reference: charge.booking.reference,
           reason: parsed.data.reason,
         },
-        body: `The ${formatRWF(charge.amount)} charge on ${charge.booking.reference} has been waived. ${parsed.data.reason}`,
+        body: `The ${formatMoney(charge.amount)} charge on ${charge.booking.reference} has been waived. ${parsed.data.reason}`,
         actionUrl: `/dashboard/bookings/${charge.booking.id}`,
       })
 
@@ -299,7 +299,7 @@ export async function PATCH(req: NextRequest) {
       targetType: 'ExtraCharge',
       targetId: charge.id,
       targetUserId: charge.booking.clientId,
-      description: `Collected ${formatRWF(collected)} from the deposit on ${charge.booking.reference}`,
+      description: `Collected ${formatMoney(collected)} from the deposit on ${charge.booking.reference}`,
       metadata: { charged: charge.amount, collected, shortfall },
     })
 
@@ -312,10 +312,10 @@ export async function PATCH(req: NextRequest) {
           ? 'depositDeductedRemainder'
           : 'depositDeducted',
         params: {
-          amount: formatRWF(collected),
+          amount: formatMoney(collected),
           reference: charge.booking.reference,
           description: charge.description,
-          remaining: formatRWF(remainingToClient),
+          remaining: formatMoney(remainingToClient),
         },
       })
     }

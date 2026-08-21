@@ -15,7 +15,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { Loader2, Wallet, Check, AlertCircle } from "lucide-react";
 
 export interface PricingValues {
@@ -133,7 +133,7 @@ export default function PricingEditor({
             <p className="mt-0.5 text-[11px] text-ink-faint">
               {f.hintKey
                 ? t(f.hintKey)
-                : formatRWF((values[f.key] as number) || 0)}
+                : formatMoney((values[f.key] as number) || 0)}
             </p>
           </div>
         ))}

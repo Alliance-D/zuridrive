@@ -22,7 +22,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { sendSms } from '@/lib/sms'
 import { createNotification } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { NotificationType } from '@prisma/client'
 import { applyPlanChange } from '@/lib/subscriptions/limits'
 
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
         messageKey: 'subscriptionRenewing',
         params: {
           plan: sub.plan.name,
-          price: formatRWF(sub.plan.priceMonthly),
+          price: formatMoney(sub.plan.priceMonthly),
           days: daysLeft,
         },
       })

@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { CalendarDays, MapPin, Camera, ChevronRight, User } from "lucide-react";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -172,7 +172,7 @@ export default function BookingCard({
           {/* Bottom row: price + ref + arrow */}
           <div className="mt-2.5 flex items-center justify-between">
             <div>
-              <span className="text-sm font-bold text-brand">{formatRWF(totalAmount)}</span>
+              <span className="text-sm font-bold text-brand">{formatMoney(totalAmount)}</span>
               <span className="ml-1 text-xs text-ink-faint">Ref: {reference}</span>
             </div>
             <ChevronRight className="h-4 w-4 text-ink-faint transition-transform duration-150 group-hover:translate-x-0.5" />

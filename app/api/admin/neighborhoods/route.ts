@@ -55,17 +55,22 @@ export async function POST(req: NextRequest) {
     }
 
     const name = parsed.data.name.trim()
+    const city = parsed.data.city.trim()
 
-    const clash = await prisma.neighborhood.findUnique({ where: { name } })
+    // Clashes are per city. The same neighbourhood name in a different city is
+    // a different place, not a duplicate.
+    const clash = await prisma.neighborhood.findUnique({
+      where: { name_city: { name, city } },
+    })
     if (clash) {
       return NextResponse.json(
-        { error: `"${name}" already exists.` },
+        { error: `"${name}" already exists in ${city}.` },
         { status: 409 },
       )
     }
 
     const created = await prisma.neighborhood.create({
-      data: { name, city: parsed.data.city.trim() },
+      data: { name, city },
     })
 
     await logAdminAction({

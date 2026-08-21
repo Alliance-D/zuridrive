@@ -26,7 +26,7 @@ import { logAdminAction } from '@/lib/admin-logger'
 import { sendSms } from '@/lib/sms'
 import { createNotification } from '@/lib/notifications'
 import { setRetentionOnDisputeResolution } from '@/lib/photos/retention'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { NotificationType, type DepositStatus } from '@prisma/client'
 import { z } from 'zod'
 
@@ -142,7 +142,7 @@ export async function POST(
         if (clientRefundAmount + ownerAwardAmount !== depositAmount) {
           return NextResponse.json(
             {
-              error: `The split must add up to exactly ${formatRWF(depositAmount)}. You allocated ${formatRWF(
+              error: `The split must add up to exactly ${formatMoney(depositAmount)}. You allocated ${formatMoney(
                 clientRefundAmount + ownerAwardAmount,
               )}.`,
             },
@@ -268,7 +268,7 @@ export async function POST(
             : 'disputeResolvedClientNone',
         params: {
           reference: dispute.booking.reference,
-          amount: formatRWF(clientRefundAmount),
+          amount: formatMoney(clientRefundAmount),
         },
       })
     }
@@ -285,7 +285,7 @@ export async function POST(
         params: {
           car: carName,
           reference: dispute.booking.reference,
-          amount: formatRWF(ownerAwardAmount),
+          amount: formatMoney(ownerAwardAmount),
         },
       })
     }

@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { formatRWF, formatRWFCompact } from "@/lib/currency";
+import { formatMoney, formatMoneyCompact } from "@/lib/currency";
 
 /** The commission split, as the booking flow computes it. */
 function split(rental: number, ratePercent: number) {
@@ -77,16 +77,16 @@ describe("late cancellation split", () => {
 
 describe("formatting", () => {
   it("renders whole francs with separators", () => {
-    expect(formatRWF(90_000)).toMatch(/90[,\s ]000/);
-    expect(formatRWF(0)).toMatch(/0/);
+    expect(formatMoney(90_000)).toMatch(/90[,\s ]000/);
+    expect(formatMoney(0)).toMatch(/0/);
   });
 
   it("never shows decimals — RWF has no minor unit", () => {
-    expect(formatRWF(1_234_567)).not.toMatch(/[.,]\d\d$/);
+    expect(formatMoney(1_234_567)).not.toMatch(/[.,]\d\d$/);
   });
 
   it("compacts large amounts", () => {
-    const compact = formatRWFCompact(1_500_000);
-    expect(compact.length).toBeLessThan(formatRWF(1_500_000).length);
+    const compact = formatMoneyCompact(1_500_000);
+    expect(compact.length).toBeLessThan(formatMoney(1_500_000).length);
   });
 });

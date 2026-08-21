@@ -10,7 +10,7 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import {
   PageHeader,
   StatCard,
@@ -189,7 +189,7 @@ export default async function AdminFleetPage({
                       {t("seatCount", { count: car.seatingCapacity })} ·{" "}
                       {car.pricing
                         ? t("perDay", {
-                            amount: formatRWF(car.pricing.perDayInCity),
+                            amount: formatMoney(car.pricing.perDayInCity),
                           })
                         : t("noPricing")}
                     </p>

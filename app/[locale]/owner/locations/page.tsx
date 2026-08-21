@@ -14,7 +14,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile } from "@/lib/owner";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { routes } from "@/lib/routes";
 import { MapPin, Check, Clock, Building2, Truck } from "lucide-react";
 
@@ -142,7 +142,7 @@ export default async function OwnerLocationsPage({
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-success">
                   <Truck className="h-3 w-3" />
                   {t("deliversAnywhere")}
-                  {car.deliveryFee ? ` · ${formatRWF(car.deliveryFee)}` : ""}
+                  {car.deliveryFee ? ` · ${formatMoney(car.deliveryFee)}` : ""}
                 </p>
               )}
 
@@ -164,7 +164,7 @@ export default async function OwnerLocationsPage({
                           <p className="text-[11px] text-ink-soft">
                             {l.neighborhood.name}
                             {l.deliveryFee
-                              ? ` · ${t("deliveryFeeSuffix", { amount: formatRWF(l.deliveryFee) })}`
+                              ? ` · ${t("deliveryFeeSuffix", { amount: formatMoney(l.deliveryFee) })}`
                               : ""}
                           </p>
                         )}

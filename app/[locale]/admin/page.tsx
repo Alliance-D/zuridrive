@@ -9,7 +9,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { PageHeader, StatCard, Card, EmptyRow } from "@/components/admin/ui";
 import { ArrowRight, AlertTriangle } from "lucide-react";
 
@@ -103,12 +103,12 @@ export default async function AdminOverviewPage({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label={t("commissionThisMonth")}
-          value={formatRWF(monthRevenue._sum.commissionAmount ?? 0)}
+          value={formatMoney(monthRevenue._sum.commissionAmount ?? 0)}
           tone="dark"
         />
         <StatCard
           label={t("depositsHeld")}
-          value={formatRWF(depositsHeld._sum.amount ?? 0)}
+          value={formatMoney(depositsHeld._sum.amount ?? 0)}
           hint={t("depositsHeldHint")}
         />
         <StatCard

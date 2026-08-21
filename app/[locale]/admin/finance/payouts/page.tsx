@@ -10,7 +10,7 @@ import { prisma } from "@/lib/db";
 import { requireAdminModule } from "@/lib/auth";
 import { formatDate } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { FinanceNav } from "../nav";
 import {
   PageHeader,
@@ -108,13 +108,13 @@ export default async function AdminPayoutsPage({
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatCard
           label={t("awaitingAction")}
-          value={formatRWF(pendingSum._sum.netAmount ?? 0)}
+          value={formatMoney(pendingSum._sum.netAmount ?? 0)}
           hint={t("requestCount", { count: pendingSum._count })}
           tone={queue.length > 0 ? "warn" : "default"}
         />
         <StatCard
           label={t("paidOutLifetime")}
-          value={formatRWF(totals._sum.netAmount ?? 0)}
+          value={formatMoney(totals._sum.netAmount ?? 0)}
           tone="dark"
         />
         <StatCard label={t("inHistory")} value={history.length} />
@@ -134,7 +134,7 @@ export default async function AdminPayoutsPage({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-bold text-ink">
-                        {formatRWF(p.netAmount)}
+                        {formatMoney(p.netAmount)}
                       </span>
                       <Badge tone={TONE[p.status]}>
                         {label("payoutStatus", p.status)}
@@ -159,8 +159,8 @@ export default async function AdminPayoutsPage({
                     <p className="text-[11px] text-ink-faint">
                       {t("tripCount", { count: p._count.items })} ·{" "}
                       {t("grossMinusCommission", {
-                        gross: formatRWF(p.grossAmount),
-                        commission: formatRWF(p.commissionDeducted),
+                        gross: formatMoney(p.grossAmount),
+                        commission: formatMoney(p.commissionDeducted),
                       })}{" "}
                       ·{" "}
                       {t("requestedOn", {
@@ -192,7 +192,7 @@ export default async function AdminPayoutsPage({
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-ink">
-                      {formatRWF(p.netAmount)}
+                      {formatMoney(p.netAmount)}
                     </span>
                     <Badge tone={TONE[p.status]}>{label("payoutStatus", p.status)}</Badge>
                   </div>

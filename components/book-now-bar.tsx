@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { routes } from "@/lib/routes";
 
 interface BookNowBarProps {
@@ -31,7 +31,7 @@ export function BookNowBar({ carId, startingPrice }: BookNowBarProps) {
         <div className="flex-1">
           <div className="text-sm text-gray-600">{t("pricePerDayLabel")}</div>
           <div className="text-2xl font-bold text-blue-600">
-            {startingPrice != null ? formatRWF(startingPrice) : "—"}
+            {startingPrice != null ? formatMoney(startingPrice) : "—"}
           </div>
         </div>
         <a

@@ -14,7 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { sendSms } from '@/lib/sms'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { setRetentionOnCompletion } from '@/lib/photos/retention'
 import { getPlatformSettings } from '@/lib/platform-settings'
 
@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
         params: {
           car: carName,
           reference: booking.reference,
-          amount: formatRWF(depositAmount),
+          amount: formatMoney(depositAmount),
         },
       })
     }

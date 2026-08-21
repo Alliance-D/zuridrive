@@ -8,7 +8,7 @@
  *  • Quick stats (total, active, completed, pending)
  *  • Recent bookings list
  *
- * All monetary values via formatRWF(). Skeleton loading via Suspense.
+ * All monetary values via formatMoney(). Skeleton loading via Suspense.
  */
 
 import { Suspense } from "react";
@@ -18,7 +18,7 @@ import { loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ActiveTripCard from "@/components/dashboard/ActiveTripCard";
 import UpcomingBookingCard from "@/components/dashboard/UpcomingBookingCard";

@@ -9,7 +9,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile } from "@/lib/owner";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { formatDate } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { routes } from "@/lib/routes";
@@ -171,7 +171,7 @@ export default async function OwnerBookingsPage({
 
                 <div className="shrink-0 text-right">
                   <p className="text-sm font-bold text-brand">
-                    {formatRWF(b.ownerEarnings)}
+                    {formatMoney(b.ownerEarnings)}
                   </p>
                   <p className="text-[10px] text-ink-faint">
                     {t("yourEarningsLabel")}

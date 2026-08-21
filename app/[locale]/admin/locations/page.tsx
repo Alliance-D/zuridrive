@@ -12,7 +12,7 @@ import { getTranslations } from "next-intl/server";
 import AddPlatformLocation from "@/components/admin/AddPlatformLocation";
 import { prisma } from "@/lib/db";
 import { requireAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { formatDate } from "@/lib/dates";
 import {
   PageHeader,
@@ -161,7 +161,7 @@ export default async function AdminLocationsPage({
                         · {l.car.owner.user.name ?? t("ownerFallback")} ·{" "}
                         {l.neighborhood?.name ?? t("noNeighbourhood")}
                         {l.deliveryFee
-                          ? ` · ${t("deliveryFeeSuffix", { amount: formatRWF(l.deliveryFee) })}`
+                          ? ` · ${t("deliveryFeeSuffix", { amount: formatMoney(l.deliveryFee) })}`
                           : ""}{" "}
                         ·{" "}
                         {t("addedOn", {

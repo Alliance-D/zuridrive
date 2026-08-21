@@ -13,7 +13,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireAdminModule, hasAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { PageHeader, Card, Badge } from "@/components/admin/ui";
 import { PhotoComparisonView } from "@/components/photos/PhotoComparisonView";
 import ResolveDisputeForm from "@/components/admin/ResolveDisputeForm";
@@ -174,7 +174,7 @@ export default async function DisputeDetailPage({
                 : "—"}
               {b.car.fuelPolicy?.refuelingFee
                 ? ` · ${t("refuelFee", {
-                    amount: formatRWF(b.car.fuelPolicy.refuelingFee),
+                    amount: formatMoney(b.car.fuelPolicy.refuelingFee),
                   })}`
                 : ""}
             </Row>
@@ -185,7 +185,7 @@ export default async function DisputeDetailPage({
           <dl className="space-y-1.5 text-xs">
             <Row label={t("rowDeposit")}>
               <span className="font-bold text-ink">
-                {formatRWF(deposit?.amount ?? 0)}
+                {formatMoney(deposit?.amount ?? 0)}
               </span>
               {deposit && (
                 <span className="ml-2">
@@ -203,8 +203,8 @@ export default async function DisputeDetailPage({
                 </span>
               )}
             </Row>
-            <Row label={t("rowRentalSubtotal")}>{formatRWF(b.subtotal)}</Row>
-            <Row label={t("rowOwnerEarnings")}>{formatRWF(b.ownerEarnings)}</Row>
+            <Row label={t("rowRentalSubtotal")}>{formatMoney(b.subtotal)}</Row>
+            <Row label={t("rowOwnerEarnings")}>{formatMoney(b.ownerEarnings)}</Row>
           </dl>
 
           {deposit && deposit.movements.length > 0 && (
@@ -221,7 +221,7 @@ export default async function DisputeDetailPage({
                         to: label("depositMovement", m.toStatus),
                       })}
                     </span>{" "}
-                    · {formatRWF(m.amount)} ·{" "}
+                    · {formatMoney(m.amount)} ·{" "}
                     {formatDate(m.createdAt, params.locale)}
                     <br />
                     <span className="text-ink-faint">{m.reason}</span>
@@ -258,13 +258,13 @@ export default async function DisputeDetailPage({
               <div>
                 <dt className="text-ink-faint">{t("returnedToClient")}</dt>
                 <dd className="font-semibold text-ink">
-                  {formatRWF(dispute.resolution.clientRefundAmount)}
+                  {formatMoney(dispute.resolution.clientRefundAmount)}
                 </dd>
               </div>
               <div>
                 <dt className="text-ink-faint">{t("awardedToOwner")}</dt>
                 <dd className="font-semibold text-ink">
-                  {formatRWF(dispute.resolution.ownerAwardAmount)}
+                  {formatMoney(dispute.resolution.ownerAwardAmount)}
                 </dd>
               </div>
             </dl>

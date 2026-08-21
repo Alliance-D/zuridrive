@@ -5,7 +5,7 @@
  * Toggle driver option with live surcharge preview.
  */
 
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { useTranslations } from 'next-intl'
 import { User } from 'lucide-react'
 
@@ -43,8 +43,8 @@ export function DriverToggle({ enabled, onChange, surchargePerDay, durationDays 
               {t("includeDriver")}
             </p>
             <p className="text-xs text-stone-500">
-              {formatRWF(surchargePerDay)}/day surcharge
-              {totalSurcharge ? ` · ${formatRWF(totalSurcharge)} total` : ''}
+              {formatMoney(surchargePerDay)}/day surcharge
+              {totalSurcharge ? ` · ${formatMoney(totalSurcharge)} total` : ''}
             </p>
           </div>
         </div>

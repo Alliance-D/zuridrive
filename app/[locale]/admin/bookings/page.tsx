@@ -11,7 +11,7 @@ import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule, hasAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import {
   PageHeader,
   StatCard,
@@ -228,13 +228,13 @@ export default async function AdminBookingsPage({
                     {canSeeMoney && (
                       <Td align="right">
                         <span className="font-semibold">
-                          {formatRWF(b.subtotal)}
+                          {formatMoney(b.subtotal)}
                         </span>
                       </Td>
                     )}
                     {canSeeMoney && (
                       <Td align="right" muted>
-                        {b.depositAmount ? formatRWF(b.depositAmount) : "—"}
+                        {b.depositAmount ? formatMoney(b.depositAmount) : "—"}
                       </Td>
                     )}
                   </tr>

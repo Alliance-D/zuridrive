@@ -20,7 +20,7 @@ import { formatPhoneForMoMo } from '@/lib/payments/momo'
 import { getPaymentProvider } from '@/lib/payments'
 import { settleBookingPayment } from '@/lib/payments/settle'
 import { notifyAdminsWithModule } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { uploadedFileUrl } from '@/lib/validation/urls'
 import { z } from 'zod'
 
@@ -273,12 +273,12 @@ export async function POST(
       await notifyAdminsWithModule('FINANCE_MANAGER', {
         type: 'BANK_TRANSFER_PENDING',
         title: 'Bank transfer proof uploaded',
-        body: `Booking ${booking.reference} — ${formatRWF(totalChargedNow)} — awaiting confirmation`,
+        body: `Booking ${booking.reference} — ${formatMoney(totalChargedNow)} — awaiting confirmation`,
         titleKey: 'bankProofTitle',
         bodyKey: 'bankProofBody',
         params: {
           reference: booking.reference,
-          amount: formatRWF(totalChargedNow),
+          amount: formatMoney(totalChargedNow),
         },
         actionUrl: '/admin/finance/payments',
         metadata: { bookingId: booking.id, paymentId: payment.id },

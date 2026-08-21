@@ -21,7 +21,7 @@ import {
   ChevronRight,
   CheckCircle2,
 } from "lucide-react";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -147,7 +147,7 @@ export default function ActiveTripCard({
                 </span>
                 <span className="flex items-center gap-1">
                   <Car className="h-3 w-3" />
-                  {formatRWF(totalAmount)} total
+                  {formatMoney(totalAmount)} total
                 </span>
               </div>
             </div>

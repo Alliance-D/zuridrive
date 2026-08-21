@@ -14,7 +14,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { requireAdminModule } from "@/lib/auth";
 import { formatDate } from "@/lib/dates";
-import { formatRWF, formatRWFCompact } from "@/lib/currency";
+import { formatMoney, formatMoneyCompact } from "@/lib/currency";
 import {
   resolveRange,
   RANGES,
@@ -104,7 +104,7 @@ export default async function AdminAnalyticsPage({
             {t("platformRevenue")}
           </p>
           <p className="mt-1 text-[48px] font-bold leading-none">
-            {formatRWF(headlines.revenue)}
+            {formatMoney(headlines.revenue)}
           </p>
           <div className="mt-2 flex items-center gap-3">
             <Delta
@@ -125,12 +125,12 @@ export default async function AdminAnalyticsPage({
 
         <Metric
           label={t("ownerEarnings")}
-          value={formatRWF(headlines.ownerEarnings)}
+          value={formatMoney(headlines.ownerEarnings)}
           hint={t("paidOrPayable")}
         />
         <Metric
           label={t("mrr")}
-          value={formatRWF(headlines.mrr)}
+          value={formatMoney(headlines.mrr)}
           hint={t("activeSubCount", {
             count: headlines.activeSubscriptions,
           })}
@@ -169,7 +169,7 @@ export default async function AdminAnalyticsPage({
         <TableView
           tableLabel={t("viewAsTable")}
           caption={t("revenueByPeriod")}
-          rows={revenue.map((p) => [p.label, formatRWF(p.value)])}
+          rows={revenue.map((p) => [p.label, formatMoney(p.value)])}
           headers={[t("colPeriod"), t("colCommission")]}
         />
       </Card>
@@ -258,7 +258,7 @@ export default async function AdminAnalyticsPage({
                       {o.cars}
                     </td>
                     <td className="py-2.5 text-right text-xs font-semibold text-brand">
-                      {formatRWF(o.earnings)}
+                      {formatMoney(o.earnings)}
                     </td>
                   </tr>
                 ))}

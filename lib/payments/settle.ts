@@ -29,7 +29,7 @@ import { activateDeposit } from "@/lib/finance/deposits";
 import { activateSubscription } from "@/lib/subscriptions/checkout";
 import { sendSms } from "@/lib/sms";
 import { createNotification } from "@/lib/notifications";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { NotificationType } from "@prisma/client";
 
 export type SettlementOutcome =
@@ -316,7 +316,7 @@ async function notifyBookingPaid(
         to: booking.client.phone,
         messageKey: "paymentConfirmed",
         params: {
-          amount: formatRWF(totalPaid),
+          amount: formatMoney(totalPaid),
           car: carName,
           reference: booking.reference,
         },
@@ -332,7 +332,7 @@ async function notifyBookingPaid(
           car: carName,
           start: booking.startDate,
           end: booking.endDate,
-          amount: formatRWF(totalPaid),
+          amount: formatMoney(totalPaid),
           reference: booking.reference,
         },
       });

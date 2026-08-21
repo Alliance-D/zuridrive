@@ -8,7 +8,7 @@
 
 import { prisma } from "@/lib/db";
 import { requireAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { runReconciliation } from "@/lib/finance/reconciliation";
 import { FinanceNav } from "../nav";
 import {
@@ -91,7 +91,7 @@ export default async function AdminReportsPage({
           >
             {live.hasMismatch
               ? t("booksOffBy", {
-                  amount: formatRWF(live.discrepancyAmount),
+                  amount: formatMoney(live.discrepancyAmount),
                 })
               : t("booksBalance")}
           </p>
@@ -117,16 +117,16 @@ export default async function AdminReportsPage({
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
             <StatCard
               label={t("rentalIncome")}
-              value={formatRWF(live.rentalCollected)}
+              value={formatMoney(live.rentalCollected)}
             />
             <StatCard
               label={t("depositsTaken")}
-              value={formatRWF(live.depositsCollected)}
+              value={formatMoney(live.depositsCollected)}
               hint={t("clientMoneyInTrust")}
             />
             <StatCard
               label={t("totalCollected")}
-              value={formatRWF(live.totalCollected)}
+              value={formatMoney(live.totalCollected)}
               tone="dark"
             />
           </div>
@@ -139,20 +139,20 @@ export default async function AdminReportsPage({
           <dl className="space-y-2 text-sm">
             <Row
               label={t("commissionEarned")}
-              value={formatRWF(live.totalCommission)}
+              value={formatMoney(live.totalCommission)}
             />
             <Row
               label={t("ownerEarnings")}
-              value={formatRWF(live.ownerEarningsRealised)}
+              value={formatMoney(live.ownerEarningsRealised)}
             />
             <Row
               label={t("paidOutToOwners")}
-              value={formatRWF(live.totalPaidOut)}
+              value={formatMoney(live.totalPaidOut)}
             />
             <div className="border-t border-sand pt-2">
               <Row
                 label={t("stillOwed")}
-                value={formatRWF(live.outstandingOwnerBalance)}
+                value={formatMoney(live.outstandingOwnerBalance)}
                 strong
               />
             </div>
@@ -163,20 +163,20 @@ export default async function AdminReportsPage({
           <dl className="space-y-2 text-sm">
             <Row
               label={t("currentlyHeld")}
-              value={formatRWF(live.totalDepositsHeld)}
+              value={formatMoney(live.totalDepositsHeld)}
             />
             <Row
               label={t("returnedToClients")}
-              value={formatRWF(live.totalDepositsReleased)}
+              value={formatMoney(live.totalDepositsReleased)}
             />
             <Row
               label={t("withheldAwarded")}
-              value={formatRWF(live.totalDepositsWithheld)}
+              value={formatMoney(live.totalDepositsWithheld)}
             />
             <div className="border-t border-sand pt-2">
               <Row
                 label={t("accountedFor")}
-                value={formatRWF(
+                value={formatMoney(
                   live.totalDepositsHeld +
                     live.totalDepositsReleased +
                     live.totalDepositsWithheld,
@@ -187,7 +187,7 @@ export default async function AdminReportsPage({
             {live.pendingDeposits > 0 && (
               <p className="pt-1 text-[11px] text-ink-faint">
                 {t("pendingDepositsNote", {
-                  amount: formatRWF(live.pendingDeposits),
+                  amount: formatMoney(live.pendingDeposits),
                 })}
               </p>
             )}
@@ -227,16 +227,16 @@ export default async function AdminReportsPage({
                       </Badge>
                     </Td>
                     <Td align="right" muted>
-                      {formatRWF(h.totalCollected)}
+                      {formatMoney(h.totalCollected)}
                     </Td>
                     <Td align="right" muted>
-                      {formatRWF(h.totalCommission)}
+                      {formatMoney(h.totalCommission)}
                     </Td>
                     <Td align="right" muted>
-                      {formatRWF(h.totalPaidOut)}
+                      {formatMoney(h.totalPaidOut)}
                     </Td>
                     <Td align="right" muted>
-                      {formatRWF(h.totalDepositsHeld)}
+                      {formatMoney(h.totalDepositsHeld)}
                     </Td>
                     <Td align="right">
                       <span
@@ -246,7 +246,7 @@ export default async function AdminReportsPage({
                             : "text-ink-soft"
                         }
                       >
-                        {formatRWF(h.discrepancyAmount)}
+                        {formatMoney(h.discrepancyAmount)}
                       </span>
                     </Td>
                   </tr>

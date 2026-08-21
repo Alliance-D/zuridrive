@@ -29,7 +29,7 @@ import { getTranslations } from "next-intl/server";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { prisma } from "@/lib/db";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { getPlatformSettings } from "@/lib/platform-settings";
 import {
   Wallet,
@@ -169,7 +169,7 @@ export default async function BecomeAnOwnerPage({
               {t("freePlanName")}
             </h3>
             <p className="mt-2 text-3xl font-semibold text-brand">
-              {formatRWF(0)}
+              {formatMoney(0)}
             </p>
             <ul className="mt-6 flex-1 space-y-2.5 text-sm text-ink-muted">
               <li className="flex gap-2">
@@ -219,7 +219,7 @@ export default async function BecomeAnOwnerPage({
                 </h3>
 
                 <p className="mt-2 text-3xl font-semibold text-brand">
-                  {formatRWF(plan.priceMonthly)}
+                  {formatMoney(plan.priceMonthly)}
                   <span className="text-sm font-normal text-ink-soft">
                     {" "}
                     {t("perMonth")}

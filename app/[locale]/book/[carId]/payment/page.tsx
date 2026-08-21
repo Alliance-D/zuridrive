@@ -13,7 +13,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useTranslations } from 'next-intl'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Smartphone, Upload, Check, X, Clock, RefreshCw } from 'lucide-react'
@@ -194,7 +194,7 @@ export default function PaymentPage({ params }: { params: { carId: string } }) {
               <h2 className="text-xl font-bold text-stone-900 mb-2">{t('waitingForPayment')}</h2>
               <p className="text-stone-600 text-sm leading-relaxed mb-6">
                 {amount !== null
-                  ? t('promptSentWithAmount', { amount: formatRWF(amount) })
+                  ? t('promptSentWithAmount', { amount: formatMoney(amount) })
                   : t('promptSent')}
               </p>
 

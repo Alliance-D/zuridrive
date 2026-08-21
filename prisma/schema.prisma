@@ -599,13 +599,19 @@ model PlatformLocation {
 // Admin-managed neighborhood tags — used to label owner custom locations
 model Neighborhood {
   id        String   @id @default(cuid())
-  name      String   @unique
+  /// Unique per city, not globally. Neighbourhood names repeat between
+  /// cities — an "Industrial Area" exists in more than one — so a global
+  /// constraint blocks the second city that has one, whether that is Musanze
+  /// or Nairobi.
+  name      String
   city      String   @default("Kigali")
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
   // Relations
   ownerLocations OwnerLocation[]
+
+  @@unique([name, city])
 
   @@map("neighborhoods")
 }

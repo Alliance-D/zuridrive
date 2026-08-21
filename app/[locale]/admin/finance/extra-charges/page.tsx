@@ -12,7 +12,7 @@ import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule, hasAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { FinanceNav } from "../nav";
 import {
   PageHeader,
@@ -103,16 +103,16 @@ export default async function AdminExtraChargesPage({
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatCard
           label={t("outstanding")}
-          value={formatRWF(sumFor("PENDING"))}
+          value={formatMoney(sumFor("PENDING"))}
           hint={t("chargeCount", { count: countFor("PENDING") })}
           tone={countFor("PENDING") > 0 ? "warn" : "default"}
         />
         <StatCard
           label={t("collected")}
-          value={formatRWF(sumFor("COLLECTED"))}
+          value={formatMoney(sumFor("COLLECTED"))}
           tone="dark"
         />
-        <StatCard label={t("waived")} value={formatRWF(sumFor("WAIVED"))} />
+        <StatCard label={t("waived")} value={formatMoney(sumFor("WAIVED"))} />
       </div>
 
       {!canCollect && (
@@ -144,7 +144,7 @@ export default async function AdminExtraChargesPage({
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm font-bold text-ink">
-                          {formatRWF(c.amount)}
+                          {formatMoney(c.amount)}
                         </span>
                         <Badge tone="info">{label("chargeType", c.type)}</Badge>
                         <Badge tone={TONE[c.status]}>
@@ -175,8 +175,8 @@ export default async function AdminExtraChargesPage({
                           {heldDeposit === 0
                             ? t("noDepositHeld")
                             : t("partialDeposit", {
-                                held: formatRWF(heldDeposit),
-                                shortfall: formatRWF(shortfall),
+                                held: formatMoney(heldDeposit),
+                                shortfall: formatMoney(shortfall),
                               })}
                         </p>
                       )}

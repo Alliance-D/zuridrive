@@ -15,7 +15,7 @@ import type { BookingFormUpdater } from './BookingWizard'
 import { useTranslations } from 'next-intl'
 import { getDepositCopy } from '@/lib/deposit-copy';
 import { Smartphone, Landmark, Shield, Copy, Check } from 'lucide-react'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import type { PricingBreakdown } from '@/lib/booking/pricing'
 import { useState } from 'react'
 
@@ -60,26 +60,26 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
           <h2 className="text-lg font-semibold text-stone-900 mb-4">{t("orderSummary")}</h2>
           <div className="space-y-2">
-            <SummaryLine label={t("rental")} value={formatRWF(pricing.baseAmount)} />
+            <SummaryLine label={t("rental")} value={formatMoney(pricing.baseAmount)} />
             {pricing.driverSurchargeTotal > 0 && (
-              <SummaryLine label={t("driverSurcharge")} value={formatRWF(pricing.driverSurchargeTotal)} />
+              <SummaryLine label={t("driverSurcharge")} value={formatMoney(pricing.driverSurchargeTotal)} />
             )}
             {pricing.deliveryFee > 0 && (
-              <SummaryLine label={t("delivery")} value={formatRWF(pricing.deliveryFee)} />
+              <SummaryLine label={t("delivery")} value={formatMoney(pricing.deliveryFee)} />
             )}
             <div className="border-t border-stone-100 pt-2 mt-2">
-              <SummaryLine label={t("rentalSubtotal")} value={formatRWF(pricing.subtotalBeforeDeposit)} bold />
+              <SummaryLine label={t("rentalSubtotal")} value={formatMoney(pricing.subtotalBeforeDeposit)} bold />
             </div>
             {pricing.depositEnabled && pricing.depositAmount > 0 && (
               <div className="flex justify-between items-center text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-2">
                 <span className="text-xs font-medium">{td(depositCopy.labelKey)}</span>
-                <span className="text-xs font-bold">{formatRWF(pricing.depositAmount)}</span>
+                <span className="text-xs font-bold">{formatMoney(pricing.depositAmount)}</span>
               </div>
             )}
             <div className="border-t border-stone-200 pt-3 mt-2">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-stone-900">{depositCopy.heldBy === 'owner' ? t('totalPayableToOwner') : t('totalChargedNow')}</span>
-                <span className="text-xl font-bold text-brand">{formatRWF(pricing.totalChargedNow)}</span>
+                <span className="text-xl font-bold text-brand">{formatMoney(pricing.totalChargedNow)}</span>
               </div>
             </div>
           </div>
@@ -106,9 +106,9 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
             <div className="mt-4 rounded-xl bg-stone-50 border border-stone-100 p-3">
               <p className="text-xs text-stone-500">{t("agreeAtHandover")}</p>
               <p className="text-sm font-semibold text-stone-900 mt-0.5">
-                {formatRWF(pricing.subtotalBeforeDeposit)} {t("rentalSuffix")}
+                {formatMoney(pricing.subtotalBeforeDeposit)} {t("rentalSuffix")}
                 {pricing.depositAmount > 0 && (
-                  <>{" "}{t("plusRefundable", { amount: formatRWF(pricing.depositAmount) })}</>
+                  <>{" "}{t("plusRefundable", { amount: formatMoney(pricing.depositAmount) })}</>
                 )}
               </p>
             </div>
@@ -242,7 +242,7 @@ export function PaymentStep({ form, pricing, errors, onChange, isLoggedIn }: Pay
             ? t('bookingConfirmedAfterPayment')
             : t('ownerConfirmsThenSettle')}{' '}
           {pricing
-            ? `${t('depositPrefix', { amount: formatRWF(pricing.depositAmount) })} `
+            ? `${t('depositPrefix', { amount: formatMoney(pricing.depositAmount) })} `
             : ''}
           {td(depositCopy.explanationKey)}
         </p>

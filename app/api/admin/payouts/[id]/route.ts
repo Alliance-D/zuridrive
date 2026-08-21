@@ -22,7 +22,7 @@ import { requireModuleAccess } from '@/lib/api-guard'
 import { logAdminAction } from '@/lib/admin-logger'
 import { sendSms } from '@/lib/sms'
 import { createNotification } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { NotificationType, type PayoutStatus } from '@prisma/client'
 import { uploadedFileUrl } from '@/lib/validation/urls'
 import { z } from 'zod'
@@ -137,7 +137,7 @@ export async function POST(
         targetType: 'Payout',
         targetId: payout.id,
         targetUserId: ownerUser.id,
-        description: `Approved ${formatRWF(payout.netAmount)} payout`,
+        description: `Approved ${formatMoney(payout.netAmount)} payout`,
         metadata: { netAmount: payout.netAmount, trips: payout._count.items },
       })
 
@@ -147,8 +147,8 @@ export async function POST(
         title: 'Payout approved',
       titleKey: 'payoutApprovedTitle',
       bodyKey: 'payoutApprovedBody',
-      params: { amount: formatRWF(payout.netAmount) },
-        body: `Your ${formatRWF(payout.netAmount)} payout has been approved and is being processed.`,
+      params: { amount: formatMoney(payout.netAmount) },
+        body: `Your ${formatMoney(payout.netAmount)} payout has been approved and is being processed.`,
         actionUrl: '/owner/payouts',
       })
 
@@ -174,7 +174,7 @@ export async function POST(
         targetType: 'Payout',
         targetId: payout.id,
         targetUserId: ownerUser.id,
-        description: `Marked ${formatRWF(payout.netAmount)} payout as paid`,
+        description: `Marked ${formatMoney(payout.netAmount)} payout as paid`,
         metadata: {
           netAmount: payout.netAmount,
           reference: parsed.data.referenceNumber,
@@ -188,7 +188,7 @@ export async function POST(
           userId: ownerUser.id,
           messageKey: 'payoutSent',
           params: {
-            amount: formatRWF(payout.netAmount),
+            amount: formatMoney(payout.netAmount),
             method: payout.method,
           },
         })
@@ -200,8 +200,8 @@ export async function POST(
         title: 'Payout sent',
       titleKey: 'payoutSentTitle',
       bodyKey: 'payoutSentBody',
-      params: { amount: formatRWF(payout.netAmount) },
-        body: `${formatRWF(payout.netAmount)} is on its way to you.`,
+      params: { amount: formatMoney(payout.netAmount) },
+        body: `${formatMoney(payout.netAmount)} is on its way to you.`,
         actionUrl: '/owner/payouts',
       })
 
@@ -226,7 +226,7 @@ export async function POST(
       targetId: payout.id,
       targetUserId: ownerUser.id,
       reason: parsed.data.reason,
-      description: `Marked ${formatRWF(payout.netAmount)} payout as failed`,
+      description: `Marked ${formatMoney(payout.netAmount)} payout as failed`,
     })
 
     if (ownerUser.phone) {
@@ -236,7 +236,7 @@ export async function POST(
         userId: ownerUser.id,
         messageKey: 'payoutFailed',
         params: {
-          amount: formatRWF(payout.netAmount),
+          amount: formatMoney(payout.netAmount),
           reason: parsed.data.reason,
         },
       })

@@ -18,7 +18,7 @@ import CarGallery from "@/components/car-gallery";
 import ReviewsSection from "@/components/reviews-section";
 import BookNowBar from "@/components/book-now-bar";
 import { prisma } from "@/lib/prisma";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { ROUTES } from "@/lib/routes";
 import {
   Star, Users, Fuel, Zap, Settings2, Calendar,
@@ -195,13 +195,13 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                     <tbody>
                       <PricingRow
                         period={t("perDayLabel")}
-                        inCity={formatRWF(pricing.perDayInCity)}
-                        outside={formatRWF(pricing.perDayOutsideCity)}
+                        inCity={formatMoney(pricing.perDayInCity)}
+                        outside={formatMoney(pricing.perDayOutsideCity)}
                       />
                       <PricingRow
                         period={t("perWeek")}
-                        inCity={formatRWF(pricing.perWeekInCity)}
-                        outside={formatRWF(pricing.perWeekOutsideCity)}
+                        inCity={formatMoney(pricing.perWeekInCity)}
+                        outside={formatMoney(pricing.perWeekOutsideCity)}
                         isAlt
                       />
                       <tr>
@@ -213,7 +213,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                         </td>
                         <td className={`${TD} text-fluid-sm text-center`} colSpan={2}>
                           <span className="font-display text-fluid-xl font-semibold text-brand">
-                            {formatRWF(pricing.perMonth)}
+                            {formatMoney(pricing.perMonth)}
                           </span>
                           <span className="ml-1 text-fluid-xs text-ink-soft">{t("perMonthSuffix")}</span>
                         </td>
@@ -225,7 +225,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                   {pricing.driverEnabled && pricing.driverSurchargePerDay && (
                     <div className="flex items-center gap-2 border-t border-sand-light bg-sand px-5 py-3 text-fluid-sm text-ink-soft">
                       <Users size={14} />
-                      Driver available: +{formatRWF(pricing.driverSurchargePerDay)} per day when selected
+                      Driver available: +{formatMoney(pricing.driverSurchargePerDay)} per day when selected
                     </div>
                   )}
                 </div>
@@ -259,7 +259,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                   </div>
                   <div>
                     <p className="mb-1 text-fluid-base font-bold">
-                      {t("depositRequired", { amount: formatRWF(pricing.depositAmount) })}
+                      {t("depositRequired", { amount: formatMoney(pricing.depositAmount) })}
                     </p>
                     <p className="text-fluid-sm leading-[1.6] text-ink-soft">
                       {td(getDepositCopy().explanationKey)}{" "}
@@ -295,7 +295,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                         )}
                         {loc.deliveryFee && loc.deliveryFee > 0 && (
                           <p className="mt-1 text-fluid-xs font-semibold text-brand">
-                            {t("deliveryFeeAdd", { amount: formatRWF(loc.deliveryFee) })}
+                            {t("deliveryFeeAdd", { amount: formatMoney(loc.deliveryFee) })}
                           </p>
                         )}
                       </div>
@@ -399,7 +399,7 @@ function FuelPolicyCard({
 }) {
   const DESCRIPTION: Record<string, string> = {
     FULL_TO_FULL: refuelingFee
-      ? t("fuelFullToFullFee", { amount: formatRWF(refuelingFee) })
+      ? t("fuelFullToFullFee", { amount: formatMoney(refuelingFee) })
       : t("fuelFullToFull"),
     SAME_LEVEL: t("fuelSameLevel"),
     FREE_TANK: t("fuelFreeTank"),
@@ -448,7 +448,7 @@ async function BookingWidget({ car, locale }: { locale: string; car: Parameters<
         {pricing ? (
           <>
             <span className="font-display text-fluid-2xl font-semibold tracking-[-0.02em] text-brand">
-              {formatRWF(pricing.perDayInCity)}
+              {formatMoney(pricing.perDayInCity)}
             </span>
             <span className="ml-1 text-fluid-sm text-ink-soft">{t("perDaySuffix")}</span>
           </>

@@ -11,6 +11,7 @@
  * Maps are ALWAYS optional — never forced.
  */
 
+import { formatMoney } from '@/lib/currency';
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { MapPin, Building2, Home, PenLine, ChevronDown } from 'lucide-react'
@@ -167,7 +168,7 @@ export function LocationPicker({
                   )}
                   {loc.deliveryFee > 0 && (
                     <p className="text-xs text-accent font-medium mt-0.5">
-                      + RWF {loc.deliveryFee.toLocaleString()} delivery fee
+                      + {formatMoney(loc.deliveryFee)} delivery fee
                     </p>
                   )}
                 </div>

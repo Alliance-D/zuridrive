@@ -10,7 +10,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { Loader2, AlertCircle, Upload, X, Scale, CheckCircle2 } from "lucide-react";
 
 export default function DisputeCancellationFee({
@@ -98,7 +98,7 @@ export default function DisputeCancellationFee({
   return (
     <div className="rounded-xl bg-warning-bg p-3">
       <p className="text-sm font-semibold text-warning">
-        {t("lateCancelFeeKept", { amount: formatRWF(feeCharged) })}
+        {t("lateCancelFeeKept", { amount: formatMoney(feeCharged) })}
       </p>
       <p className="mt-0.5 text-xs text-warning">
         {t("lateCancelExplain")}

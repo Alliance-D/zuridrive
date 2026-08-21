@@ -23,7 +23,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { runAndLogReconciliation } from '@/lib/finance/reconciliation'
 import { notifyAdminsWithModule } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { NotificationType } from '@prisma/client'
 
 const CRON_SECRET = process.env.CRON_SECRET!
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
 
     // A discrepancy is money that is somewhere it should not be. It goes to
     // whoever runs finance, and to the Super Admin, who cannot be excluded.
-    const amount = formatRWF(Math.abs(result.discrepancyAmount))
+    const amount = formatMoney(Math.abs(result.discrepancyAmount))
 
     await notifyAdminsWithModule('FINANCE_MANAGER', {
       type: NotificationType.RECONCILIATION_MISMATCH,

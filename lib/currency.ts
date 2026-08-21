@@ -1,42 +1,67 @@
 // =============================================================================
-// ZuriDrive — Currency Formatter
-// All monetary values are in RWF (Rwandan Franc)
-// Format: RWF 15,000 — never decimals, never raw numbers alone
+// ZuriDrive — money formatting
+//
+// The currency code comes from configuration rather than the function name, so
+// a second market is a deployment setting rather than an edit to several
+// hundred call sites. It defaults to RWF, which is what Rwanda runs on.
+//
+// This is deployment config, not editable platform data: one deployment serves
+// one market. A single deployment serving several currencies at once would
+// need the currency carried on each booking, which is a different and much
+// larger change.
+//
+// Amounts are integers with no decimal part, which is how RWF, UGX and TZS are
+// used in practice. A currency with meaningful minor units — KES cents — would
+// need the stored values reconsidered too, not just this formatter, since
+// every amount in the database is a whole number.
 // =============================================================================
 
+/** ISO code shown beside amounts. NEXT_PUBLIC_ so client components can read it. */
+const CURRENCY = process.env.NEXT_PUBLIC_CURRENCY?.trim() || "RWF";
+
+/** Locale used for digit grouping only — not for choosing the currency. */
+const GROUPING_LOCALE = process.env.NEXT_PUBLIC_NUMBER_LOCALE?.trim() || "en-US";
+
+/** The configured currency code, for anywhere that needs to name it. */
+export const currencyCode = CURRENCY;
+
 /**
- * Formats an integer amount as RWF currency string
- * @param amount - Integer amount in RWF (e.g. 15000)
- * @returns Formatted string (e.g. "RWF 15,000")
+ * Formats an integer amount for display.
+ * @param amount - Whole-unit amount (e.g. 15000)
+ * @returns e.g. "RWF 15,000"
  */
-export function formatRWF(amount: number): string {
+export function formatMoney(amount: number): string {
   // Round to nearest integer — no decimals ever
   const rounded = Math.round(amount);
-  return `RWF ${rounded.toLocaleString("en-US")}`;
+  return `${CURRENCY} ${rounded.toLocaleString(GROUPING_LOCALE)}`;
 }
 
 /**
- * Formats a compact amount for display in tight spaces (e.g. card badges)
- * @param amount - Integer amount in RWF
- * @returns Compact string (e.g. "RWF 15K" or "RWF 1.5M")
+ * Formats a compact amount for tight spaces (e.g. card badges)
+ * @param amount - Whole-unit amount
+ * @returns e.g. "RWF 15K" or "RWF 1.5M"
  */
-export function formatRWFCompact(amount: number): string {
+export function formatMoneyCompact(amount: number): string {
   if (amount >= 1_000_000) {
-    return `RWF ${(amount / 1_000_000).toFixed(1)}M`;
+    return `${CURRENCY} ${(amount / 1_000_000).toFixed(1)}M`;
   }
   if (amount >= 1_000) {
-    return `RWF ${(amount / 1_000).toFixed(0)}K`;
+    return `${CURRENCY} ${(amount / 1_000).toFixed(0)}K`;
   }
-  return formatRWF(amount);
+  return formatMoney(amount);
 }
 
 /**
- * Parses a user-entered number string to an integer RWF amount
- * Strips commas, spaces, "RWF" prefix
- * Returns null if not a valid number
+ * Parses a user-entered amount to an integer.
+ * Strips grouping separators, spaces, and the currency code.
+ * Returns null if not a valid amount.
  */
-export function parseRWF(input: string): number | null {
+export function parseMoney(input: string): number | null {
   const cleaned = input
+    // The configured code, and RWF regardless — someone typing an amount into
+    // a Rwandan deployment may well type "RWF" out of habit even after the
+    // code changes, and it costs nothing to accept it.
+    .replace(new RegExp(CURRENCY, "gi"), "")
     .replace(/RWF/gi, "")
     .replace(/,/g, "")
     .replace(/\s/g, "")

@@ -28,7 +28,7 @@ import { getCommissionRateForOwner } from '@/lib/subscriptions/limits'
 import { paymentsEnabled } from '@/lib/payments'
 import { sendSms } from '@/lib/sms'
 import { localeFromRequest } from '@/lib/locale-cookie'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { NotificationType } from '@prisma/client'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
@@ -370,7 +370,7 @@ export async function POST(req: NextRequest) {
           car: `${car.make} ${car.model}`,
           start: startDate,
           end: endDate,
-          amount: formatRWF(pricing.subtotalBeforeDeposit),
+          amount: formatMoney(pricing.subtotalBeforeDeposit),
           reference: bookingReference,
         },
       })

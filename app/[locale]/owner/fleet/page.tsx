@@ -13,7 +13,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { routes } from "@/lib/routes";
 import { getOwnerAllowance } from "@/lib/subscriptions/limits";
@@ -202,7 +202,7 @@ export default async function OwnerFleetPage({ params }: { params: { locale: str
                       <dt className="text-ink-faint">{t("dailyRate")}</dt>
                       <dd className="font-semibold text-ink">
                         {car.pricing
-                          ? formatRWF(car.pricing.perDayInCity)
+                          ? formatMoney(car.pricing.perDayInCity)
                           : t("notSet")}
                       </dd>
                     </div>

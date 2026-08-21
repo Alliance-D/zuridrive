@@ -22,7 +22,7 @@ import { getPaymentProvider } from '@/lib/payments'
 import { settleSubscriptionPayment } from '@/lib/payments/settle'
 import { beginSubscriptionPurchase } from '@/lib/subscriptions/checkout'
 import { notifyAdminsWithModule } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { uploadedFileUrl } from '@/lib/validation/urls'
 import { z } from 'zod'
 
@@ -181,12 +181,12 @@ export async function POST(req: NextRequest) {
     await notifyAdminsWithModule('FINANCE_MANAGER', {
       type: 'BANK_TRANSFER_PENDING',
       title: 'Subscription payment proof uploaded',
-      body: `${purchase.planName} — ${formatRWF(purchase.priceMonthly)} — awaiting confirmation`,
+      body: `${purchase.planName} — ${formatMoney(purchase.priceMonthly)} — awaiting confirmation`,
       titleKey: 'subscriptionProofTitle',
       bodyKey: 'subscriptionProofBody',
       params: {
         plan: purchase.planName,
-        amount: formatRWF(purchase.priceMonthly),
+        amount: formatMoney(purchase.priceMonthly),
       },
       actionUrl: '/admin/finance/subscriptions',
       metadata: { subscriptionId: purchase.id },

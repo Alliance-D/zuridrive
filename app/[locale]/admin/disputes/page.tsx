@@ -10,7 +10,7 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { requireAdminModule } from "@/lib/auth";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import {
   PageHeader,
   StatCard,
@@ -124,7 +124,7 @@ export default async function AdminDisputesPage({
         />
         <StatCard
           label={t("depositsFrozen")}
-          value={formatRWF(frozen._sum.amount ?? 0)}
+          value={formatMoney(frozen._sum.amount ?? 0)}
           hint={t("depositsFrozenHint")}
           tone={frozen._sum.amount ? "warn" : "default"}
         />
@@ -206,7 +206,7 @@ export default async function AdminDisputesPage({
 
                     <div className="shrink-0 text-right">
                       <p className="text-sm font-bold text-ink">
-                        {formatRWF(d.booking.deposit?.amount ?? 0)}
+                        {formatMoney(d.booking.deposit?.amount ?? 0)}
                       </p>
                       <p className="text-[10px] text-ink-faint">
                         {t("depositLabel")}

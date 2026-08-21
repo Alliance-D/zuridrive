@@ -22,7 +22,7 @@ import { logAdminAction } from '@/lib/admin-logger'
 import { sendSms } from '@/lib/sms'
 import { createNotification } from '@/lib/notifications'
 import { activateDeposit, voidPendingDeposit } from '@/lib/finance/deposits'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { NotificationType } from '@prisma/client'
 import { z } from 'zod'
 
@@ -134,7 +134,7 @@ export async function POST(
         action: 'PAYMENT_CONFIRMED_MANUAL',
         targetType: 'Payment',
         targetId: payment.id,
-        description: `Confirmed ${formatRWF(payment.totalAmount)} bank transfer for ${payment.booking.reference}`,
+        description: `Confirmed ${formatMoney(payment.totalAmount)} bank transfer for ${payment.booking.reference}`,
         metadata: {
           bookingRef: payment.booking.reference,
           amount: payment.totalAmount,
@@ -149,7 +149,7 @@ export async function POST(
           userId: payment.booking.clientId,
           messageKey: 'paymentConfirmed',
           params: {
-            amount: formatRWF(payment.totalAmount),
+            amount: formatMoney(payment.totalAmount),
             car: carName,
             reference: payment.booking.reference,
           },
@@ -168,7 +168,7 @@ export async function POST(
             car: carName,
             start: payment.booking.startDate,
             end: payment.booking.endDate,
-            amount: formatRWF(payment.booking.subtotal),
+            amount: formatMoney(payment.booking.subtotal),
             reference: payment.booking.reference,
           },
         })

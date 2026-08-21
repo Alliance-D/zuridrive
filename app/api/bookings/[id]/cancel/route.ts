@@ -32,7 +32,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { sendSms } from '@/lib/sms'
 import { createNotification } from '@/lib/notifications'
-import { formatRWF } from '@/lib/currency'
+import { formatMoney } from '@/lib/currency'
 import { getPlatformSettings } from '@/lib/platform-settings'
 import { NotificationType, type BookingStatus } from '@prisma/client'
 import { z } from 'zod'
@@ -311,7 +311,7 @@ export async function POST(
             reference: booking.reference,
             car: carName,
             reason: parsed.data.reason,
-            amount: formatRWF(refundAmount),
+            amount: formatMoney(refundAmount),
           },
         })
       }

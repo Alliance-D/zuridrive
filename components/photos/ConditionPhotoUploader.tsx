@@ -11,6 +11,7 @@
  * category icons, clear required/optional badges, progress indicator.
  */
 
+import { formatMoney } from '@/lib/currency';
 import { useState, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import Image from "next/image";
@@ -319,7 +320,7 @@ export function ConditionPhotoUploader({
                   })}
                 </strong>
               {fuelRefuelFee
-                ? ` — A refueling fee of RWF ${fuelRefuelFee.toLocaleString()} applies if returned below this level.`
+                ? ` — A refueling fee of ${formatMoney(fuelRefuelFee)} applies if returned below this level.`
                 : ' — Please include a clear photo of the fuel gauge.'}
             </p>
           </div>
@@ -409,7 +410,7 @@ export function ConditionPhotoUploader({
                 <p className="text-xs text-amber-300 leading-relaxed">
                   Take a clear, well-lit photo of the fuel gauge on the dashboard.
                   This is used as evidence if there is a fuel dispute at return.
-                  {fuelRefuelFee ? ` A refueling fee of RWF ${fuelRefuelFee.toLocaleString()} applies if the level changes.` : ''}
+                  {fuelRefuelFee ? ` A refueling fee of ${formatMoney(fuelRefuelFee)} applies if the level changes.` : ''}
                 </p>
               </div>
             )}

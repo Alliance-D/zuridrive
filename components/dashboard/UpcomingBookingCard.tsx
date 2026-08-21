@@ -11,7 +11,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { CalendarDays, MapPin, ChevronRight, Clock } from "lucide-react";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 
 interface UpcomingBookingCardProps {
   bookingId:      string;
@@ -120,7 +120,7 @@ export default function UpcomingBookingCard({
             <Clock className="h-3 w-3" />
             {countdownText}
           </span>
-          <span className="text-sm font-bold text-brand">{formatRWF(totalAmount)}</span>
+          <span className="text-sm font-bold text-brand">{formatMoney(totalAmount)}</span>
         </div>
       </div>
 

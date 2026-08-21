@@ -9,7 +9,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { Star, MapPin, Users, Fuel, Zap } from "lucide-react";
-import { formatRWF } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
 import { ROUTES } from "@/lib/routes";
 import type { Car, CarPhoto, PricingMatrix, CarOwnerProfile, User, Review } from "@prisma/client";
 
@@ -152,7 +152,7 @@ export async function CarCard({ car, locale }: CarCardProps) {
             {startingPrice !== null ? (
               <>
                 <span className="font-display text-fluid-xl font-semibold tracking-[-0.02em] text-brand">
-                  {formatRWF(startingPrice)}
+                  {formatMoney(startingPrice)}
                 </span>
                 <span className="ml-1 font-mono text-fluid-xs text-ink-soft">
                   {t("perDay")}
