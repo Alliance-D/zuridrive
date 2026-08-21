@@ -16,7 +16,20 @@ const MOMO_COLLECTION_KEY = process.env.MTN_MOMO_COLLECTION_PRIMARY_KEY!
 const MOMO_API_USER = process.env.MTN_MOMO_API_USER!
 const MOMO_API_KEY = process.env.MTN_MOMO_API_KEY!
 const MOMO_ENVIRONMENT = process.env.MTN_MOMO_ENVIRONMENT || 'sandbox'  // 'sandbox' | 'production'
-const MOMO_CURRENCY = 'RWF'
+/**
+ * The currency MTN is asked to collect in.
+ *
+ * Read from the same setting the interface displays, because these must never
+ * disagree. This was hardcoded to RWF while prices on screen came from
+ * configuration, so pointing a deployment at another market would have shown
+ * one currency and charged another — the same number, in a unit worth several
+ * times more or less. Nothing would have errored; the amounts would simply
+ * have been wrong.
+ *
+ * It stays a separate constant rather than importing the display module
+ * directly so it is obvious at this call site what is being sent to MTN.
+ */
+const MOMO_CURRENCY = process.env.NEXT_PUBLIC_CURRENCY?.trim() || 'RWF'
 
 /**
  * Where MTN should call us back when a payment resolves.
