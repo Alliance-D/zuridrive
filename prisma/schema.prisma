@@ -354,6 +354,12 @@ model User {
   supportMessages  SupportMessage[] @relation("SupportMessages")
 
   @@map("users")
+
+  /// Home market. Used to default a phone prefix and a starting country in
+  /// search — never to restrict what someone can see or book, because hiring
+  /// a car in another country is the ordinary case, not an edge one.
+  countryCode String?
+  country     Country? @relation(fields: [countryCode], references: [code])
 }
 
 // Extended profile for car owners — created during onboarding
@@ -497,6 +503,11 @@ model Car {
   /// An owner opening their fleet.
   @@index([ownerId])
 
+
+  /// The market this car operates in. Decides the currency it is priced in and
+  /// which country's listings a renter sees.
+  countryCode String  @default("RW")
+  country     Country @relation(fields: [countryCode], references: [code])
 }
 
 // Car photos — uploaded via Cloudinary
@@ -611,9 +622,12 @@ model Neighborhood {
   // Relations
   ownerLocations OwnerLocation[]
 
-  @@unique([name, city])
+  @@unique([name, city, countryCode])
 
   @@map("neighborhoods")
+
+  countryCode String  @default("RW")
+  country     Country @relation(fields: [countryCode], references: [code])
 }
 
 // Tier 2 — Owner Custom Locations (owner-created, Content Moderator approved)
@@ -756,6 +770,14 @@ model Booking {
   @@index([startDate])
   @@index([endDate])
 
+
+  /// Currency this record is denominated in, captured when it was created.
+  ///
+  /// Snapshotted rather than looked up, for the same reason commissionRate is:
+  /// a record must always be readable in the terms it was made under. If a
+  /// market ever redenominated, or a car moved between markets, looking the
+  /// currency up later would silently restate history.
+  currency String @default("RWF")
 }
 
 // Pickup/dropoff location for a booking — snapshot of the chosen tier
@@ -891,6 +913,14 @@ model Payment {
   createdAt DateTime @default(now())
 
   @@map("payments")
+
+  /// Currency this record is denominated in, captured when it was created.
+  ///
+  /// Snapshotted rather than looked up, for the same reason commissionRate is:
+  /// a record must always be readable in the terms it was made under. If a
+  /// market ever redenominated, or a car moved between markets, looking the
+  /// currency up later would silently restate history.
+  currency String @default("RWF")
 }
 
 // Deposit record — completely separate from rental payment
@@ -913,6 +943,14 @@ model Deposit {
   movements DepositMovement[]
 
   @@map("deposits")
+
+  /// Currency this record is denominated in, captured when it was created.
+  ///
+  /// Snapshotted rather than looked up, for the same reason commissionRate is:
+  /// a record must always be readable in the terms it was made under. If a
+  /// market ever redenominated, or a car moved between markets, looking the
+  /// currency up later would silently restate history.
+  currency String @default("RWF")
 }
 
 // Immutable log of every deposit state change
@@ -945,6 +983,14 @@ model Commission {
   createdAt        DateTime @default(now())
 
   @@map("commissions")
+
+  /// Currency this record is denominated in, captured when it was created.
+  ///
+  /// Snapshotted rather than looked up, for the same reason commissionRate is:
+  /// a record must always be readable in the terms it was made under. If a
+  /// market ever redenominated, or a car moved between markets, looking the
+  /// currency up later would silently restate history.
+  currency String @default("RWF")
 }
 
 // Payout request — owner requests payout for completed bookings
@@ -984,6 +1030,14 @@ model Payout {
   items PayoutItem[]
 
   @@map("payouts")
+
+  /// Currency this record is denominated in, captured when it was created.
+  ///
+  /// Snapshotted rather than looked up, for the same reason commissionRate is:
+  /// a record must always be readable in the terms it was made under. If a
+  /// market ever redenominated, or a car moved between markets, looking the
+  /// currency up later would silently restate history.
+  currency String @default("RWF")
 }
 
 // Individual booking items included in a payout
@@ -1016,6 +1070,14 @@ model ExtraCharge {
   createdAt    DateTime          @default(now())
 
   @@map("extra_charges")
+
+  /// Currency this record is denominated in, captured when it was created.
+  ///
+  /// Snapshotted rather than looked up, for the same reason commissionRate is:
+  /// a record must always be readable in the terms it was made under. If a
+  /// market ever redenominated, or a car moved between markets, looking the
+  /// currency up later would silently restate history.
+  currency String @default("RWF")
 }
 
 // =============================================================================
@@ -1259,11 +1321,22 @@ model ReconciliationLog {
 ///
 /// IMPORTANT: changing commissionRatePercent never rewrites history. Every
 /// Booking and Commission row stores the rate that applied when it was created.
+/// Platform-wide policy, shared by every market.
+///
+/// Anything that varies between markets — currency, commission, payout
+/// thresholds, phone format, payment provider — lives on Country instead. What
+/// remains here is policy that should read the same wherever you are: how long
+/// an owner has to confirm, how long photos are kept, how a late cancellation
+/// is treated.
 model PlatformSetting {
   id String @id @default("singleton")
 
   // Finance
+  /// Default commission. A market can override it on Country; this applies
+  /// where none is set.
   commissionRatePercent Int @default(20) // Applied to new bookings only
+  /// Fallback approval threshold. Amounts do not compare across currencies, so
+  /// each market carries its own on Country and this is only the default.
   largePayoutThreshold  Int @default(1000000) // Above this, Super Admin must approve
 
   // Fleet
@@ -1412,4 +1485,64 @@ model CarListingDraft {
   updatedAt DateTime @updatedAt
 
   @@map("car_listing_drafts")
+}
+
+/// A market the platform operates in.
+///
+/// One deployment serves every country, so anything that differs between
+/// markets is data here rather than an environment variable. A second market
+/// is a row plus a seeded price list, not a second deployment: that keeps the
+/// brand, the supply and the demand pooled in one place, which is the whole
+/// point of a marketplace.
+///
+/// What lives here is what genuinely varies by market. Platform-wide policy —
+/// cancellation windows, photo retention — stays on PlatformSetting.
+model Country {
+  /// ISO 3166-1 alpha-2, uppercase. RW, UG, KE, TZ.
+  code String @id
+
+  /// English name, for admin screens and country pickers.
+  name String
+
+  /// ISO 4217 currency this market prices and charges in.
+  ///
+  /// Every amount in this market is a whole unit of it. RWF, UGX and TZS have
+  /// no meaningful minor unit; KES nominally does, but car hire is priced in
+  /// whole shillings, so nothing here stores cents.
+  currency String
+
+  /// E.164 dialling prefix, including the plus. "+250".
+  phonePrefix String
+
+  /// How many digits follow the prefix in a valid national number.
+  phoneNationalDigits Int @default(9)
+
+  /// Commission on bookings in this market, when it differs from the platform
+  /// default. Null means use PlatformSetting.commissionRatePercent.
+  commissionRatePercent Int?
+
+  /// Payouts above this need Super Admin approval. Amounts are meaningless
+  /// across currencies, so this cannot be one global number.
+  largePayoutThreshold Int @default(1000000)
+
+  /// Which payment provider collects here. MTN operates in both Rwanda and
+  /// Uganda but under separate accounts, so this names the integration and the
+  /// credentials come from configuration.
+  paymentProvider String @default("DIRECT")
+
+  /// Off until the market is ready to trade. Seeded rows for planned markets
+  /// sit inactive so switching one on is a flag, not a migration.
+  isActive Boolean @default(false)
+
+  /// Order in country pickers. Lower sorts first.
+  displayOrder Int @default(100)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars          Car[]
+  users         User[]
+  neighborhoods Neighborhood[]
+
+  @@map("countries")
 }

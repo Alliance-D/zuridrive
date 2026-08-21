@@ -29,6 +29,12 @@ export const prisma = new PrismaClient();
  * The table list is read from the catalogue rather than hard-coded, so a new
  * model cannot silently start leaking state between tests. Sequences are not
  * reset because every id is a cuid.
+ *
+ * Countries are left alone for the same reason sequences are: they are
+ * reference data, not test state. Every car and every neighbourhood points at
+ * one, so deleting them between tests would break the foreign keys on the next
+ * insert — and no test wants to seed the list of countries the platform
+ * operates in before it can create a car.
  */
 const DELETE_ALL = `
   DO $$
@@ -39,7 +45,9 @@ const DELETE_ALL = `
 
     FOR r IN (
       SELECT tablename FROM pg_tables
-      WHERE schemaname = 'public' AND tablename NOT LIKE '_prisma%'
+      WHERE schemaname = 'public'
+        AND tablename NOT LIKE '_prisma%'
+        AND tablename <> 'countries'
     )
     LOOP
       EXECUTE 'DELETE FROM "public"."' || r.tablename || '"';
@@ -49,8 +57,29 @@ const DELETE_ALL = `
   END $$;
 `;
 
+/**
+ * The markets, matching the seed migration.
+ *
+ * Restored rather than assumed, so a test that changes a country — switching a
+ * market on, say — cannot leak that into the next one.
+ */
+const COUNTRIES = [
+  { code: "RW", name: "Rwanda", currency: "RWF", phonePrefix: "+250", isActive: true, displayOrder: 1, paymentProvider: "MOMO", largePayoutThreshold: 1_000_000 },
+  { code: "UG", name: "Uganda", currency: "UGX", phonePrefix: "+256", isActive: false, displayOrder: 2, paymentProvider: "MOMO", largePayoutThreshold: 10_000_000 },
+  { code: "KE", name: "Kenya", currency: "KES", phonePrefix: "+254", isActive: false, displayOrder: 3, paymentProvider: "DIRECT", largePayoutThreshold: 300_000 },
+  { code: "TZ", name: "Tanzania", currency: "TZS", phonePrefix: "+255", isActive: false, displayOrder: 4, paymentProvider: "DIRECT", largePayoutThreshold: 6_000_000 },
+];
+
 export async function resetDatabase(): Promise<void> {
   await prisma.$executeRawUnsafe(DELETE_ALL);
+
+  for (const c of COUNTRIES) {
+    await prisma.country.upsert({
+      where: { code: c.code },
+      create: c,
+      update: c,
+    });
+  }
 }
 
 export async function disconnect(): Promise<void> {

@@ -24,6 +24,9 @@ import { z } from 'zod'
 const CreateSchema = z.object({
   name: z.string().min(2).max(60),
   city: z.string().min(2).max(60).default('Kigali'),
+  /// Which market the neighbourhood is in. Defaults to Rwanda, the only live
+  /// one, so existing callers need no change.
+  countryCode: z.string().length(2).optional(),
 })
 
 const UpdateSchema = z.object({
@@ -56,11 +59,15 @@ export async function POST(req: NextRequest) {
 
     const name = parsed.data.name.trim()
     const city = parsed.data.city.trim()
+    const countryCode = parsed.data.countryCode?.trim().toUpperCase() ?? 'RW'
 
     // Clashes are per city. The same neighbourhood name in a different city is
     // a different place, not a duplicate.
+    // Scoped to the market as well as the city: "Industrial Area, Kampala" and
+    // "Industrial Area, Kigali" are different places, and so are two cities
+    // that happen to share a name across a border.
     const clash = await prisma.neighborhood.findUnique({
-      where: { name_city: { name, city } },
+      where: { name_city_countryCode: { name, city, countryCode } },
     })
     if (clash) {
       return NextResponse.json(
@@ -70,7 +77,7 @@ export async function POST(req: NextRequest) {
     }
 
     const created = await prisma.neighborhood.create({
-      data: { name, city },
+      data: { name, city, countryCode },
     })
 
     await logAdminAction({

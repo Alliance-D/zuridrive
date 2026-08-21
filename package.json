@@ -12,6 +12,7 @@
     "check:messages": "node scripts/check-messages.mjs",
     "check:sms": "node scripts/check-sms.mjs",
     "check:colors": "node scripts/check-colors.mjs",
+    "check:countries": "node scripts/check-countries.mjs",
     "prisma:studio": "prisma studio",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",

@@ -145,9 +145,9 @@ async function main() {
   const neighbourhoods = await Promise.all(
     ['Kimironko', 'Remera', 'Nyamirambo', 'Gikondo', 'Kibagabaga'].map((name) =>
       prisma.neighborhood.upsert({
-        where: { name_city: { name, city: 'Kigali' } },
+        where: { name_city_countryCode: { name, city: 'Kigali', countryCode: 'RW' } },
         update: {},
-        create: { name, city: 'Kigali' },
+        create: { name, city: 'Kigali', countryCode: 'RW' },
       }),
     ),
   )
