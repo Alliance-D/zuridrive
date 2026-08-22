@@ -26,6 +26,8 @@ export const metadata: Metadata = {
 
 // Parse and validate filter values from URL searchParams
 interface FilterParams {
+  /// ISO country code of the market to browse. Absent means every live market.
+  country?: string;
   location?: string;
   type?: string;        // day | week | month
   from?: string;
@@ -41,6 +43,7 @@ interface FilterParams {
 
 function parseFilters(params: Record<string, string | string[] | undefined>): FilterParams {
   return {
+    country: typeof params.country === "string" ? params.country.toUpperCase() : undefined,
     location: typeof params.location === "string" ? params.location : undefined,
     type: typeof params.type === "string" ? params.type : undefined,
     from: typeof params.from === "string" ? params.from : undefined,
@@ -62,7 +65,19 @@ async function getCars(filters: FilterParams) {
     const where: Record<string, unknown> = {
       status: "LIVE",
       isActive: true,
+      // Never show a listing from a market that is not trading. A country is
+      // switched on when it is ready, and until then its cars are invisible
+      // however they were created.
+      country: { isActive: true },
     };
+
+    // Which market. Filtered on the car's country rather than the visitor's,
+    // because what matters is where they want to drive: somebody in Kampala
+    // hiring a car in Kigali is the ordinary case here, not an edge one, and
+    // guessing from their address would hide exactly what they came for.
+    if (filters.country) {
+      where.countryCode = filters.country;
+    }
 
     // Category filter
     if (filters.category) where.category = filters.category;

@@ -16,7 +16,16 @@
 // every amount in the database is a whole number.
 // =============================================================================
 
-/** ISO code shown beside amounts. NEXT_PUBLIC_ so client components can read it. */
+/**
+ * The currency to assume when a caller does not name one.
+ *
+ * One deployment serves every market now, so this is a fallback rather than
+ * the answer: anything rendering a real financial record should pass that
+ * record's own currency, which is snapshotted on it. This covers the cases
+ * where there is no record yet — a price being typed into a form, an empty
+ * dashboard — and keeps every existing call site correct while Rwanda is the
+ * only live market.
+ */
 const CURRENCY = process.env.NEXT_PUBLIC_CURRENCY?.trim() || "RWF";
 
 /** Locale used for digit grouping only — not for choosing the currency. */
@@ -27,13 +36,17 @@ export const currencyCode = CURRENCY;
 
 /**
  * Formats an integer amount for display.
- * @param amount - Whole-unit amount (e.g. 15000)
+ *
+ * @param amount   - Whole-unit amount (e.g. 15000)
+ * @param currency - The record's own currency. Pass it whenever there is one:
+ *                   a booking made in Kampala must read UGX on a Rwandan
+ *                   admin's screen, not be silently relabelled.
  * @returns e.g. "RWF 15,000"
  */
-export function formatMoney(amount: number): string {
+export function formatMoney(amount: number, currency?: string | null): string {
   // Round to nearest integer — no decimals ever
   const rounded = Math.round(amount);
-  return `${CURRENCY} ${rounded.toLocaleString(GROUPING_LOCALE)}`;
+  return `${currency || CURRENCY} ${rounded.toLocaleString(GROUPING_LOCALE)}`;
 }
 
 /**
@@ -41,14 +54,15 @@ export function formatMoney(amount: number): string {
  * @param amount - Whole-unit amount
  * @returns e.g. "RWF 15K" or "RWF 1.5M"
  */
-export function formatMoneyCompact(amount: number): string {
+export function formatMoneyCompact(amount: number, currency?: string | null): string {
+  const code = currency || CURRENCY;
   if (amount >= 1_000_000) {
-    return `${CURRENCY} ${(amount / 1_000_000).toFixed(1)}M`;
+    return `${code} ${(amount / 1_000_000).toFixed(1)}M`;
   }
   if (amount >= 1_000) {
-    return `${CURRENCY} ${(amount / 1_000).toFixed(0)}K`;
+    return `${code} ${(amount / 1_000).toFixed(0)}K`;
   }
-  return formatMoney(amount);
+  return formatMoney(amount, code);
 }
 
 /**

@@ -117,6 +117,7 @@ export async function POST(req: NextRequest) {
       include: {
         pricing: true,
         fuelPolicy: true,
+        country: { select: { code: true, currency: true } },
         owner: {
           include: { user: { select: { id: true, phone: true, name: true } } },
         },
@@ -162,7 +163,11 @@ export async function POST(req: NextRequest) {
     // It comes from the owner's plan when that plan sets one, so a higher
     // subscription can buy a smaller cut, and falls back to the platform rate
     // otherwise.
-    const commissionRatePercent = await getCommissionRateForOwner(car.ownerId)
+    const commissionRatePercent = await getCommissionRateForOwner(
+      car.ownerId,
+      undefined,
+      car.countryCode,
+    )
 
     const pricing = calculateBookingPrice({
       commissionRatePercent,
@@ -271,6 +276,11 @@ export async function POST(req: NextRequest) {
           driverTotal: pricing.driverSurchargeTotal,
           deliveryFee: pricing.deliveryFee,
           subtotal: pricing.subtotalBeforeDeposit,
+          // Snapshotted alongside the rate, and for the same reason: the
+          // booking has to stay readable in the terms it was made under. The
+          // car's market decides it — a car listed in Kampala is priced in
+          // shillings whoever is booking it and wherever they are.
+          currency: car.country.currency,
           commissionRate: pricing.commissionRate,
           commissionAmount: pricing.commissionAmount,
           ownerEarnings: pricing.ownerEarnings,
@@ -310,6 +320,7 @@ export async function POST(req: NextRequest) {
       const payment = await tx.payment.create({
         data: {
           bookingId: booking.id,
+          currency: car.country.currency,
           method: settlesDirectly ? 'DIRECT' : data.paymentMethod,
           status: settlesDirectly ? 'CONFIRMED' : 'PENDING',
           confirmedAt: settlesDirectly ? new Date() : null,
@@ -331,6 +342,7 @@ export async function POST(req: NextRequest) {
         deposit = await tx.deposit.create({
           data: {
             bookingId: booking.id,
+            currency: car.country.currency,
             amount: pricing.depositAmount,
             status: 'PENDING',
           },
@@ -347,6 +359,7 @@ export async function POST(req: NextRequest) {
         await tx.commission.create({
           data: {
             bookingId: booking.id,
+            currency: car.country.currency,
             rate: pricing.commissionRate,
             baseAmount: pricing.commissionableSubtotal,
             commissionAmount: pricing.commissionAmount,

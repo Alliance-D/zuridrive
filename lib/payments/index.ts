@@ -29,7 +29,48 @@ const REGISTRY: Record<string, PaymentProvider> = {
   DIRECT: directProvider,
   FLUTTERWAVE: flutterwaveProvider,
   MTN_MOMO: momoProvider,
+  // Country.paymentProvider stores the short name; both spellings resolve to
+  // the same integration so a country row and an env var can be written the
+  // way each reads naturally.
+  MOMO: momoProvider,
 };
+
+/**
+ * The provider that collects in a given market.
+ *
+ * Markets do not share a collector: MTN operates in Rwanda and Uganda but
+ * under separate accounts, and neither covers Kenya, where M-Pesa is what
+ * people actually use. The country row names the integration; the credentials
+ * stay in configuration, because they are secrets and do not belong in a
+ * table anyone with admin access can read.
+ *
+ * Falls back to the globally configured provider when a market names none, so
+ * nothing changes for a single-market deployment.
+ */
+export function getPaymentProviderForCountry(
+  providerName: string | null | undefined,
+): PaymentProvider {
+  if (!providerName) return getPaymentProvider();
+
+  const provider = REGISTRY[providerName.toUpperCase()];
+  if (!provider) {
+    console.warn(
+      `[payments] country names provider "${providerName}", which is not ` +
+        `registered. Falling back to direct settlement.`,
+    );
+    return directProvider;
+  }
+
+  if (!provider.canCollect && providerName.toUpperCase() !== "DIRECT") {
+    console.warn(
+      `[payments] provider "${providerName}" cannot collect yet — this market ` +
+        `settles directly with the owner.`,
+    );
+    return directProvider;
+  }
+
+  return provider;
+}
 
 export function getPaymentProvider(): PaymentProvider {
   const requested = process.env.PAYMENT_PROVIDER?.toUpperCase();

@@ -407,24 +407,41 @@ export async function relistAfterRenewal(
  *
  * "Live" means the same thing here as it does for listing allowances: ACTIVE
  * or TRIAL. A lapsed plan grants nothing, including its better rate.
+ *
+ * Three levels, most specific first: the owner's plan, then the market the car
+ * is in, then the platform default. A market rate exists because what the
+ * competition charges in Kampala is not what it charges in Kigali, and a
+ * single global number would have to be wrong in one of them. Pass the car's
+ * country to use it.
  */
 export async function getCommissionRateForOwner(
   ownerProfileId: string,
   db: Db = prisma,
+  countryCode?: string,
 ): Promise<number> {
-  const [subscription, settings] = await Promise.all([
+  const [subscription, settings, country] = await Promise.all([
     db.ownerSubscription.findFirst({
       where: { ownerId: ownerProfileId },
       include: { plan: true },
       orderBy: [{ status: "asc" }, { startedAt: "desc" }],
     }),
     getPlatformSettings(),
+    countryCode
+      ? db.country.findUnique({
+          where: { code: countryCode },
+          select: { commissionRatePercent: true },
+        })
+      : Promise.resolve(null),
   ]);
+
+  // The market's rate stands in for the platform default when it sets one.
+  const baseRate =
+    country?.commissionRatePercent ?? settings.commissionRatePercent;
 
   const isLive =
     subscription?.status === "ACTIVE" || subscription?.status === "TRIAL";
 
-  if (!subscription || !isLive) return settings.commissionRatePercent;
+  if (!subscription || !isLive) return baseRate;
 
-  return subscription.plan.commissionRatePercent ?? settings.commissionRatePercent;
+  return subscription.plan.commissionRatePercent ?? baseRate;
 }
