@@ -218,6 +218,14 @@ export default async function CarsPage({ params, searchParams }: CarsPageProps) 
       )?.name ?? null
     : null;
   const { cars, total, totalPages } = await getCars(filters);
+
+  // Only markets that are trading. The sidebar hides the control entirely when
+  // there is one, so this is empty of consequence until a second opens.
+  const liveMarkets = await prisma.country.findMany({
+    where: { isActive: true },
+    select: { code: true, name: true },
+    orderBy: { displayOrder: "asc" },
+  });
   const currentPage = filters.page ?? 1;
 
   return (
@@ -253,7 +261,11 @@ export default async function CarsPage({ params, searchParams }: CarsPageProps) 
         {/* Filter sidebar — sticky on desktop, static once stacked */}
         <aside className="cars-sidebar sticky top-[calc(var(--nav-height)_+_1rem)]">
           <Suspense fallback={<FilterSidebarSkeleton />}>
-            <CarsFilterSidebar activeFilters={filters} totalResults={total} />
+            <CarsFilterSidebar
+              activeFilters={filters}
+              countries={liveMarkets}
+              totalResults={total}
+            />
           </Suspense>
         </aside>
 

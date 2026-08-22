@@ -57,7 +57,8 @@
     "fuelOwnerHandlesDesc": "Lisansi mubyumvikanaho ubwanyu na nyir'imodoka. Mubaze ibisobanuro.",
     "browseCars": "Reba imodoka",
     "priceFrom": "Uhereye ku {amount} RWF",
-    "priceUpTo": "Kugeza ku {amount} RWF"
+    "priceUpTo": "Kugeza ku {amount} RWF",
+    "country": "Igihugu"
   },
   "carDetail": {
     "pricing": "Ibiciro",

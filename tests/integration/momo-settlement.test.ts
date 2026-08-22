@@ -44,19 +44,27 @@ vi.mock("@/lib/payments/momo", () => ({
 // The stub still delegates to getPaymentStatusSpy, so each test controls the
 // provider's answer exactly as before, and the rule under test is unchanged:
 // settlement asks the provider and never trusts the callback body.
+//
+// Both selectors return the same stub. Settlement now picks the provider by
+// the market that took the money — only the Ugandan MTN account can confirm a
+// Ugandan payment — but which market is chosen is not what these tests are
+// about, and mocking them apart would only mean writing the stub twice.
+const momoStub = {
+  id: "MTN_MOMO",
+  displayName: "MTN Mobile Money",
+  canCollect: true,
+  charge: vi.fn(async () => ({ reference: "generated-reference", redirectUrl: null })),
+  getStatus: async (ref: string) => {
+    const r = await getPaymentStatusSpy(ref);
+    return { reference: r.referenceId, status: r.status, reason: r.reason };
+  },
+  refund: vi.fn(),
+  parseWebhook: () => ({ reference: null, signatureValid: false }),
+};
+
 vi.mock("@/lib/payments", () => ({
-  getPaymentProvider: () => ({
-    id: "MTN_MOMO",
-    displayName: "MTN Mobile Money",
-    canCollect: true,
-    charge: vi.fn(async () => ({ reference: "generated-reference", redirectUrl: null })),
-    getStatus: async (ref: string) => {
-      const r = await getPaymentStatusSpy(ref);
-      return { reference: r.referenceId, status: r.status, reason: r.reason };
-    },
-    refund: vi.fn(),
-    parseWebhook: () => ({ reference: null, signatureValid: false }),
-  }),
+  getPaymentProvider: () => momoStub,
+  getPaymentProviderForCountry: () => momoStub,
   paymentsEnabled: () => true,
 }));
 

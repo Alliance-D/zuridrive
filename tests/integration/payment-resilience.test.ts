@@ -24,7 +24,13 @@ const provider = vi.hoisted(() => ({
   canCollect: true,
   displayName: "Test MoMo",
 }));
-vi.mock("@/lib/payments", () => ({ getPaymentProvider: () => provider }));
+// The route picks its collector by the car's market now — only the Ugandan
+// MTN account can charge a Ugandan booking — so both selectors resolve to the
+// same stub here. Which market is chosen is a different test's business.
+vi.mock("@/lib/payments", () => ({
+  getPaymentProvider: () => provider,
+  getPaymentProviderForCountry: () => provider,
+}));
 
 const { POST } = await import("@/app/api/bookings/[id]/payment/route");
 

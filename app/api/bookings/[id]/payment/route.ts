@@ -17,7 +17,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { formatPhoneForMoMo } from '@/lib/payments/momo'
-import { getPaymentProvider } from '@/lib/payments'
+import { getPaymentProviderForCountry } from '@/lib/payments'
 import { settleBookingPayment } from '@/lib/payments/settle'
 import { notifyAdminsWithModule } from '@/lib/notifications'
 import { formatMoney } from '@/lib/currency'
@@ -89,6 +89,8 @@ export async function POST(
           select: {
             make: true,
             model: true,
+            // Which market collects this payment, and under whose account.
+            country: { select: { code: true, paymentProvider: true } },
             owner: {
               include: { user: { select: { id: true, phone: true, name: true } } },
             },
@@ -142,7 +144,15 @@ export async function POST(
       // lib/payments/momo, which meant the booking flow knew which provider it
       // was talking to — so adding a second one would have required finding and
       // rewriting this call site. Now it asks whoever is configured.
-      const provider = getPaymentProvider()
+      // The car's market decides the collector, not the deployment.
+      //
+      // MTN operates in Rwanda and Uganda under separate accounts, and neither
+      // covers Kenya. Asking for the globally configured provider would send a
+      // Ugandan booking to the Rwandan MTN account the day that market opens —
+      // money into an account nobody is reconciling, with nothing erroring.
+      const provider = getPaymentProviderForCountry(
+        booking.car.country.paymentProvider,
+      )
 
       // Guard: a provider that cannot collect must never be asked to. The
       // registry already falls back to DIRECT on a misconfiguration, and DIRECT

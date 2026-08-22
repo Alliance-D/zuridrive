@@ -57,7 +57,8 @@
     "fuelOwnerHandlesDesc": "Fuel is managed separately between you and the owner. Ask for details.",
     "browseCars": "Browse Cars",
     "priceFrom": "From {amount} RWF",
-    "priceUpTo": "Up to {amount} RWF"
+    "priceUpTo": "Up to {amount} RWF",
+    "country": "Country"
   },
   "carDetail": {
     "pricing": "Pricing",

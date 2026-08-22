@@ -24,7 +24,7 @@
 // =============================================================================
 
 import { prisma } from "@/lib/db";
-import { getPaymentProvider } from "@/lib/payments";
+import { getPaymentProvider, getPaymentProviderForCountry } from "@/lib/payments";
 import { activateDeposit } from "@/lib/finance/deposits";
 import { activateSubscription } from "@/lib/subscriptions/checkout";
 import { sendSms } from "@/lib/sms";
@@ -95,6 +95,7 @@ export async function settleBookingPayment(
             select: {
               make: true,
               model: true,
+              country: { select: { paymentProvider: true } },
               owner: {
                 select: {
                   user: { select: { id: true, name: true, phone: true } },
@@ -123,7 +124,15 @@ export async function settleBookingPayment(
   }
 
   // Rule 1: ask the provider, don't believe the caller.
-  const result = await getPaymentProvider().getStatus(referenceId);
+  //
+  // And ask the right one. A payment taken through the Ugandan MTN account can
+  // only be verified through that account — the Rwandan one has never heard of
+  // the reference and would report it unknown, which reads identically to a
+  // payment that was never made.
+  const provider = getPaymentProviderForCountry(
+    booking.car.country.paymentProvider,
+  );
+  const result = await provider.getStatus(referenceId);
 
   if (result.status === "PENDING") {
     return { outcome: "PENDING", kind: "BOOKING", targetId: booking.id };
@@ -133,7 +142,7 @@ export async function settleBookingPayment(
     await prisma.payment.update({
       where: { id: payment.id },
       data: { status: "FAILED", failureReason:
-          result.reason ?? `Declined at ${getPaymentProvider().displayName}` },
+          result.reason ?? `Declined at ${provider.displayName}` },
     });
     return {
       outcome: "FAILED",
@@ -187,7 +196,19 @@ export async function settleSubscriptionPayment(
     where: { momoReference: referenceId },
     include: {
       plan: true,
-      owner: { select: { user: { select: { id: true, name: true, phone: true } } } },
+      owner: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              // An owner pays their subscription in their own market.
+              country: { select: { paymentProvider: true } },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -203,7 +224,13 @@ export async function settleSubscriptionPayment(
     };
   }
 
-  const result = await getPaymentProvider().getStatus(referenceId);
+  // Same rule as a booking payment: only the account that took the money can
+  // confirm it. Falls back to the configured provider for an owner whose
+  // country is not set, which is every owner today.
+  const subProvider = getPaymentProviderForCountry(
+    subscription.owner.user.country?.paymentProvider,
+  );
+  const result = await subProvider.getStatus(referenceId);
 
   if (result.status === "PENDING") {
     return { outcome: "PENDING", kind: "SUBSCRIPTION", targetId: subscription.id };
@@ -214,7 +241,7 @@ export async function settleSubscriptionPayment(
       where: { id: subscription.id },
       data: {
         rejectionReason:
-          result.reason ?? `Declined at ${getPaymentProvider().displayName}`,
+          result.reason ?? `Declined at ${subProvider.displayName}`,
       },
     });
     return {

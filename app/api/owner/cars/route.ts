@@ -25,6 +25,15 @@ import { uploadedFileUrl } from '@/lib/validation/urls'
 import { z } from 'zod'
 
 const CreateListingSchema = z.object({
+  /**
+   * Which market the car operates in.
+   *
+   * Optional, and defaulted from the owner rather than trusted blindly: it
+   * decides the currency the car is priced in and which country's renters can
+   * see it, so it is not a field to let a request assert freely.
+   */
+  countryCode: z.string().length(2).optional(),
+
   // Step 1 — basics
   make: z.string().min(1).max(50),
   model: z.string().min(1).max(50),
@@ -150,6 +159,34 @@ export async function POST(req: NextRequest) {
 
     const d = parsed.data
 
+    // ── Which market is this car in ──────────────────────────────────────
+    //
+    // Defaults to the owner's own country, which is the ordinary case: people
+    // list cars where they are. A request may name a different one, but only a
+    // market that is actually trading — otherwise a listing could be parked in
+    // a country that has not opened, invisible and unbookable, with nothing
+    // explaining why.
+    const owner = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { countryCode: true },
+    })
+
+    const requested = parsed.data.countryCode?.toUpperCase()
+    const listingCountry = requested ?? owner?.countryCode ?? 'RW'
+
+    const market = await prisma.country.findUnique({
+      where: { code: listingCountry },
+      select: { code: true, isActive: true, name: true },
+    })
+
+    if (!market || !market.isActive) {
+      return NextResponse.json(
+        { error: 'ZuriDrive is not operating in that country yet.' },
+        { status: 400 },
+      )
+    }
+
+
     // Cross-field rules the shape alone can't express
     if (d.driverEnabled && !d.driverSurchargePerDay) {
       return NextResponse.json(
@@ -201,6 +238,7 @@ export async function POST(req: NextRequest) {
         deliverAnywhere: d.deliverAnywhere,
         deliveryFee: d.deliverAnywhere ? d.deliveryFee : null,
         // Owners never publish directly unless auto-publish is enabled.
+        countryCode: listingCountry,
         status: autoPublishListings ? 'LIVE' : 'PENDING_APPROVAL',
         publishedAt: autoPublishListings ? new Date() : null,
         pricing: {

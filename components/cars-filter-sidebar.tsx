@@ -19,7 +19,12 @@ import { Loader2, SlidersHorizontal, ChevronDown} from "lucide-react";
 
 interface FilterOption {
   /** Key under the `enum` namespace — these are DB values. */
-  labelKey: string;
+  labelKey?: string;
+  /**
+   * Already-readable label, for options that come from data rather than an
+   * enum. Country names are rows, not translation keys.
+   */
+  label?: string;
   value: string;
 }
 
@@ -31,7 +36,17 @@ interface CarsFilterSidebarProps {
     fuelType?: string;
     minPrice?: number;
     maxPrice?: number;
+    country?: string;
   };
+  /**
+   * Markets currently trading.
+   *
+   * The control only appears when there is more than one — a country filter
+   * offering a single country is a control that cannot do anything, and it
+   * would take up the top of the sidebar for the whole of the Rwanda-only
+   * period. It appears by itself the day a second market opens.
+   */
+  countries?: { code: string; name: string }[];
   totalResults?: number;
 }
 
@@ -39,6 +54,7 @@ const PRICE_CEILING = 200_000;
 
 export function CarsFilterSidebar({
   activeFilters,
+  countries = [],
   totalResults,
 }: CarsFilterSidebarProps) {
   const router = useRouter();
@@ -55,6 +71,7 @@ export function CarsFilterSidebar({
     category: activeFilters?.category ?? "",
     transmission: activeFilters?.transmission ?? "",
     fuelType: activeFilters?.fuelType ?? "",
+    country: activeFilters?.country ?? "",
   });
 
   // Values must match the enums in schema.prisma exactly — anything else
@@ -89,6 +106,7 @@ export function CarsFilterSidebar({
       else params.set(key, String(value));
     };
 
+    set("country", filters.country);
     set("category", filters.category);
     set("transmission", filters.transmission);
     set("fuelType", filters.fuelType);
@@ -110,6 +128,7 @@ export function CarsFilterSidebar({
       category: "",
       transmission: "",
       fuelType: "",
+      country: "",
     });
     startTransition(() => router.push("/cars"));
   }
@@ -120,7 +139,10 @@ export function CarsFilterSidebar({
     filters.priceMax < PRICE_CEILING;
 
   /** Single-select behaviour: picking a value replaces the previous one. */
-  const toggle = (key: "category" | "transmission" | "fuelType", value: string) =>
+  const toggle = (
+    key: "category" | "transmission" | "fuelType" | "country",
+    value: string,
+  ) =>
     setFilters((f) => ({ ...f, [key]: f[key] === value ? "" : value }));
 
   /** How many filters are narrowing the results, for the mobile badge. */
@@ -128,6 +150,7 @@ export function CarsFilterSidebar({
     (filters.category ? 1 : 0) +
     (filters.transmission ? 1 : 0) +
     (filters.fuelType ? 1 : 0) +
+    (filters.country ? 1 : 0) +
     (filters.priceMin > 0 || filters.priceMax < PRICE_CEILING ? 1 : 0);
 
   return (
@@ -225,6 +248,15 @@ export function CarsFilterSidebar({
         </div>
       </fieldset>
 
+      {countries.length > 1 && (
+        <FilterGroup
+          legend={t("country")}
+          options={countries.map((c) => ({ value: c.code, label: c.name }))}
+          selected={filters.country}
+          onSelect={(v) => toggle("country", v)}
+        />
+      )}
+
       <FilterGroup
         legend={t("category")}
         options={categories}
@@ -300,7 +332,7 @@ function FilterGroup({
               onChange={() => onSelect(o.value)}
               className="mr-2 accent-brand"
             />
-            {te(o.labelKey as never)}
+            {o.label ?? te(o.labelKey as never)}
           </label>
         ))}
       </div>

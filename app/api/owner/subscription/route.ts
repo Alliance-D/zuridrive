@@ -18,7 +18,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { formatPhoneForMoMo } from '@/lib/payments/momo'
-import { getPaymentProvider } from '@/lib/payments'
+import { getPaymentProviderForCountry } from '@/lib/payments'
 import { settleSubscriptionPayment } from '@/lib/payments/settle'
 import { beginSubscriptionPurchase } from '@/lib/subscriptions/checkout'
 import { notifyAdminsWithModule } from '@/lib/notifications'
@@ -91,7 +91,16 @@ export async function POST(req: NextRequest) {
       // Through the provider interface, same as the booking flow — this used
       // to call MTN directly, which is the coupling that makes adding a second
       // provider expensive.
-      const provider = getPaymentProvider()
+      //
+      // An owner pays their subscription in their own market: a Ugandan owner
+      // is collected by the Ugandan MTN account, not the Rwandan one.
+      const ownerCountry = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { country: { select: { paymentProvider: true } } },
+      })
+      const provider = getPaymentProviderForCountry(
+        ownerCountry?.country?.paymentProvider,
+      )
       if (!provider.canCollect) {
         return NextResponse.json(
           {
