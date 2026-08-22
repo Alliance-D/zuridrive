@@ -183,6 +183,24 @@ export default async function AdminBookingDetailPage({
             )}
           </dl>
         </Card>
+
+        {/* The renter's note, and whether it looked like it carried a number.
+            The flag is not an accusation — renters and owners exchange numbers
+            through the platform routinely. It is here so that if bookings start
+            getting cancelled shortly after the owner reads the note, somebody
+            can see the pattern instead of guessing at it. */}
+        {booking.renterNote && (
+          <Card title={t("renterNote")}>
+            <p className="whitespace-pre-wrap text-xs text-ink">
+              {booking.renterNote}
+            </p>
+            {booking.renterNoteHasContact && (
+              <p className="mt-2 rounded-lg bg-surface p-2 text-[11px] text-ink-soft">
+                {t("renterNoteContactFlag")}
+              </p>
+            )}
+          </Card>
+        )}
       </div>
 
       {canSeeFinance && (

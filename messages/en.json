@@ -199,7 +199,12 @@
     "minBookingDays": "Minimum booking: {count, plural, =1 {# day} other {# days}}",
     "phCustomLocation": "e.g. In front of Chic Restaurant, Kacyiru, near the roundabout",
     "fuelPolicy": "Fuel Policy",
-    "describePickup": "Describe your pickup location"
+    "describePickup": "Describe your pickup location",
+    "noteHeading": "Anything the owner should know",
+    "noteLabel": "Add a note (optional)",
+    "notePlaceholder": "e.g. Landing at 11pm on flight WB204 — I'll need a child seat",
+    "noteHelp": "Flight times, a late arrival, a child seat, where you'll be waiting.",
+    "noteContactHint": "No need to include your phone number — the owner is sent it automatically once the booking is confirmed."
   },
   "deposit": {
     "labelPlatform": "Refundable deposit",
@@ -698,7 +703,8 @@
     "editCar": "Edit car",
     "awaitingApproval": "Awaiting approval",
     "listingSuspended": "This listing is suspended",
-    "completeOnboarding": "Complete onboarding"
+    "completeOnboarding": "Complete onboarding",
+    "renterNoteHeading": "Note from the renter"
   },
   "admin": {
     "overview": "Overview",
@@ -978,7 +984,9 @@
     "signOut": "Sign out",
     "voided": "voided",
     "plans": "Plans & pricing",
-    "plansSub": "What owners pay, and the commission each plan carries."
+    "plansSub": "What owners pay, and the commission each plan carries.",
+    "renterNote": "Renter's note",
+    "renterNoteContactFlag": "This note looks like it contains a phone number. Renters and owners exchange numbers through the platform routinely — this is only flagged so a pattern is visible if one appears."
   },
   "common": {
     "cancel": "Cancel",

@@ -199,7 +199,12 @@
     "minBookingDays": "Ubukode buto bushoboka: {count, plural, =1 {umunsi #} other {iminsi #}}",
     "phCustomLocation": "urugero: Imbere ya Chic Restaurant, Kacyiru, hafi y'uruziga",
     "fuelPolicy": "Amabwiriza ya lisansi",
-    "describePickup": "Sobanura aho uzafatira imodoka"
+    "describePickup": "Sobanura aho uzafatira imodoka",
+    "noteHeading": "Icyo nyir'imodoka akwiye kumenya",
+    "noteLabel": "Ongeraho ubutumwa (si ngombwa)",
+    "notePlaceholder": "urugero: Ngera saa tanu z'ijoro ku ndege WB204 — nkeneye intebe y'umwana",
+    "noteHelp": "Igihe indege igera, gutinda, intebe y'umwana, aho uzaba utegereje.",
+    "noteContactHint": "Ntugomba gushyiramo nimero ya telefoni — nyir'imodoka ayihabwa byikora igihe ubukode bwemejwe."
   },
   "deposit": {
     "labelPlatform": "Ingwate isubizwa",
@@ -698,7 +703,8 @@
     "editCar": "Hindura imodoka",
     "awaitingApproval": "Itegereje kwemezwa",
     "listingSuspended": "Iyi modoka yarahagaritswe",
-    "completeOnboarding": "Uzuza kwiyandikisha"
+    "completeOnboarding": "Uzuza kwiyandikisha",
+    "renterNoteHeading": "Ubutumwa buvuye ku ukodesha"
   },
   "admin": {
     "overview": "Incamake",
@@ -978,7 +984,9 @@
     "signOut": "Sohoka",
     "voided": "byavanyweho",
     "plans": "Gahunda n'ibiciro",
-    "plansSub": "Ibyo ba nyir'imodoka bishyura, na komisiyo kuri buri gahunda."
+    "plansSub": "Ibyo ba nyir'imodoka bishyura, na komisiyo kuri buri gahunda.",
+    "renterNote": "Ubutumwa bw'ukodesha",
+    "renterNoteContactFlag": "Ubu butumwa busa n'ubufite nimero ya telefoni. Abakodesha na ba nyir'imodoka bahanahana nimero binyuze kuri uru rubuga buri gihe — ibi byerekanwa gusa kugira ngo hagaragare niba hari ikibazo gikomeza."
   },
   "common": {
     "cancel": "Reka",

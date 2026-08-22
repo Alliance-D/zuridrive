@@ -14,6 +14,7 @@ import type { BookingFormUpdater } from './BookingWizard'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Upload, Check, User, Phone, Mail, FileText, CreditCard } from 'lucide-react'
+import { hasContactDetails } from '@/lib/contact-detection'
 
 interface ClientInfoFormProps {
   form: {
@@ -21,6 +22,7 @@ interface ClientInfoFormProps {
     clientPhone: string
     clientEmail: string
     licenceAttested: boolean
+    renterNote: string
   }
   errors: Record<string, string>
   isLoggedIn: boolean
@@ -30,6 +32,10 @@ interface ClientInfoFormProps {
 export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInfoFormProps) {
   const t = useTranslations('booking')
   const [uploading, setUploading] = useState(false)
+
+  // Checked as they type so the hint appears while it is still useful, rather
+  // than after the booking is made.
+  const showsContact = hasContactDetails(form.renterNote)
 
 
   return (
@@ -103,6 +109,44 @@ export function ClientInfoForm({ form, errors, isLoggedIn, onChange }: ClientInf
 
         {errors.licenceAttested && (
           <p className="text-xs text-danger">{errors.licenceAttested}</p>
+        )}
+      </div>
+
+      {/* Anything the owner should know before handover ────────────────────
+          A flight number, a late arrival, a child seat. Without somewhere to
+          put this, people improvise — usually by writing a phone number into
+          a field that was not meant for one. */}
+      <div className="space-y-3 pt-2">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-500">
+          {t("noteHeading")}
+        </h3>
+
+        <label htmlFor="renterNote" className="block text-sm text-stone-700">
+          {t("noteLabel")}
+        </label>
+        <textarea
+          id="renterNote"
+          value={form.renterNote}
+          onChange={(e) => onChange("renterNote", e.target.value.slice(0, 500))}
+          rows={3}
+          placeholder={t("notePlaceholder")}
+          className="w-full rounded-xl border border-stone-200 p-3 text-sm focus:border-brand focus:outline-none"
+        />
+
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-xs text-stone-500">{t("noteHelp")}</p>
+          <span className="shrink-0 text-xs text-stone-400">
+            {form.renterNote.length}/500
+          </span>
+        </div>
+
+        {/* Said once, quietly, and only when it applies. The owner is given
+            the renter's number automatically, so this is genuinely useful
+            information rather than a warning — and nothing is blocked. */}
+        {showsContact && (
+          <p className="rounded-lg bg-stone-50 p-3 text-xs text-stone-600">
+            {t("noteContactHint")}
+          </p>
         )}
       </div>
 

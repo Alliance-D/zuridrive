@@ -29,6 +29,7 @@ import { paymentsEnabled } from '@/lib/payments'
 import { sendSms } from '@/lib/sms'
 import { localeFromRequest } from '@/lib/locale-cookie'
 import { formatMoney } from '@/lib/currency'
+import { hasContactDetails } from '@/lib/contact-detection'
 import { NotificationType } from '@prisma/client'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
@@ -66,6 +67,13 @@ const CreateBookingSchema = z.object({
   }),
 
   paymentMethod: z.enum(['MTN_MOMO', 'BANK_TRANSFER', 'DIRECT']),
+
+  /**
+   * Anything the renter wants the owner to know before handover: a flight
+   * number, a late arrival, a child seat. Optional, and capped — this is
+   * context for one handover, not a message thread.
+   */
+  renterNote: z.string().max(500).optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -281,6 +289,14 @@ export async function POST(req: NextRequest) {
           // car's market decides it — a car listed in Kampala is priced in
           // shillings whoever is booking it and wherever they are.
           currency: car.country.currency,
+          renterNote: data.renterNote?.trim() || null,
+          // Flagged, never blocked: renters and owners exchange numbers
+          // through the platform as a matter of course, and a false positive
+          // on a flight number would be infuriating. This only means somebody
+          // can see a pattern later if one appears.
+          renterNoteHasContact: data.renterNote
+            ? hasContactDetails(data.renterNote)
+            : false,
           commissionRate: pricing.commissionRate,
           commissionAmount: pricing.commissionAmount,
           ownerEarnings: pricing.ownerEarnings,

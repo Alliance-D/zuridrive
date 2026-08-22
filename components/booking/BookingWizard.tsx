@@ -114,6 +114,8 @@ export interface BookingFormState {
   clientEmail: string
   /** Renter confirms they hold a licence and will show it at handover. */
   licenceAttested: boolean
+  /** Anything the renter wants the owner to know before handover. */
+  renterNote: string
 
   // Step 3 — Payment
   paymentMethod: 'MTN_MOMO' | 'BANK_TRANSFER'
@@ -171,6 +173,7 @@ export function BookingWizard({
     clientPhone: clientProfile?.phone ?? '',
     clientEmail: clientProfile?.email ?? '',
     licenceAttested: false,
+    renterNote: '',
     paymentMethod: 'MTN_MOMO',
     momoPhone: clientProfile?.phone ?? '',
   })
@@ -315,6 +318,7 @@ export function BookingWizard({
           clientPhone: form.clientPhone,
           clientEmail: form.clientEmail || undefined,
           licenceAttested: form.licenceAttested,
+          renterNote: form.renterNote.trim() || undefined,
           paymentMethod: form.paymentMethod,
         }),
       })

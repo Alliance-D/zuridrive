@@ -10,6 +10,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { loginPath } from '@/lib/navigation'
+import { getTranslations } from 'next-intl/server'
 import { db } from '@/lib/db'
 import { BookingDetailView } from '@/components/trip/BookingDetailView'
 import { OwnerConfirmBanner } from '@/components/trip/OwnerConfirmBanner'
@@ -165,6 +166,8 @@ export default async function OwnerBookingDetailPage({
     viewerRole: 'OWNER' as const,
   }
 
+  const t = await getTranslations('owner')
+
   return (
     <div>
       {/* Owner accept/reject banner — shown only when awaiting confirmation */}
@@ -178,6 +181,22 @@ export default async function OwnerBookingDetailPage({
           totalAmount={data.totalChargedNow}
         />
       )}
+      {/* What the renter asked the owner to know. Shown above the booking
+          detail because it is the part with something to act on — a flight
+          time is no use discovered after the handover. */}
+      {booking.renterNote && (
+        <div className="mx-auto max-w-3xl px-4 pt-4">
+          <div className="rounded-xl border border-stone-200 bg-white p-4">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-stone-500">
+              {t('renterNoteHeading')}
+            </p>
+            <p className="whitespace-pre-wrap text-sm text-stone-700">
+              {booking.renterNote}
+            </p>
+          </div>
+        </div>
+      )}
+
       <BookingDetailView booking={data} />
       {['PENDING_PAYMENT','PAYMENT_CONFIRMED','AWAITING_OWNER_CONFIRMATION','CONFIRMED'].includes(booking.status) && (
         <div className="mx-auto max-w-3xl px-4 pb-8">

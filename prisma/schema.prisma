@@ -778,6 +778,22 @@ model Booking {
   /// market ever redenominated, or a car moved between markets, looking the
   /// currency up later would silently restate history.
   currency String @default("RWF")
+
+  /// What the renter wants the owner to know: a flight number, a late arrival,
+  /// a child seat, where they will be standing.
+  ///
+  /// Part of the booking rather than a conversation, because it is context for
+  /// one handover and not a channel. Written once at booking, editable until
+  /// the trip starts, and read by the owner and by admins.
+  renterNote String?
+
+  /// Set when the note looks like it contains a phone number.
+  ///
+  /// Not a block and not an accusation — renters and owners exchange numbers
+  /// through the platform legitimately. It exists so that if bookings start
+  /// getting cancelled shortly after the owner reads the note, somebody can
+  /// see the pattern rather than guess at it.
+  renterNoteHasContact Boolean @default(false)
 }
 
 // Pickup/dropoff location for a booking — snapshot of the chosen tier
