@@ -51,3 +51,4 @@ turbo.json
 # TypeScript incremental build cache
 *.tsbuildinfo
 shots/
+translation-review.html
