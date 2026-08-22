@@ -17,7 +17,12 @@ import { useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Globe, Check, ChevronDown } from "lucide-react";
-import { routing, LOCALE_LABELS, type Locale } from "@/i18n/routing";
+import {
+  routing,
+  LOCALE_LABELS,
+  OFFERED_LOCALES,
+  type Locale,
+} from "@/i18n/routing";
 import { LOCALE_COOKIE, LANG_ASKED_COOKIE } from "@/lib/locale-cookie";
 
 export default function LanguageSwitcher({ dark = false }: { dark?: boolean }) {
@@ -68,7 +73,7 @@ export default function LanguageSwitcher({ dark = false }: { dark?: boolean }) {
 
       {open && (
         <div className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-sand-dark bg-white py-1 shadow-lg">
-          {routing.locales.map((l) => (
+          {OFFERED_LOCALES.map((l) => (
             <button
               key={l}
               onClick={() => choose(l)}

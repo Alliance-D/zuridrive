@@ -21,7 +21,7 @@
  *   node scripts/check-messages.mjs
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOTS = ["app", "components", "lib"];
@@ -346,3 +346,59 @@ if (missing.length) {
 }
 
 console.log("\nAll static t() references resolve in en and rw.");
+
+/** Leaf strings in a nested message object. */
+function countKeys(obj) {
+  let n = 0;
+  for (const v of Object.values(obj)) {
+    n += v && typeof v === "object" ? countKeys(v) : 1;
+  }
+  return n;
+}
+
+// -- Is every offered language actually readable? ---------------------------
+//
+// A locale can be routable long before it is translated. Offering one that is
+// empty makes the switcher a lie: somebody picks it, the page stays in
+// English, and they conclude the site is broken rather than untranslated.
+//
+// So OFFERED_LOCALES has to be backed by real files. This refuses to let a
+// language be advertised before it can be read.
+const routingSource = readFileSync("i18n/routing.ts", "utf8");
+const offered =
+  routingSource
+    .match(/OFFERED_LOCALES\s*=\s*\[([^\]]*)\]/)?.[1]
+    ?.match(/"(\w+)"/g)
+    ?.map((q) => q.replace(/"/g, "")) ?? [];
+
+const englishTotal = countKeys(JSON.parse(readFileSync("messages/en.json", "utf8")));
+const thin = [];
+
+for (const locale of offered) {
+  const file = `messages/${locale}.json`;
+  if (!existsSync(file)) {
+    thin.push(`${locale} is offered but ${file} does not exist`);
+    continue;
+  }
+  const keys = countKeys(JSON.parse(readFileSync(file, "utf8")));
+  // A little drift is normal while a translation catches up. An empty or
+  // barely-started file is not a translation.
+  if (keys < englishTotal * 0.9) {
+    thin.push(
+      `${locale} is offered but has ${keys} of ${englishTotal} strings ` +
+        `(${Math.round((keys / englishTotal) * 100)}%)`,
+    );
+  }
+}
+
+if (thin.length) {
+  console.error("\nLanguages offered before they are ready:\n");
+  for (const t of thin) console.error(`  ${t}`);
+  console.error(
+    "\nEither finish the translation or take the locale out of " +
+      "OFFERED_LOCALES in i18n/routing.ts.",
+  );
+  process.exit(1);
+}
+
+console.log(`${offered.length} language(s) offered to users: ${offered.join(", ")}.`);

@@ -16,7 +16,12 @@ import { useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { Globe, Loader2, Check } from "lucide-react";
-import { routing, LOCALE_LABELS, type Locale } from "@/i18n/routing";
+import {
+  routing,
+  LOCALE_LABELS,
+  OFFERED_LOCALES,
+  type Locale,
+} from "@/i18n/routing";
 import { LOCALE_COOKIE, LANG_ASKED_COOKIE } from "@/lib/locale-cookie";
 
 export default function LanguageSection({ saved }: { saved: string }) {
@@ -73,7 +78,7 @@ export default function LanguageSection({ saved }: { saved: string }) {
       <p className="mb-4 text-xs text-ink-soft">{t("languageHint")}</p>
 
       <div className="flex flex-wrap gap-2">
-        {routing.locales.map((l) => {
+        {OFFERED_LOCALES.map((l) => {
           const selected = l === choice;
           return (
             <button
