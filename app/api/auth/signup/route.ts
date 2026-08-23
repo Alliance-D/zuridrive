@@ -102,33 +102,20 @@ export async function POST(req: NextRequest) {
       select: { id: true, phone: true, name: true },
     })
 
-    // Verify the number now. The password is what signs them in from here on,
-    // so this code is a one-off proof that the phone is theirs rather than a
-    // credential they will need again.
-    const otp = generateOtp()
-    const expiryMinutes = parseInt(process.env.OTP_EXPIRY_MINUTES ?? '5')
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        otpCode: otp,
-        otpExpiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000),
-        otpAttempts: 0,
-      },
-    })
-
-    await sendOtpSms(phone, otp, user.id, localeFromRequest(req))
-
-    return NextResponse.json(
-      {
-        success: true,
-        user,
-        // Dev only - no SMS provider is configured locally, so the form shows
-        // the code rather than leaving you stuck.
-        ...(process.env.NODE_ENV === 'development' && { devOtp: otp }),
-      },
-      { status: 201 },
-    )
+    // No code is sent here, and the account works immediately.
+    //
+    // Every SMS is billed, and one at sign-up buys very little: the password
+    // is what signs somebody in from now on, so a code at this moment proves
+    // the number only until the moment they close the tab. What matters is
+    // that the number is real by the time it has to work — when an owner lists
+    // a car and renters must be able to reach them, or when a booking's
+    // confirmation has somewhere to go.
+    //
+    // That check already exists and runs at those points, so verification is
+    // deferred to where the consequence is rather than paid for at the door.
+    // See lib/phone-verification.ts, and /api/auth/verify-otp, which is
+    // already written to verify an already-signed-in user.
+    return NextResponse.json({ success: true, user }, { status: 201 })
   } catch (error) {
     console.error('[POST /api/auth/signup]', error)
     return NextResponse.json(

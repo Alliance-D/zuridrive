@@ -82,12 +82,28 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message ?? data.error ?? t("couldntSendCode"));
+        setError(data.message ?? data.error ?? t("couldntCreateAccount"));
         return;
       }
 
-      setDevOtp(data.devOtp ?? null);
-      setStep("code");
+      // Straight in on the password they just chose. No code is sent at
+      // sign-up — the number is verified later, at the point where it has to
+      // work, which is where the check already lives.
+      const result = await signIn("phone-password", {
+        phone: normalise(phone),
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        // The account exists either way, so send them to sign in rather than
+        // leaving them stranded on a form that has already done its job.
+        setError(t("accountCreatedPleaseSignIn"));
+        return;
+      }
+
+      router.push(isOwner ? "/owner/onboarding" : routes.dashboard);
+      router.refresh();
     } catch {
       setError(tc("networkError"));
     } finally {
@@ -139,7 +155,7 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
             ? isOwner
               ? t("ownerIntro")
               : t("renterIntro")
-            : t("codeSentToDot", { phone })}
+            : t("welcomeBack")}
         </p>
 
         {step === "details" ? (
@@ -266,7 +282,7 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
               className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
             >
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-              {busy ? t("sendingCode") : t("sendMeACode")}
+              {busy ? t("creatingAccount") : t("createAccount")}
             </button>
 
             <p className="text-center text-[11px] text-ink-faint">

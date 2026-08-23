@@ -1829,7 +1829,7 @@
     "listYourCarOnZuriDrive": "Andikisha imodoka yawe kuri ZuriDrive",
     "createYourAccount": "Fungura konti yawe",
     "ownerIntro": "Tangira kwinjiza ku modoka yicaye ubusa.",
-    "renterIntro": "Uzajya winjira ukoresheje telefoni yawe. Nta jambobanga ryo kwibuka.",
+    "renterIntro": "Uzajya winjira ukoresheje nimero ya telefoni n'ijambobanga wihitiyemo.",
     "codeSentToDot": "Twoherereje kode y'imibare 6 kuri {phone}.",
     "myself": "Njyewe ubwanjye",
     "aBusiness": "Ikigo",
@@ -1854,7 +1854,9 @@
     "confirmPassword": "Ongera wandike ijambo ry'ibanga",
     "passwordsDontMatch": "Ayo magambo y'ibanga ntabwo asa.",
     "passwordTooShort": "Koresha nibura inyuguti 8.",
-    "passwordTooCommon": "Iryo jambo ry'ibanga ryoroshye kumenyekana. Gerageza irindi."
+    "passwordTooCommon": "Iryo jambo ry'ibanga ryoroshye kumenyekana. Gerageza irindi.",
+    "accountCreatedPleaseSignIn": "Konti yawe yaremwe. Injira.",
+    "couldntCreateAccount": "Ntitwashoboye kurema konti yawe. Ongera ugerageze."
   },
   "confirmation": {
     "proofReceived": "Icyemezo cy'ubwishyu cyakiriwe!",

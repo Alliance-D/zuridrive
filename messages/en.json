@@ -1829,7 +1829,7 @@
     "listYourCarOnZuriDrive": "List your car on ZuriDrive",
     "createYourAccount": "Create your account",
     "ownerIntro": "Start earning from a car that's sitting idle.",
-    "renterIntro": "You'll sign in with your phone. No password to remember.",
+    "renterIntro": "Sign in with your phone number and a password you choose.",
     "codeSentToDot": "We sent a 6-digit code to {phone}.",
     "myself": "Myself",
     "aBusiness": "A business",
@@ -1854,7 +1854,9 @@
     "confirmPassword": "Confirm password",
     "passwordsDontMatch": "Those two passwords are not the same.",
     "passwordTooShort": "Use at least 8 characters.",
-    "passwordTooCommon": "That password is too easy to guess. Try something less common."
+    "passwordTooCommon": "That password is too easy to guess. Try something less common.",
+    "accountCreatedPleaseSignIn": "Your account was created. Please sign in.",
+    "couldntCreateAccount": "We couldn't create your account. Please try again."
   },
   "confirmation": {
     "proofReceived": "Payment proof received!",
