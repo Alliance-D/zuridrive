@@ -136,6 +136,26 @@ export function ConfirmationScreen({ booking }: ConfirmationScreenProps) {
             <p className="text-xs text-stone-400 mt-2">
               {t("saveReference")}
             </p>
+
+            {/* Where the confirmation went ───────────────────────────────────
+                A renter types their own number and nobody checks it. If it is
+                wrong they get no confirmation, no reminder the day before, and
+                no way to know why — they simply turn up, or do not.
+                
+                Showing the number back at the one moment they are paying
+                attention costs nothing and catches a typo while it is still
+                theirs to fix. Cheaper than verifying by SMS, and it catches
+                the case that actually happens: a slip, not a fraud. */}
+            <p className="mt-4 text-xs text-stone-500">
+              {t("sentToNumber", { phone: booking.client.phone })}
+              {" "}
+              <Link
+                href={`/dashboard/bookings/${booking.id}`}
+                className="text-brand underline"
+              >
+                {t("wrongNumber")}
+              </Link>
+            </p>
           </motion.div>
         </motion.div>
 

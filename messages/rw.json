@@ -1890,7 +1890,9 @@
     "accountCreated": "Konti yawe ya ZuriDrive yarafunguwe",
     "accountCreatedBody": "Twoherereje SMS kuri {phone} irimo umurongo wo kwinjira. Nta jambobanga rikenewe. Kanda gusa uwo murongo ugere ku ncamake yawe.",
     "viewMyBookings": "Reba ubukode bwanjye",
-    "browseMoreCars": "Reba izindi modoka"
+    "browseMoreCars": "Reba izindi modoka",
+    "sentToNumber": "Twohereje amakuru y'ubukode kuri {phone}.",
+    "wrongNumber": "Si nimero yawe?"
   },
   "payment": {
     "startAgain": "Tangira bundi bushya",

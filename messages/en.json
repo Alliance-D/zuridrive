@@ -1890,7 +1890,9 @@
     "accountCreated": "Your ZuriDrive account has been created",
     "accountCreatedBody": "We've sent an SMS to {phone} with a login link. No password needed. Just tap the link to access your dashboard.",
     "viewMyBookings": "View my bookings",
-    "browseMoreCars": "Browse more cars"
+    "browseMoreCars": "Browse more cars",
+    "sentToNumber": "We've sent your booking details to {phone}.",
+    "wrongNumber": "Not your number?"
   },
   "payment": {
     "startAgain": "Start again",
