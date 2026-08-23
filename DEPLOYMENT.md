@@ -19,6 +19,22 @@ Kigali on real networks, change the one line.
 several queries, and each one crosses whatever distance separates them. Getting
 this wrong costs more than the region choice itself.
 
+## Check a database before you commit to it
+
+```bash
+DATABASE_URL="postgres://..." npm run check:database
+```
+
+The one that matters is `btree_gist`. The bookings table carries an exclusion
+constraint that physically prevents two overlapping bookings on the same car,
+and it needs that extension. A provider that will not allow it fails the
+migration — and if that gets skipped past, double bookings return silently:
+nothing errors, two people simply arrive for the same car.
+
+The check builds the real constraint on a temporary table and tries to insert
+an overlap, because being listed as available is not the same as working. It
+writes nothing permanent.
+
 ## Where the database runs
 
 Postgres, anywhere that offers a Frankfurt region — Supabase, Neon and Railway
