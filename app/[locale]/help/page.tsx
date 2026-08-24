@@ -86,7 +86,7 @@ export default async function HelpPage({
           <dt>{t("q12")}</dt>
           <dd>
             {t("a12pre")}{" "}
-            <a href="mailto:finance@zuridrive.rw">finance@zuridrive.rw</a>{" "}
+            <a href="mailto:dushimealliance3@gmail.com">dushimealliance3@gmail.com</a>{" "}
             {t("a12post")}
           </dd>
 

@@ -15,7 +15,7 @@ import { getTranslations } from "next-intl/server";
 import ProsePage, { Clause } from "@/components/marketing/ProsePage";
 
 const UPDATED = "1 August 2026";
-const CONTACT = "privacy@zuridrive.rw";
+const CONTACT = "dushimealliance3@gmail.com";
 
 export async function generateMetadata({
   params,

@@ -32,16 +32,16 @@ export default async function Footer() {
                 Contact
               </p>
               <a
-                href="tel:+250700000000"
+                href="tel:+250795527989"
                 className="mb-1 block text-fluid-sm text-white/65 no-underline"
               >
-                +250 700 000 000
+                +250 795 527 989
               </a>
               <a
-                href="mailto:hello@zuridrive.rw"
+                href="mailto:dushimealliance3@gmail.com"
                 className="block text-fluid-sm text-white/65 no-underline"
               >
-                hello@zuridrive.rw
+                dushimealliance3@gmail.com
               </a>
             </div>
           </div>

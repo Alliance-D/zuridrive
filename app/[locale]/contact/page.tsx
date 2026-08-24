@@ -30,7 +30,7 @@ export default async function ContactPage({
   });
   const b = (chunks: React.ReactNode) => <strong>{chunks}</strong>;
   const phone = (chunks: React.ReactNode) => (
-    <a href="tel:+250788000000">{chunks}</a>
+    <a href="tel:+250795527989">{chunks}</a>
   );
 
   return (
@@ -56,7 +56,7 @@ export default async function ContactPage({
         <dl>
           <dt>{t("dtGeneral")}</dt>
           <dd>
-            <a href="mailto:hello@zuridrive.rw">hello@zuridrive.rw</a>
+            <a href="mailto:dushimealliance3@gmail.com">dushimealliance3@gmail.com</a>
           </dd>
 
           {/* The top plan carries a listing cap, so /list-your-car sends
@@ -65,8 +65,8 @@ export default async function ContactPage({
               them. */}
           <dt>{t("dtFleet")}</dt>
           <dd>
-            <a href="mailto:hello@zuridrive.rw?subject=Fleet%20enquiry">
-              hello@zuridrive.rw
+            <a href="mailto:dushimealliance3@gmail.com?subject=Fleet%20enquiry">
+              dushimealliance3@gmail.com
             </a>
             .{" "}
             {t("ddFleet")}
@@ -74,25 +74,25 @@ export default async function ContactPage({
 
           <dt>{t("dtPayments")}</dt>
           <dd>
-            <a href="mailto:finance@zuridrive.rw">finance@zuridrive.rw</a>.{" "}
+            <a href="mailto:dushimealliance3@gmail.com">dushimealliance3@gmail.com</a>.{" "}
             {t("ddPayments")}
           </dd>
 
           <dt>{t("dtPrivacy")}</dt>
           <dd>
-            <a href="mailto:privacy@zuridrive.rw">privacy@zuridrive.rw</a>.{" "}
+            <a href="mailto:dushimealliance3@gmail.com">dushimealliance3@gmail.com</a>.{" "}
             {t("ddPrivacy")}
           </dd>
 
           <dt>{t("dtSecurity")}</dt>
           <dd>
-            <a href="mailto:security@zuridrive.rw">security@zuridrive.rw</a>.{" "}
+            <a href="mailto:dushimealliance3@gmail.com">dushimealliance3@gmail.com</a>.{" "}
             {t("ddSecurity")}
           </dd>
 
           <dt>{t("dtPress")}</dt>
           <dd>
-            <a href="mailto:hello@zuridrive.rw">hello@zuridrive.rw</a>
+            <a href="mailto:dushimealliance3@gmail.com">dushimealliance3@gmail.com</a>
           </dd>
         </dl>
       </Clause>

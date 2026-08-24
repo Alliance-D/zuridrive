@@ -97,7 +97,7 @@ export default async function TermsPage({
       <Clause n={12} title={t("s12Title")}>
         <p>
           {t("s12pre")}{" "}
-          <a href="mailto:hello@zuridrive.rw">hello@zuridrive.rw</a>
+          <a href="mailto:dushimealliance3@gmail.com">dushimealliance3@gmail.com</a>
           {t("s12mid")} <Link href="/help">{t("s12help")}</Link>{" "}
           {t("s12and")} <Link href="/privacy">{t("s12privacy")}</Link>.
         </p>

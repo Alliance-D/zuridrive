@@ -3,14 +3,13 @@
 /**
  * SignupForm — phone-first signup for clients and owners.
  *
- * Two steps: details → SMS code.
+ * One step. Details in, account created, signed straight in on the password
+ * they just chose.
  *
- * A password is set here and the code is a one-off proof that the number is
- * theirs. This used to create no password at all, which left everyone who
- * signed up unable to use the sign-in form, since that asks for one.
- *
- * In development the API returns the code (`devOtp`) since no SMS provider is
- * configured, and the form shows it rather than leaving you stuck.
+ * There used to be a second step for an SMS code. It was removed because it
+ * cost a message to prove a number that the password then made unnecessary —
+ * verification now happens where the number has to work, which is when an
+ * owner lists a car. See app/api/auth/signup/route.ts.
  */
 
 import { useState } from "react";
@@ -25,7 +24,6 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
   const t = useTranslations("auth");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [step, setStep] = useState<"details" | "code">("details");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +34,6 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
   // the business name rather than the founder's personal name.
   const [ownerType, setOwnerType] = useState<"INDIVIDUAL" | "COMPANY">("INDIVIDUAL");
   const [businessName, setBusinessName] = useState("");
-  const [code, setCode] = useState("");
-  const [devOtp, setDevOtp] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -111,35 +107,6 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
     }
   }
 
-  async function verify() {
-    setBusy(true);
-    setError(null);
-    try {
-      const result = await signIn("phone-otp", {
-        phone: normalise(phone),
-        otp: code.trim(),
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError(
-          result.error === "OTP_INVALID"
-            ? t("codeNotRight")
-            : result.error === "OTP_EXPIRED"
-              ? t("codeHasExpired")
-              : t("couldntSignYouIn"),
-        );
-        return;
-      }
-
-      router.push(isOwner ? "/owner/onboarding" : routes.dashboard);
-      router.refresh();
-    } catch {
-      setError(tc("networkRetry"));
-    } finally {
-      setBusy(false);
-    }
-  }
 
   const canRequest =
     name.trim().length >= 2 && phone.trim().length >= 10 && !busy;
@@ -151,14 +118,9 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
           {isOwner ? t("listYourCarOnZuriDrive") : t("createYourAccount")}
         </h1>
         <p className="mt-1 text-sm text-ink-soft">
-          {step === "details"
-            ? isOwner
-              ? t("ownerIntro")
-              : t("renterIntro")
-            : t("welcomeBack")}
+          {isOwner ? t("ownerIntro") : t("renterIntro")}
         </p>
 
-        {step === "details" ? (
           <div className="mt-5 space-y-3">
             {isOwner && (
               <div>
@@ -289,55 +251,6 @@ export default function SignupForm({ role }: { role: "CLIENT" | "OWNER" }) {
               {t("agreeToTerms")}
             </p>
           </div>
-        ) : (
-          <div className="mt-5 space-y-3">
-            {devOtp && (
-              <div className="rounded-lg bg-warning-bg px-3 py-2">
-                <p className="text-xs text-warning">
-                  {t("devModeCode")}{" "}
-                  <strong className="font-mono text-sm">{devOtp}</strong>
-                </p>
-              </div>
-            )}
-
-            <Field label={t("sixDigitCode")} htmlFor="code">
-              <input
-                id="code"
-                className={`${input} text-center font-mono text-lg tracking-[0.4em]`}
-                value={code}
-                onChange={(e) =>
-                  setCode(e.target.value.replace(/[^\d]/g, "").slice(0, 6))
-                }
-                inputMode="numeric"
-                placeholder={t("sixDigitCodePlaceholder")}
-                autoFocus
-              />
-            </Field>
-
-            {error && <ErrorBox>{error}</ErrorBox>}
-
-            <button
-              onClick={verify}
-              disabled={code.length !== 6 || busy}
-              className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
-            >
-              {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-              {busy ? t("creatingAccount") : t("createAccount")}
-            </button>
-
-            <button
-              onClick={() => {
-                setStep("details");
-                setCode("");
-                setError(null);
-              }}
-              className="flex w-full items-center justify-center gap-1 text-xs font-semibold text-ink-soft hover:text-ink"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              {t('changeDetails')}
-            </button>
-          </div>
-        )}
       </div>
 
       <p className="mt-4 text-center text-sm text-ink-soft">
