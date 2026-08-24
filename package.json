@@ -14,6 +14,7 @@
     "check:colors": "node scripts/check-colors.mjs",
     "check:countries": "node scripts/check-countries.mjs",
     "check:database": "node scripts/check-database-support.mjs",
+    "db:init-plans": "tsx prisma/init-plans.ts",
     "review:rw": "node scripts/build-translation-review.mjs",
     "prisma:studio": "prisma studio",
     "prisma:migrate": "prisma migrate dev",

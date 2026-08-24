@@ -124,12 +124,21 @@ values, not the development ones**:
 
 ```bash
 npx prisma migrate deploy    # never `migrate dev` against production
-npx prisma db seed           # only if the platform settings row is missing
+npm run db:init-plans        # creates the three subscription tiers
 ```
 
-The seed creates the four country rows and the platform settings singleton. It
-is safe to run twice — every insert is an upsert — but check what it writes
-before pointing it at a live database.
+**Do not run `npm run db:seed` against production.** It creates a demo owner, a
+fake car, a booking and a review — useful locally, wrong in a live database.
+
+The migrations create the four country rows themselves, and the platform
+settings row is handled by `getPlatformSettings()` when it is missing. The one
+thing neither covers is subscription plans: the admin page can edit tiers but
+not create them, since the tiers are fixed by the product rather than something
+an operator invents. `db:init-plans` writes those three rows and nothing else.
+
+It leaves every price at zero on purpose. What ZuriDrive charges is a decision
+for whoever runs it, not a default inherited from a script — set the prices on
+`/admin/plans`. Running it again never overwrites a price already set there.
 
 ## After deploying, before telling anyone
 
