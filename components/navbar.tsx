@@ -11,9 +11,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { Menu, X, ChevronDown, Car, User, LogOut, LayoutDashboard } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 

@@ -5,7 +5,7 @@
  * their listing, so that queue is the one with a person waiting on it.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { getEnumLabeller } from "@/lib/enum-labels";

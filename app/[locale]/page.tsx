@@ -11,7 +11,7 @@
 //   6. Footer
 // =============================================================================
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { CAR_CARD_INCLUDE } from "@/lib/car-card";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";

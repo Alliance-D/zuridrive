@@ -11,7 +11,7 @@
  * available ones turns a dead end into the thing they came for.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";

@@ -24,8 +24,8 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
 import {
   LayoutDashboard,

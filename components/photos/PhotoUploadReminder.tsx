@@ -17,7 +17,7 @@
 import { useState } from 'react'
 import { useTranslations } from "next-intl";
 import { Camera, X, ArrowRight, AlertCircle, Fuel } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from "@/i18n/navigation";
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface PhotoUploadReminderProps {

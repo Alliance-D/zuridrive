@@ -5,7 +5,7 @@
  * a Super Admin, so User Manager can't be used as an escalation path.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";

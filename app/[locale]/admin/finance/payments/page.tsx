@@ -5,7 +5,7 @@
  * only payments a human has to action, and a client is waiting on each one.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";

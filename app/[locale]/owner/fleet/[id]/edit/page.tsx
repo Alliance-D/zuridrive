@@ -11,7 +11,7 @@ import { getEnumLabeller } from "@/lib/enum-labels";
 import LocationManager from "@/components/owner/LocationManager";
 import PricingEditor from "@/components/owner/PricingEditor";
 import PhotoManager from "@/components/owner/PhotoManager";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile } from "@/lib/owner";
 

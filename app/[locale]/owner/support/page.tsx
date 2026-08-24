@@ -10,7 +10,7 @@
  * free tier can't see the edges of would be worse than no promise.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
 import { loginPath } from "@/lib/navigation";
 import { getTranslations } from "next-intl/server";

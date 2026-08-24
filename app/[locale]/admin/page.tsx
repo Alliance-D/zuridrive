@@ -6,7 +6,7 @@
  * bank confirmation, a car waiting for approval.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { formatMoney } from "@/lib/currency";

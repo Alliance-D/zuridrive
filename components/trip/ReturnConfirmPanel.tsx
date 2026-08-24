@@ -16,7 +16,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, AlertTriangle, Clock, ChevronDown } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from "@/i18n/navigation";
 
 interface ReturnConfirmPanelProps {
   bookingId: string

@@ -32,7 +32,7 @@ import { DisputePanel } from './DisputePanel'
 import { DepositStatusCard } from './DepositStatusCard'
 import { BookingStatusTimeline } from './BookingStatusTimeline'
 import { ConditionPhotoGrid } from './ConditionPhotoGrid'
-import Link from 'next/link'
+import { Link } from "@/i18n/navigation";
 
 // Re-use the type from the server component
 interface BookingDetailViewProps {

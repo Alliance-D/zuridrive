@@ -9,7 +9,7 @@
  * decoratively, teaches people not to trust the real charts.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Lock, ArrowRight } from "lucide-react";
 
 export default function LockedInsight({

@@ -6,7 +6,7 @@
  * exactly what finance will pay.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile, getAvailableBalance } from "@/lib/owner";

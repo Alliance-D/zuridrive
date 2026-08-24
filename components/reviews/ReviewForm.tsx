@@ -10,7 +10,7 @@
 
 import { useState } from "react";
 import { useTranslations } from 'next-intl'
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Star, Loader2, AlertCircle } from "lucide-react";
 
 const CATEGORIES = [

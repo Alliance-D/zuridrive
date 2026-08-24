@@ -9,7 +9,7 @@
  */
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { SUPPORT_CATEGORIES } from "@/lib/support";
 import { Loader2, AlertCircle, Upload, X, CheckCircle2, Zap } from "lucide-react";

@@ -8,9 +8,9 @@
  */
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { NotificationType } from "@prisma/client";
 import { formatDate } from "@/lib/dates";
 import {

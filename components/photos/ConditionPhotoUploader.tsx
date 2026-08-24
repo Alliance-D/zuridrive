@@ -16,7 +16,7 @@ import { useState, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
-import { useRouter } from 'next/navigation'
+import { useRouter } from "@/i18n/navigation";
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CarFront, RotateCcw, Armchair,

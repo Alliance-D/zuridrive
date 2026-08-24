@@ -19,7 +19,7 @@
 
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ChevronLeft, User as UserIcon } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { requireAdminModule, hasAdminModule } from "@/lib/auth";

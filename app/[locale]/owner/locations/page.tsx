@@ -10,7 +10,7 @@
  * what clients can already choose without them doing anything.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireOwnerProfile } from "@/lib/owner";

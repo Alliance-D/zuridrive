@@ -16,7 +16,7 @@
  * depend on providers that only exist inside the [locale] tree.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export const metadata = {
   title: "Page not found — ZuriDrive",

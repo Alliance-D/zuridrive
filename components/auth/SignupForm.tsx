@@ -14,9 +14,9 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { signIn } from "next-auth/react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { routes } from "@/lib/routes";
 import { Loader2, AlertCircle, ArrowLeft, Phone, User, Mail, Building2, Lock, Eye, EyeOff } from "lucide-react";
 

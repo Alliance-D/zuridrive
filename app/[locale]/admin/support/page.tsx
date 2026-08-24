@@ -14,7 +14,7 @@
  * to paying owners quietly becomes a broken promise to everyone else.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { requireAdminModule } from "@/lib/auth";
 import { prisma } from "@/lib/db";

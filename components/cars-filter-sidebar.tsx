@@ -14,7 +14,8 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Loader2, SlidersHorizontal, ChevronDown} from "lucide-react";
 
 interface FilterOption {

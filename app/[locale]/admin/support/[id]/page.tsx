@@ -6,7 +6,7 @@
  * see that a ticket is two hours from missing its target can act on it.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions, requireAdminModule } from "@/lib/auth";

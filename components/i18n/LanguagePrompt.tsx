@@ -19,7 +19,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { X } from "lucide-react";
 import { routing, LOCALE_LABELS, type Locale } from "@/i18n/routing";

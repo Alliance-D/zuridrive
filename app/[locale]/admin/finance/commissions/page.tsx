@@ -6,7 +6,7 @@
  * platform rate later can't rewrite history.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";

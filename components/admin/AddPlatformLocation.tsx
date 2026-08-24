@@ -13,7 +13,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Plus, Loader2, X, AlertCircle } from "lucide-react";
 
 export default function AddPlatformLocation() {

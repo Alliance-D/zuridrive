@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Loader2, AlertCircle } from "lucide-react";
 
 type Action = "ASSIGN_TO_ME" | "RESOLVE" | "CLOSE" | "REOPEN";

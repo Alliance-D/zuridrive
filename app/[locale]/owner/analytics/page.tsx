@@ -16,7 +16,7 @@
  * /owner/earnings and the payout ledger say.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
 import { localePath, loginPath } from "@/lib/navigation";
 import { getServerSession } from "next-auth";

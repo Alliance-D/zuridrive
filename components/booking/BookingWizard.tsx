@@ -18,11 +18,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
+import { Link } from "@/i18n/navigation";
 import { paymentsEnabledClient } from '@/lib/deposit-copy'
 import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
-import { useRouter } from 'next/navigation'
+import { useRouter } from "@/i18n/navigation";
 import { motion, AnimatePresence } from 'framer-motion'
 import { CalendarDays, MapPin, User, CreditCard, ChevronRight, ChevronLeft, Info, Check, Car, Fuel, Clock } from 'lucide-react'
 import { formatMoney } from '@/lib/currency'

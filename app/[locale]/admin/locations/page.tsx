@@ -7,7 +7,7 @@
  * always available on every car.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import AddPlatformLocation from "@/components/admin/AddPlatformLocation";
 import { prisma } from "@/lib/db";

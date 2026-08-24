@@ -24,7 +24,7 @@
  * Also dropped: "join thousands of car owners", which is not true.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";

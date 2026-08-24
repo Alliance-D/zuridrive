@@ -18,7 +18,7 @@ import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { motion } from 'framer-motion'
 import { CalendarDays, MapPin, Car, Phone, Copy, Check, ArrowRight, MessageSquare } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from "@/i18n/navigation";
 import { formatMoney } from '@/lib/currency'
 
 interface ConfirmationScreenProps {

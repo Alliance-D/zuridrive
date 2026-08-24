@@ -10,7 +10,7 @@
 
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { formatDate, formatDateTime } from "@/lib/dates";
 import { getEnumLabeller } from "@/lib/enum-labels";
 import { prisma } from "@/lib/db";

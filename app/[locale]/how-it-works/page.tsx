@@ -7,7 +7,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getDepositCopy } from "@/lib/deposit-copy";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import ScrollReveal from "@/components/scroll-reveal";

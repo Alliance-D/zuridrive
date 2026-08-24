@@ -14,7 +14,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { MapPin, Loader2, Trash2, Plus, X, AlertCircle } from "lucide-react";
 
 export interface OwnerLocationItem {

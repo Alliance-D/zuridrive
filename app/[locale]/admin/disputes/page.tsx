@@ -5,7 +5,7 @@
  * long as a dispute is open, so age is the thing that matters most.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { getEnumLabeller } from "@/lib/enum-labels";

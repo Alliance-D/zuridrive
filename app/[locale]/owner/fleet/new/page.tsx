@@ -13,7 +13,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import CarListingWizard from "@/components/owner/car-form/CarListingWizard";
 import { getOwnerAllowance } from "@/lib/subscriptions/limits";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { routes } from "@/lib/routes";
 
 export async function generateMetadata({

@@ -14,7 +14,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { Globe, Loader2, Check } from "lucide-react";
 import {
   routing,
@@ -62,11 +62,10 @@ export default function LanguageSection({ saved }: { saved: string }) {
       setBusy(false);
     }
 
-    const rest = pathname.replace(
-      new RegExp(`^/(${routing.locales.join("|")})`),
-      "",
-    );
-    startTransition(() => router.replace(`/${next}${rest || ""}`));
+    // Same as the navbar switcher: usePathname() here has no locale segment
+    // and the router adds one, so the locale is named rather than spliced into
+    // the path.
+    startTransition(() => router.replace(pathname, { locale: next }));
   }
 
   return (

@@ -10,7 +10,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { useRouter } from 'next/navigation'
+import { useRouter } from "@/i18n/navigation";
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, XCircle, Clock, ChevronDown } from 'lucide-react'
 import { formatMoney } from '@/lib/currency'

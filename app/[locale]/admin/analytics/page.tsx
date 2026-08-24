@@ -10,7 +10,7 @@
  * ledgers are the source of truth and these figures must agree with them.
  */
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { requireAdminModule } from "@/lib/auth";
 import { formatDate } from "@/lib/dates";

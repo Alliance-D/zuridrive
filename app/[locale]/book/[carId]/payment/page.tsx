@@ -14,7 +14,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { formatMoney } from '@/lib/currency'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { motion, AnimatePresence } from 'framer-motion'
 import { Smartphone, Upload, Check, X, Clock, RefreshCw } from 'lucide-react'
 

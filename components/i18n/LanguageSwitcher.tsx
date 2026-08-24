@@ -14,7 +14,7 @@
  */
 
 import { useState, useTransition } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { Globe, Check, ChevronDown } from "lucide-react";
 import {
@@ -49,9 +49,11 @@ export default function LanguageSwitcher({ dark = false }: { dark?: boolean }) {
       body: JSON.stringify({ locale: next }),
     }).catch(() => {});
 
-    // pathname includes the current locale segment; swap it in place.
-    const rest = pathname.replace(new RegExp(`^/(${routing.locales.join("|")})`), "");
-    startTransition(() => router.replace(`/${next}${rest || ""}`));
+    // usePathname() from @/i18n/navigation returns the path WITHOUT the locale
+    // segment, and its router puts one back. So the path is handed over as-is
+    // with the locale named separately — building "/rw/cars" by hand here
+    // produced "/en/rw/cars", because both sides were adding a prefix.
+    startTransition(() => router.replace(pathname, { locale: next }));
   }
 
   return (

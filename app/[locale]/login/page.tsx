@@ -9,8 +9,9 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { signIn, getSession } from "next-auth/react";
 import { resolveLandingPath } from "@/lib/auth/landing";
 import { Phone, Mail, Lock, ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";

@@ -3,7 +3,7 @@
 // Server component — static links, no interactivity needed
 // =============================================================================
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { ROUTES } from "@/lib/routes";
 
