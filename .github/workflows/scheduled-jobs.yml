@@ -1,0 +1,144 @@
+# Scheduled jobs.
+#
+# These ran as Vercel crons until the Hobby plan turned out to allow only one
+# run per day — too coarse for work that has to happen close to when it is due,
+# like activating a trip on its start date or releasing a deposit.
+#
+# The endpoints were always ordinary authenticated HTTP routes, so any
+# scheduler can call them. GitHub Actions is free without limit on a public
+# repository, the secret sits in the same place as the code rather than with a
+# third party, and the schedule is version-controlled where a dashboard setting
+# would not be.
+#
+# ── Setup ────────────────────────────────────────────────────────────────────
+#
+# Two repository secrets, under Settings → Secrets and variables → Actions:
+#
+#   CRON_SECRET  the same value set in Vercel. If they differ, every job gets a
+#                401 — which this workflow reports as a failure rather than
+#                swallowing.
+#   SITE_URL     https://zuridrive.vercel.app   (no trailing slash)
+#
+# ── Times are UTC ────────────────────────────────────────────────────────────
+#
+# GitHub and Vercel both schedule in UTC, so these are the same clock times the
+# Vercel crons used. Rwanda is UTC+2:
+#
+#   02:00 UTC = 04:00 Kigali   quiet, after the day has settled
+#   09:00 UTC = 11:00 Kigali   late morning, when a reminder is worth reading
+#
+# ── Being late is fine; being disabled is not ────────────────────────────────
+#
+# GitHub does not promise punctuality. An hourly job may arrive several minutes
+# late, and under load a run can be skipped. That costs nothing here: every job
+# processes everything currently eligible rather than only what appeared since
+# the last run, so a missed run is picked up by the next one. auto-confirm
+# claims each booking with a guarded update and trip-reminders is stamped once
+# per booking, so running twice is safe too.
+#
+# The real risk is different. GitHub disables scheduled workflows on a public
+# repository after a long stretch with no activity in the repo — you get an
+# email, and if you miss it the jobs simply stop, quietly. If ZuriDrive goes
+# months without a commit, check that this workflow is still enabled under the
+# Actions tab.
+#
+# ── Going back to Vercel crons ───────────────────────────────────────────────
+#
+# On Vercel Pro the schedules can live in vercel.json again, which removes this
+# whole file from the picture. See DEPLOYMENT.md for the block to restore.
+# Delete this file when you do — leaving both running does no damage, since the
+# jobs are safe to repeat, but it doubles the work and makes the logs lie.
+
+name: Scheduled jobs
+
+on:
+  schedule:
+    - cron: "0 * * * *" # hourly
+    - cron: "0 2 * * *" # 04:00 Kigali
+    - cron: "0 9 * * *" # 11:00 Kigali
+  # Run by hand from the Actions tab, to prove it works without waiting.
+  workflow_dispatch:
+    inputs:
+      group:
+        description: "Which jobs to run"
+        required: true
+        default: all
+        type: choice
+        options: [all, hourly, nightly, morning]
+
+env:
+  SITE_URL: ${{ secrets.SITE_URL }}
+  CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+jobs:
+  hourly:
+    # Trip activation, auto-completion, and confirming bookings an owner has
+    # not answered. Was every 15 minutes on Vercel; hourly still catches
+    # everybody, since owners get two hours to respond.
+    if: >-
+      github.event.schedule == '0 * * * *' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.group == 'all' || inputs.group == 'hourly'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: auto-confirm, activate-trips, auto-complete
+        run: |
+          set -u
+          failed=0
+          for job in auto-confirm activate-trips auto-complete; do
+            code=$(curl -sS --max-time 60 -o /tmp/out -w "%{http_code}" \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              "$SITE_URL/api/cron/$job") || code="000"
+            echo "$job -> $code  $(head -c 300 /tmp/out)"
+            # A job that stops working must fail the run. A cron that quietly
+            # stops is worse than one that never existed, because you stop
+            # looking.
+            [ "$code" = "200" ] || failed=1
+          done
+          exit $failed
+
+  nightly:
+    # Photo retention, then the books. Deletions first, so reconcile sees the
+    # day's releases and removals already applied.
+    if: >-
+      github.event.schedule == '0 2 * * *' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.group == 'all' || inputs.group == 'nightly'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: delete-photos, reconcile
+        run: |
+          set -u
+          failed=0
+          for job in delete-photos reconcile; do
+            code=$(curl -sS --max-time 120 -o /tmp/out -w "%{http_code}" \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              "$SITE_URL/api/cron/$job") || code="000"
+            echo "$job -> $code  $(head -c 300 /tmp/out)"
+            [ "$code" = "200" ] || failed=1
+          done
+          exit $failed
+
+  morning:
+    # Both send SMS, so they run when somebody will actually read one.
+    # subscription-reminders was 08:00 UTC on Vercel and is 09:00 here — an
+    # hour later in a batch that is already the morning, which changes nothing
+    # that matters.
+    if: >-
+      github.event.schedule == '0 9 * * *' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.group == 'all' || inputs.group == 'morning'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: subscription-reminders, trip-reminders
+        run: |
+          set -u
+          failed=0
+          for job in subscription-reminders trip-reminders; do
+            code=$(curl -sS --max-time 120 -o /tmp/out -w "%{http_code}" \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              "$SITE_URL/api/cron/$job") || code="000"
+            echo "$job -> $code  $(head -c 300 /tmp/out)"
+            [ "$code" = "200" ] || failed=1
+          done
+          exit $failed

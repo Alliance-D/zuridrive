@@ -48,15 +48,59 @@ all do. What matters more than the vendor:
   else. Supabase and Neon both provide one — use the pooled connection string
   for `DATABASE_URL`, and the direct one for migrations.
 
-## The crons are Vercel-specific
+## Scheduled jobs run on GitHub Actions, not Vercel
 
-Seven jobs are declared in `vercel.json`: auto-confirm, activate-trips,
-auto-complete, delete-photos, subscription-reminders, reconcile, trip-reminders.
+Seven jobs have to run on a timer: auto-confirm, activate-trips, auto-complete,
+delete-photos, reconcile, subscription-reminders, trip-reminders. Without them
+bookings never auto-confirm, trips never activate, deposits never release, and
+nobody is told the books do not balance.
 
-They are ordinary authenticated HTTP endpoints, so any scheduler can call them —
-but if you leave Vercel, something has to. Without them bookings never
-auto-confirm, trips never activate, deposits never release, and nobody is told
-their books do not balance.
+**Vercel's Hobby plan allows crons only once per day**, which is too coarse for
+work that has to happen close to when it is due. The deploy is rejected
+outright if `vercel.json` asks for anything more frequent.
+
+So the schedules live in `.github/workflows/scheduled-jobs.yml` instead. The
+endpoints were always ordinary authenticated HTTP routes, so the only thing
+that changed is who calls them. GitHub Actions is free without limit on a
+public repository.
+
+**Two repository secrets are required**, under Settings → Secrets and variables
+→ Actions:
+
+| Secret | Value |
+|---|---|
+| `CRON_SECRET` | the same value set in Vercel — if they differ, every job 401s |
+| `SITE_URL` | `https://zuridrive.vercel.app`, no trailing slash |
+
+**The one thing that can quietly break it:** GitHub disables scheduled
+workflows on a public repository after a long stretch with no activity in the
+repo. You get an email. If ZuriDrive goes months without a commit, check the
+Actions tab and re-enable.
+
+### Going back to Vercel crons on Pro
+
+Vercel Pro removes the daily limit. To move back:
+
+1. Restore this block to `vercel.json`:
+
+```json
+  "crons": [
+    { "path": "/api/cron/auto-confirm", "schedule": "*/15 * * * *" },
+    { "path": "/api/cron/activate-trips", "schedule": "0 * * * *" },
+    { "path": "/api/cron/auto-complete", "schedule": "0 * * * *" },
+    { "path": "/api/cron/delete-photos", "schedule": "0 2 * * *" },
+    { "path": "/api/cron/subscription-reminders", "schedule": "0 8 * * *" },
+    { "path": "/api/cron/reconcile", "schedule": "30 2 * * *" },
+    { "path": "/api/cron/trip-reminders", "schedule": "0 9 * * *" }
+  ]
+```
+
+2. Deploy.
+3. **Delete `.github/workflows/scheduled-jobs.yml`.**
+
+Forgetting step 3 does no damage — every job is safe to run twice, which is the
+same property that makes running late safe — but it doubles the work and makes
+the logs misleading.
 
 ## Environment variables
 
